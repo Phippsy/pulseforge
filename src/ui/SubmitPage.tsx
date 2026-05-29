@@ -9,6 +9,55 @@ interface Submission {
   timestamp: number;
 }
 
+async function compressImage(file: File, maxBytes: number): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  let { width, height } = bitmap;
+
+  // Scale down iteratively until under the size limit
+  let quality = 0.85;
+  let scale = 1;
+  const MAX_DIM = 2048;
+
+  // Cap dimensions first
+  if (width > MAX_DIM || height > MAX_DIM) {
+    scale = MAX_DIM / Math.max(width, height);
+    width = Math.round(width * scale);
+    height = Math.round(height * scale);
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d')!;
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  // Try progressively lower quality until under limit
+  let blob = await canvasToBlob(canvas, quality);
+  while (blob.size > maxBytes && quality > 0.3) {
+    quality -= 0.15;
+    blob = await canvasToBlob(canvas, quality);
+  }
+
+  // If still too large, scale down further
+  while (blob.size > maxBytes && width > 400) {
+    width = Math.round(width * 0.7);
+    height = Math.round(height * 0.7);
+    canvas.width = width;
+    canvas.height = height;
+    ctx.drawImage(await createImageBitmap(file), 0, 0, width, height);
+    blob = await canvasToBlob(canvas, quality);
+  }
+
+  return blob;
+}
+
+function canvasToBlob(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
+  return new Promise((resolve) => {
+    canvas.toBlob((b) => resolve(b!), 'image/jpeg', quality);
+  });
+}
+
 function TeletextHeader() {
   const [time, setTime] = useState(new Date());
   useEffect(() => {
@@ -109,6 +158,14 @@ export function SubmitPage() {
           contentType = 'image/jpeg';
         }
 
+        // Downsample images exceeding 4.5MB to fit Vercel body limit
+        const MAX_BYTES = 4.5 * 1024 * 1024;
+        let uploadBody: Blob | File = file;
+        if (file.size > MAX_BYTES && contentType.startsWith('image/')) {
+          uploadBody = await compressImage(file, MAX_BYTES);
+          contentType = 'image/jpeg';
+        }
+
         // Upload file directly to server which streams to Vercel Blob
         const uploadRes = await fetch('/api/upload', {
           method: 'POST',
@@ -116,7 +173,7 @@ export function SubmitPage() {
             'content-type': contentType,
             'x-filename': file.name,
           },
-          body: file,
+          body: uploadBody,
         });
 
         if (!uploadRes.ok) throw new Error('Failed to upload file');
