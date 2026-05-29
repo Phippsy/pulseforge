@@ -154,14 +154,16 @@ export function SubmitPage() {
         // Determine content type (Chrome doesn't assign MIME to HEIC/HEIF)
         let contentType = file.type;
         const ext = file.name.split('.').pop()?.toLowerCase();
-        if (!contentType || contentType === 'application/octet-stream' || ext === 'heic' || ext === 'heif') {
+        const isHeic = ext === 'heic' || ext === 'heif';
+        if (!contentType || contentType === 'application/octet-stream' || isHeic) {
           contentType = 'image/jpeg';
         }
 
-        // Downsample images exceeding 4.5MB to fit Vercel body limit
+        // Always convert images through canvas to ensure browser-compatible format
+        // (HEIC/HEIF can't be displayed by most browsers) and fit within 4.5MB limit
         const MAX_BYTES = 4.5 * 1024 * 1024;
         let uploadBody: Blob | File = file;
-        if (file.size > MAX_BYTES && contentType.startsWith('image/')) {
+        if (contentType.startsWith('image/') && (file.size > MAX_BYTES || isHeic)) {
           uploadBody = await compressImage(file, MAX_BYTES);
           contentType = 'image/jpeg';
         }
