@@ -165,7 +165,7 @@ export const deepHouse: Journey = {
         warpSpeed: 0.9,
         warpIntensity: 0.55,
       },
-      effectParams: { blobCount: 10, threshold: 2.2 },
+      effectParams: { blobCount: 12, threshold: 3.5 },
       transitionDuration: 2.5,
     },
     {

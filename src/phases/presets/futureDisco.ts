@@ -192,7 +192,7 @@ export const futureDisco: Journey = {
         warpSpeed: 1.1,
         warpIntensity: 0.6,
       },
-      effectParams: { blobCount: 12, threshold: 2.0 },
+      effectParams: { blobCount: 14, threshold: 3.8 },
       transitionDuration: 2.5,
     },
     {

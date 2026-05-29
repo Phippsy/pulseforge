@@ -162,7 +162,7 @@ export class WaterRippleEffect implements VisualEffect {
       },
       vertexShader,
       fragmentShader,
-      extensions: { derivatives: true },
+      extensions: { derivatives: true, clipCullDistance: false, multiDraw: false },
     });
     this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this.material);
     this.mesh.frustumCulled = false;

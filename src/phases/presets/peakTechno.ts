@@ -57,7 +57,7 @@ export const peakTechno: Journey = {
         warpSpeed: 1.5,
         warpIntensity: 0.7,
       },
-      effectParams: { blobCount: 12, threshold: 1.8 },
+      effectParams: { blobCount: 16, threshold: 4.0 },
       transitionDuration: 1.5,
     },
     {

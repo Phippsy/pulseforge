@@ -131,7 +131,7 @@ export class TerrainEffect implements VisualEffect {
   private mesh!: THREE.Mesh;
   private material!: THREE.ShaderMaterial;
 
-  init(scene: THREE.Scene, camera: THREE.Camera): void {
+  init(scene: THREE.Scene, _camera: THREE.Camera): void {
     this.material = new THREE.ShaderMaterial({
       uniforms: {
         uTime: { value: 0 },
