@@ -164,11 +164,19 @@ export function SubmitPage() {
         const MAX_BYTES = 4.5 * 1024 * 1024;
         let uploadBody: Blob | File = file;
         if (isHeic) {
-          const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
-          const jpegBlob = Array.isArray(converted) ? converted[0] : converted;
-          // Compress further if still over limit
-          uploadBody = jpegBlob.size > MAX_BYTES ? await compressImage(jpegBlob, MAX_BYTES) : jpegBlob;
-          contentType = 'image/jpeg';
+          try {
+            // Read as ArrayBuffer first — heic2any needs a proper blob, not a File reference
+            const buffer = await file.arrayBuffer();
+            const heicBlob = new Blob([buffer], { type: 'image/heic' });
+            const converted = await heic2any({ blob: heicBlob, toType: 'image/jpeg', quality: 0.85 });
+            const jpegBlob = Array.isArray(converted) ? converted[0] : converted;
+            uploadBody = jpegBlob.size > MAX_BYTES ? await compressImage(jpegBlob, MAX_BYTES) : jpegBlob;
+            contentType = 'image/jpeg';
+          } catch {
+            setError('HEIC format not supported in this browser. Please convert to JPG/PNG first, or upload from Safari on iPhone.');
+            setSubmitting(false);
+            return;
+          }
         } else if (contentType.startsWith('image/') && file.size > MAX_BYTES) {
           uploadBody = await compressImage(file, MAX_BYTES);
           contentType = 'image/jpeg';
