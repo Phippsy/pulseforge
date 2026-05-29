@@ -1,5 +1,5 @@
 import { useStore } from '../store';
-import { effectRegistry, type EffectName } from '../visual/effects/index';
+import { type EffectName } from '../visual/effects/index';
 
 const ALL_EFFECTS: { id: EffectName; label: string }[] = [
   { id: 'tunnel', label: 'Tunnel' },
