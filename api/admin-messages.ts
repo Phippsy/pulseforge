@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getRedis } from './_lib/redis';
+import { getRedis } from './_lib/redis.js';
 
 const ADMIN_MESSAGES_KEY = 'danfest:admin-messages';
 
