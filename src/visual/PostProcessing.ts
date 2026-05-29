@@ -428,8 +428,8 @@ export class PostProcessing {
     
     this.vignettePass.uniforms.uAmount.value = params.vignetteAmount;
     this.filmGrainPass.uniforms.uTime.value = this.time;
-    this.filmGrainPass.uniforms.uIntensity.value = 0.03;
-    this.filmGrainPass.uniforms.uScanlines.value = params.feedbackAmount > 0.1 ? 0.5 : 0.0;
+    this.filmGrainPass.uniforms.uIntensity.value = 0.02;
+    this.filmGrainPass.uniforms.uScanlines.value = 0.0; // Disabled — creates visible grey lines over visuals
   }
 
   render(_renderer: THREE.WebGLRenderer): void {
