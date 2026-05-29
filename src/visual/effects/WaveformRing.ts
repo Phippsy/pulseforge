@@ -13,6 +13,7 @@ uniform float uMidEnergy;
 uniform float uHighEnergy;
 uniform float uTransient;
 uniform float uIntensity;
+uniform float uPixelRatio;
 uniform float uFFTData[64];
 
 varying float vAngle;
@@ -44,8 +45,8 @@ void main() {
   float shockPhase = a * 2.0 - uTime * 10.0;
   float shock = uTransient * sin(shockPhase) * (1.0 - ringIndex) * 0.5;
   
-  // Breathing / time-based for silent mode
-  float breath = sin(uTime * 0.5 + ringIndex * 1.5) * 0.05;
+  // Breathing / time-based for silent mode — visible even without audio
+  float breath = sin(uTime * 0.5 + ringIndex * 1.5) * 0.15 + sin(uTime * 0.3) * 0.08;
   
   float totalDisplace = bassDisplace + midDisplace + highDisplace + fftDisplace + shock + breath;
   vDisplacement = totalDisplace;
@@ -64,7 +65,7 @@ void main() {
   );
   
   gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-  gl_PointSize = (2.0 + fftVal * 4.0 + uTransient * 3.0) * uIntensity;
+  gl_PointSize = (8.0 + fftVal * 8.0 + uTransient * 5.0 + breath * 10.0) * uIntensity * uPixelRatio;
 }
 `;
 
@@ -89,7 +90,7 @@ void main() {
   if (d > 0.5) discard;
   
   // Soft glow falloff
-  float glow = exp(-d * 4.0);
+  float glow = exp(-d * 2.5);
   
   // Colour by ring + displacement
   vec3 col;
@@ -102,15 +103,16 @@ void main() {
     col = mix(uColor3, uColor4, (rMix - 0.66) * 3.0);
   }
   
-  // Displacement brightness
+  // Displacement brightness + base glow floor
   col += abs(vDisplacement) * 0.5 * uColor1;
+  col = max(col, vec3(0.15)); // Ensure minimum visibility even with no audio
   
   // Bass pulse brightens core
-  col *= 1.0 + uBassEnergy * 0.4;
+  col *= 1.0 + uBassEnergy * 0.5;
   
-  col *= glow * uIntensity * 1.5;
+  col *= glow * uIntensity * 2.0;
   
-  float alpha = glow * (0.6 + uIntensity * 0.4);
+  float alpha = glow * (0.7 + uIntensity * 0.3);
   
   gl_FragColor = vec4(col, alpha);
 }
@@ -176,6 +178,7 @@ export class WaveformRing implements VisualEffect {
         uHighEnergy: { value: 0 },
         uTransient: { value: 0 },
         uIntensity: { value: 0.7 },
+        uPixelRatio: { value: window.devicePixelRatio || 1 },
         uFFTData: this.fftUniform,
         uColor1: { value: new THREE.Color('#F72585') },
         uColor2: { value: new THREE.Color('#7209B7') },
