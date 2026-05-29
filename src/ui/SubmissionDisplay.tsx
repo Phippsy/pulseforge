@@ -20,7 +20,31 @@ interface FloatingItem {
   targetScale: number;
   rotation: number;
   rotationSpeed: number;
+  fontFamily: string;
+  color: string;
+  glowColor: string;
 }
+
+const MESSAGE_FONTS = [
+  "'Bungee Shade', cursive",
+  "'Monoton', display",
+  "'Rubik Glitch', system-ui",
+  "'VT323', monospace",
+  "'Silkscreen', cursive",
+  "'Orbitron', sans-serif",
+];
+
+const NEON_COLORS = [
+  { text: '#ff00ff', glow: 'rgba(255,0,255,0.4)' },   // magenta
+  { text: '#00ffff', glow: 'rgba(0,255,255,0.4)' },    // cyan
+  { text: '#ffff00', glow: 'rgba(255,255,0,0.4)' },    // yellow
+  { text: '#ff6600', glow: 'rgba(255,102,0,0.4)' },    // orange
+  { text: '#00ff88', glow: 'rgba(0,255,136,0.4)' },    // mint
+  { text: '#ff3366', glow: 'rgba(255,51,102,0.4)' },   // hot pink
+  { text: '#66ffcc', glow: 'rgba(102,255,204,0.4)' },  // aqua
+  { text: '#cc77ff', glow: 'rgba(204,119,255,0.4)' },  // purple
+  { text: '#ffffff', glow: 'rgba(255,255,255,0.3)' },   // white
+];
 
 const DISPLAY_DURATION = 45000; // 45s per item
 const NEW_MSG_INTERVAL = 8000; // 8s between new messages (prioritise)
@@ -166,6 +190,7 @@ export function SubmissionDisplay() {
       if (!submission) return;
 
       // Create floating item with random starting position and velocity
+      const colorPick = NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)];
       const item: FloatingItem = {
         submission,
         x: 20 + Math.random() * 60, // % from left (avoid edges)
@@ -176,6 +201,9 @@ export function SubmissionDisplay() {
         targetScale: 0.8 + Math.random() * 0.4,
         rotation: (Math.random() - 0.5) * 10, // slight tilt
         rotationSpeed: (Math.random() - 0.5) * 0.5,
+        fontFamily: MESSAGE_FONTS[Math.floor(Math.random() * MESSAGE_FONTS.length)],
+        color: colorPick.text,
+        glowColor: colorPick.glow,
       };
 
       itemRef.current = item;
@@ -251,7 +279,7 @@ export function SubmissionDisplay() {
     );
   }
 
-  const { submission, x, y, scale, rotation } = currentItem!;
+  const { submission, x, y, scale, rotation, fontFamily, color, glowColor } = currentItem!;
 
   return (
     <div
@@ -281,11 +309,18 @@ export function SubmissionDisplay() {
         )}
 
         {submission.type === 'message' && (
-          <div className="bg-black/60 backdrop-blur-md rounded-sm px-8 py-6 max-w-[50vw] border border-cyan-500/30 shadow-[0_0_40px_rgba(0,0,0,0.7)] opacity-70">
-            <p className="text-white text-2xl md:text-4xl font-bold leading-relaxed uppercase tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] drop-shadow-[0_0_20px_rgba(0,255,255,0.3)]" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+          <div className="bg-black/50 backdrop-blur-md rounded-sm px-8 py-6 max-w-[50vw] border shadow-[0_0_40px_rgba(0,0,0,0.7)] opacity-85" style={{ borderColor: `${color}40` }}>
+            <p
+              className="text-2xl md:text-4xl font-bold leading-relaxed uppercase tracking-wider"
+              style={{
+                fontFamily,
+                color,
+                textShadow: `0 0 20px ${glowColor}, 0 0 40px ${glowColor}, 0 2px 4px rgba(0,0,0,0.8)`,
+              }}
+            >
               {submission.content}
             </p>
-            <p className="text-cyan-300/80 text-sm mt-4 text-right tracking-[0.3em] uppercase" style={{ fontFamily: "'Press Start 2P', cursive" }}>— {submission.name}</p>
+            <p className="text-sm mt-4 text-right tracking-[0.3em] uppercase opacity-80" style={{ fontFamily: "'Press Start 2P', cursive", color: `${color}cc` }}>— {submission.name}</p>
           </div>
         )}
 

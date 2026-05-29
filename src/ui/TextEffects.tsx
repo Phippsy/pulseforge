@@ -25,7 +25,7 @@ function ImpactEffect({ text, visible }: EffectProps) {
       <div className="px-[5vw] w-full text-center">
         <h1
           className="text-white font-black uppercase leading-[0.9] tracking-tight animate-[impactIn_0.6s_ease-out]"
-          style={{ fontSize: 'clamp(3rem, 12vw, 10rem)' }}
+          style={{ fontSize: 'clamp(3rem, 12vw, 10rem)', fontFamily: "'Bungee Shade', cursive", textShadow: '0 0 40px rgba(255,0,255,0.6), 0 0 80px rgba(255,0,255,0.3)' }}
         >
           {text}
         </h1>
@@ -44,7 +44,7 @@ function ScatteredEffect({ text, visible }: EffectProps) {
       size: 2 + Math.random() * 6,
       delay: i * 0.08,
       glow: Math.random() > 0.5,
-      color: ['#ffffff', '#ffdd44', '#ffaa00', '#ffffff', '#ffffcc'][Math.floor(Math.random() * 5)],
+      color: ['#ff00ff', '#00ffff', '#ffff00', '#ff6600', '#00ff88', '#ff3366', '#cc77ff'][Math.floor(Math.random() * 7)],
     }));
   }, [text]);
 
@@ -58,6 +58,7 @@ function ScatteredEffect({ text, visible }: EffectProps) {
             left: `${l.x}%`,
             top: `${l.y}%`,
             fontSize: `${l.size}rem`,
+            fontFamily: "'Monoton', display",
             color: l.color,
             textShadow: l.glow ? `0 0 20px ${l.color}, 0 0 40px ${l.color}80` : 'none',
             transform: 'translate(-50%, -50%)',
@@ -128,12 +129,14 @@ function StaggerEffect({ text, visible }: EffectProps) {
   const words = text.split(/\s+/);
 
   const positions = useMemo(() => {
+    const colors = ['#ff00ff', '#00ffff', '#ffff00', '#00ff88', '#ff3366', '#cc77ff'];
     return words.map((word, i) => ({
       word,
       x: 10 + (i % 3) * 30 + Math.random() * 10,
       y: 20 + Math.floor(i / 2) * 20 + Math.random() * 10,
       size: word.length <= 3 ? '4rem' : word.length <= 5 ? '3.5rem' : '2.5rem',
       delay: i * 0.12,
+      color: colors[i % colors.length],
     }));
   }, [text]);
 
@@ -142,13 +145,15 @@ function StaggerEffect({ text, visible }: EffectProps) {
       {positions.map((p, i) => (
         <span
           key={i}
-          className="absolute font-black uppercase text-white"
+          className="absolute font-black uppercase"
           style={{
             left: `${p.x}%`,
             top: `${p.y}%`,
             fontSize: p.size,
+            fontFamily: "'Orbitron', sans-serif",
+            color: p.color,
             animation: `staggerIn 0.5s ease-out ${p.delay}s both`,
-            textShadow: '2px 2px 0 rgba(0,0,0,0.8)',
+            textShadow: `0 0 20px ${p.color}80, 2px 2px 0 rgba(0,0,0,0.8)`,
           }}
         >
           {p.word}
@@ -178,10 +183,10 @@ function TypewriterEffect({ text, visible }: EffectProps) {
       <div className="px-[5vw] max-w-[80vw]">
         <span
           className="text-white font-black uppercase tracking-wider"
-          style={{ fontSize: 'clamp(2rem, 8vw, 6rem)' }}
+          style={{ fontSize: 'clamp(2rem, 8vw, 6rem)', fontFamily: "'VT323', monospace" }}
         >
           {text.slice(0, charCount)}
-          <span className="animate-pulse text-cyan-400">_</span>
+          <span className="animate-pulse text-[#00ff88]">_</span>
         </span>
       </div>
     </div>
@@ -202,6 +207,8 @@ function KineticEffect({ text, visible }: EffectProps) {
             className="font-black uppercase text-white inline-block"
             style={{
               fontSize: 'clamp(2rem, 8vw, 6rem)',
+              fontFamily: "'Silkscreen', cursive",
+              textShadow: '0 0 30px rgba(0,255,136,0.5), 0 0 60px rgba(0,255,136,0.2)',
               animation: visible ? `kineticIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.15}s both` : 'none',
               '--from-direction': directions[i % directions.length],
             } as React.CSSProperties}
@@ -223,6 +230,8 @@ function ZoomEffect({ text, visible }: EffectProps) {
           className="text-white font-black uppercase leading-[0.9]"
           style={{
             fontSize: 'clamp(3rem, 12vw, 10rem)',
+            fontFamily: "'Rubik Glitch', system-ui",
+            textShadow: '0 0 40px rgba(255,102,0,0.6), 0 0 80px rgba(255,255,0,0.3)',
             animation: visible ? 'zoomIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards' : 'none',
           }}
         >
