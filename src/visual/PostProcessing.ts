@@ -236,47 +236,37 @@ const WarpFeedbackShader = {
       float spiralAngle = dist * 3.0 + uTime * uWarpSpeed * 0.5;
       zoomed += vec2(cos(spiralAngle), sin(spiralAngle)) * spiralStrength * dist;
       
-      // Completely discard feedback when UV goes out of bounds — prevents hard pixelated edges
-      vec4 prev = vec4(0.0);
-      if (zoomed.x > 0.01 && zoomed.x < 0.99 && zoomed.y > 0.01 && zoomed.y < 0.99) {
-        // Smooth fade near edges
-        float edgeFade = smoothstep(0.01, 0.12, zoomed.x) * smoothstep(0.99, 0.88, zoomed.x)
-                       * smoothstep(0.01, 0.12, zoomed.y) * smoothstep(0.99, 0.88, zoomed.y);
+      // If UV is out of bounds, skip feedback (use current frame only) — prevents hard pixelated edge
+      vec4 prev;
+      if (zoomed.x < 0.0 || zoomed.x > 1.0 || zoomed.y < 0.0 || zoomed.y > 1.0) {
+        prev = current;
+      } else {
         prev = texture2D(tPrev, zoomed);
-        prev.rgb *= edgeFade;
       }
       
       // Colour decay — very aggressive to prevent brightness accumulation
-      float decay = 0.82 - uAmount * 0.1 - uTransient * 0.12;
-      prev.r *= decay * 1.002;
-      prev.g *= decay * 0.998;
-      prev.b *= decay * 1.003;
+      // Decay scales with feedback amount — higher feedback needs more aggressive decay
+      float decay = 0.88 - uAmount * 0.4 - uTransient * 0.05;
+      prev.rgb *= decay;
       
-      // Darken edges more - creates depth and prevents edge buildup
-      float edgeDarken = smoothstep(0.25, 0.55, dist) * 0.25;
-      prev.rgb *= 1.0 - edgeDarken;
-      
-      // Hard clamp — low enough that feedback can NEVER accumulate to white
-      prev.rgb = min(prev.rgb, vec3(0.35));
-      
-      // Re-saturate: dim any pixel that's bright but has lost colour
+      // Aggressively kill desaturated bright pixels in feedback — these cause grey blowout
       float luma = dot(prev.rgb, vec3(0.299, 0.587, 0.114));
       float sat = length(prev.rgb - vec3(luma));
-      if (luma > 0.35 && sat < 0.08) {
-        prev.rgb *= 0.6; // aggressively kill desaturated bright pixels
-      }
+      float desat = smoothstep(0.15, 0.03, sat) * smoothstep(0.12, 0.25, luma);
+      prev.rgb *= 1.0 - desat * 0.85;
+      
+      // Cap feedback brightness — saturated colour allowed brighter
+      float maxBright = 0.25 + sat * 2.5;
+      maxBright = clamp(maxBright, 0.25, 0.6);
+      prev.rgb = min(prev.rgb, vec3(maxBright));
       
       vec4 result = mix(current, prev, uAmount);
       
-      // Clamp the FINAL output — prevents grey/white blob accumulation
-      // Only saturated pixels are allowed to be bright
+      // Final output: suppress desaturated brightness in the combined result too
       float finalLuma = dot(result.rgb, vec3(0.299, 0.587, 0.114));
       float finalSat = length(result.rgb - vec3(finalLuma));
-      float limit = 0.3 + finalSat * 2.5; // grey pixels capped at 0.3, saturated up to 0.7
-      limit = clamp(limit, 0.3, 0.7);
-      if (finalLuma > limit) {
-        result.rgb *= limit / finalLuma;
-      }
+      float finalDesat = smoothstep(0.2, 0.05, finalSat) * smoothstep(0.3, 0.5, finalLuma);
+      result.rgb *= 1.0 - finalDesat * 0.5;
       
       gl_FragColor = result;
     }

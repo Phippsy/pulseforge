@@ -193,11 +193,11 @@ void main() {
     float t = iter / maxIter;
     t = sqrt(t);
     
-    // Layer 1: iteration-based palette
-    vec3 iterCol = palette(t + uColorShift + uTime * 0.03 * uSpeed);
+    // Layer 1: iteration-based palette — boosted for exterior richness
+    vec3 iterCol = palette(t * 2.0 + uColorShift + uTime * 0.03 * uSpeed);
     
     // Layer 2: orbit trap circle coloring - creates rings/halos
-    float trapCol1 = exp(-minTrapCircle * 5.0);
+    float trapCol1 = exp(-minTrapCircle * 3.0);
     vec3 trapRing = palette(minTrapCircle * 3.0 + uTime * 0.1) * trapCol1;
     
     // Layer 3: orbit trap cross - creates glowing axes
@@ -225,15 +225,18 @@ void main() {
   // Pulsating brightness with bass
   col *= 0.8 + uBassPulse * 0.4;
   
-  // Vignette
-  float vig = 1.0 - length(vUv - 0.5) * 0.6;
+  // Ambient glow in dark regions — keeps the whole screen alive
+  float darkness = 1.0 - clamp(length(col) * 2.0, 0.0, 1.0);
+  vec3 ambient = palette(uTime * 0.05 + length(vUv - 0.5)) * 0.08 * darkness;
+  ambient += uColor1 * 0.03 * darkness * (0.5 + uBassEnergy * 0.5);
+  col += ambient;
+  
+  // Vignette (gentle)
+  float vig = 1.0 - length(vUv - 0.5) * 0.4;
   col *= vig;
   
   // HDR tone mapping
   col = col / (1.0 + col * 0.3);
-  
-  // Subtle color cycling in shadows
-  col += palette(uTime * 0.01 + length(col)) * 0.02;
   
   gl_FragColor = vec4(col, 1.0);
 }
@@ -272,6 +275,7 @@ export class FractalEffect implements VisualEffect {
     });
     const geo = new THREE.PlaneGeometry(2, 2);
     this.mesh = new THREE.Mesh(geo, this.material);
+    this.mesh.frustumCulled = false;
     scene.add(this.mesh);
   }
 
