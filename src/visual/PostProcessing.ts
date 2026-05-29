@@ -77,7 +77,8 @@ const VignetteShader = {
   `,
 };
 
-// Tone mapping + saturation enforcement — prevents HDR bloom from blowing out to white
+// Highlight compressor + saturation enforcement — prevents HDR bloom from blowing out to white
+// Unlike full ACES, this ONLY compresses the bright end (>0.7), leaving midtones/shadows untouched
 const ToneMappingShader = {
   uniforms: {
     tDiffuse: { value: null },
@@ -93,25 +94,25 @@ const ToneMappingShader = {
     uniform sampler2D tDiffuse;
     varying vec2 vUv;
     
-    // ACES filmic tone mapping — compresses HDR into 0-1 while preserving colour
-    vec3 aces(vec3 x) {
-      float a = 2.51;
-      float b = 0.03;
-      float c = 2.43;
-      float d = 0.59;
-      float e = 0.14;
-      return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
-    }
-    
     void main() {
       vec3 col = texture2D(tDiffuse, vUv).rgb;
       
-      // Apply ACES tone mapping to compress HDR bloom into visible range
-      col = aces(col);
+      // Highlight compression — only squish values above the knee
+      // This preserves dark/mid colours while preventing white blowout
+      float knee = 0.6;
+      float maxBright = max(col.r, max(col.g, col.b));
+      if (maxBright > knee) {
+        // Soft compression: maps knee..infinity to knee..1.0
+        float compressed = knee + (1.0 - knee) * (1.0 - exp(-(maxBright - knee) * 3.0));
+        col *= compressed / maxBright;
+      }
       
-      // Boost saturation to counteract bloom's desaturating effect
+      // Saturation boost — counteracts bloom's desaturating effect
       float luma = dot(col, vec3(0.299, 0.587, 0.114));
-      vec3 saturated = mix(vec3(luma), col, 1.4); // 40% saturation boost
+      float sat = length(col - vec3(luma));
+      // Boost more when saturation is low (bloom washed it out)
+      float boost = sat < 0.15 ? 1.8 : 1.4;
+      vec3 saturated = mix(vec3(luma), col, boost);
       col = clamp(saturated, 0.0, 1.0);
       
       gl_FragColor = vec4(col, 1.0);
@@ -225,24 +226,24 @@ const WarpFeedbackShader = {
       
       vec4 prev = texture2D(tPrev, zoomed);
       
-      // Colour decay — aggressive enough to prevent white accumulation
-      float decay = 0.88 - uAmount * 0.06 - uTransient * 0.1;
+      // Colour decay — aggressive to prevent brightness accumulation
+      float decay = 0.85 - uAmount * 0.08 - uTransient * 0.12;
       prev.r *= decay * 1.002;
       prev.g *= decay * 0.998;
       prev.b *= decay * 1.003;
       
       // Darken edges more - creates depth and prevents edge buildup
-      float edgeDarken = smoothstep(0.35, 0.7, dist) * 0.15;
+      float edgeDarken = smoothstep(0.3, 0.6, dist) * 0.2;
       prev.rgb *= 1.0 - edgeDarken;
       
-      // Hard clamp to prevent white buildup
-      prev.rgb = min(prev.rgb, vec3(0.7));
+      // Hard clamp — low enough that feedback can NEVER accumulate to white
+      prev.rgb = min(prev.rgb, vec3(0.55));
       
-      // Re-saturate: if colour is washing out toward white, pull it back
+      // Re-saturate: dim any pixel that's bright but has lost colour
       float luma = dot(prev.rgb, vec3(0.299, 0.587, 0.114));
       float sat = length(prev.rgb - vec3(luma));
-      if (luma > 0.4 && sat < 0.1) {
-        prev.rgb *= 0.7; // dim desaturated (near-white) pixels aggressively
+      if (luma > 0.35 && sat < 0.08) {
+        prev.rgb *= 0.6; // aggressively kill desaturated bright pixels
       }
       
       gl_FragColor = mix(current, prev, uAmount);
@@ -381,10 +382,11 @@ export class PostProcessing {
   }
 
   updateParams(params: PostProcessParams): void {
-    // Bloom — ACES tone mapping after this prevents white blowout
-    this.bloomPass.strength = Math.min(2.0, params.bloomStrength * 0.8 + this.bassEnergy * 0.5 + this.transient * 0.3);
-    this.bloomPass.threshold = Math.max(0.45, params.bloomThreshold - this.bassEnergy * 0.05);
-    this.bloomPass.radius = Math.min(0.8, params.bloomRadius * 0.8 + this.bassEnergy * 0.05);
+    // Bloom — hard-capped at 1.0 to prevent ANY white blowout
+    // Highlight compressor after bloom handles the rest
+    this.bloomPass.strength = Math.min(1.0, params.bloomStrength * 0.5 + this.bassEnergy * 0.2 + this.transient * 0.1);
+    this.bloomPass.threshold = Math.max(0.55, params.bloomThreshold);
+    this.bloomPass.radius = Math.min(0.6, params.bloomRadius * 0.6 + this.bassEnergy * 0.03);
     this.chromaticPass.uniforms.uAmount.value = Math.min(0.03, params.chromaticAberration + this.bassEnergy * 0.005 + this.transient * 0.008);
     this.chromaticPass.uniforms.uTime.value = this.time;
     this.kaleidoscopePass.uniforms.uSegments.value = params.kaleidoscopeSegments;
