@@ -225,14 +225,13 @@ export class PsychedelicEQEffect implements VisualEffect {
   setFFTData(data: Float32Array): void {
     const step = Math.floor(data.length / BAR_COUNT);
     for (let i = 0; i < BAR_COUNT; i++) {
-      // Average nearby bins and normalize
+      // Average nearby bins and normalize from dB (-100..0) to 0..1
       let sum = 0;
       for (let j = 0; j < step; j++) {
-        sum += data[i * step + j];
+        const dB = data[i * step + j];
+        sum += Math.max(0, (dB + 100) / 100);
       }
-      const avg = sum / step;
-      // dB to linear, assuming data is 0-255 range from getByteFrequencyData
-      this.fftData[i] = avg / 255;
+      this.fftData[i] = sum / step;
     }
     // If real FFT data is available, use it
     for (let i = 0; i < BAR_COUNT; i++) {

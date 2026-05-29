@@ -216,10 +216,13 @@ export class GraphicEqualiserEffect implements VisualEffect {
         let sum = 0;
         let count = 0;
         for (let j = Math.max(0, startBin); j < Math.min(endBin, binCount); j++) {
-          sum += this.fftData[j];
+          // fftData is in dB (typically -100 to 0), normalise to 0-1
+          const dB = this.fftData[j];
+          const normalized = Math.max(0, (dB + 100) / 100);
+          sum += normalized;
           count++;
         }
-        // Normalise and apply slight boost to higher bands (perceptual weighting)
+        // Average and apply slight boost to higher bands (perceptual weighting)
         const avg = count > 0 ? sum / count : 0;
         const freqBoost = 1.0 + (i / numBands) * 0.5; // +50% boost at highest band
         this.bandValues[i] = Math.min(1.0, avg * freqBoost);
