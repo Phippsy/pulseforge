@@ -103,8 +103,22 @@ export function SubmitPage() {
 
         if (!res.ok) throw new Error('Failed to submit');
       } else if (mode === 'photo' && file) {
+        // Ensure HEIC/HEIF files have a proper content type (Chrome reports them as empty)
+        let uploadFile: File | Blob = file;
+        if (!file.type || file.type === 'application/octet-stream') {
+          const ext = file.name.split('.').pop()?.toLowerCase();
+          const mimeMap: Record<string, string> = {
+            heic: 'image/heic', heif: 'image/heif',
+            jpg: 'image/jpeg', jpeg: 'image/jpeg',
+            png: 'image/png', gif: 'image/gif', webp: 'image/webp',
+            mp4: 'video/mp4', mov: 'video/quicktime',
+          };
+          const contentType = (ext && mimeMap[ext]) || 'image/jpeg';
+          uploadFile = new File([file], file.name, { type: contentType });
+        }
+
         // Upload file directly to Vercel Blob via client upload (no body size limit)
-        const blob = await upload(`danfest/${Date.now()}-${file.name}`, file, {
+        const blob = await upload(`danfest/${Date.now()}-${file.name}`, uploadFile, {
           access: 'public',
           handleUploadUrl: '/api/upload',
         });
