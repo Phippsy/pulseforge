@@ -13,9 +13,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body,
       request: req,
       onBeforeGenerateToken: async (pathname) => {
-        // Validate the upload
         return {
-          allowedContentTypes: ['image/*', 'video/*', 'image/heic', 'image/heif'],
           maximumSizeInBytes: 50 * 1024 * 1024, // 50MB max
         };
       },
