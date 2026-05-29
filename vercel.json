@@ -1,0 +1,13 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/api/admin-messages/:id", "destination": "/api/admin-messages" },
+    { "source": "/api/submissions/:id/shown", "destination": "/api/submissions/[id]/shown" },
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/submit", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/index.html" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}

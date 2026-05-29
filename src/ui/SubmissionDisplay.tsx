@@ -1,0 +1,294 @@
+import { useEffect, useState, useRef, useCallback } from 'react';
+import type { Submission } from '../types/submission';
+import { DynamicTextDisplay, type TextEffect } from './TextEffects';
+
+interface AdminMsg {
+  id: string;
+  content: string;
+  effect: TextEffect;
+  type: 'heavy_rotation' | 'one_off';
+  priority: boolean;
+}
+
+interface FloatingItem {
+  submission: Submission;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  scale: number;
+  targetScale: number;
+  rotation: number;
+  rotationSpeed: number;
+}
+
+const DISPLAY_DURATION = 45000; // 45s per item
+const NEW_MSG_INTERVAL = 8000; // 8s between new messages (prioritise)
+const OLD_MSG_INTERVAL = 60000; // 60s between recycled messages (visuals take priority)
+const POLL_INTERVAL = 8000; // poll API every 8s
+
+export function SubmissionDisplay() {
+  const [currentItem, setCurrentItem] = useState<FloatingItem | null>(null);
+  const [visible, setVisible] = useState(false);
+  const newQueueRef = useRef<Submission[]>([]);
+  const shownQueueRef = useRef<Submission[]>([]);
+  const rotateIndexRef = useRef(0);
+  const animRef = useRef<number>(0);
+  const itemRef = useRef<FloatingItem | null>(null);
+  const lastShowRef = useRef(0);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const adminMessagesRef = useRef<AdminMsg[]>([]);
+  const priorityQueueRef = useRef<AdminMsg[]>([]);
+  const [activeAdminMsg, setActiveAdminMsg] = useState<AdminMsg | null>(null);
+
+  // Fetch all submissions - separate into new (unshown) and shown
+  const fetchQueue = useCallback(async () => {
+    try {
+      const [subRes, adminRes] = await Promise.all([
+        fetch('/api/submissions'),
+        fetch('/api/admin-messages'),
+      ]);
+      if (subRes.ok) {
+        const data = await subRes.json();
+        const all: Submission[] = data.submissions || [];
+        // New submissions always jump the queue
+        newQueueRef.current = all.filter(s => !s.shown);
+        shownQueueRef.current = all.filter(s => s.shown);
+      }
+      if (adminRes.ok) {
+        const data = await adminRes.json();
+        const enabled = (data.messages || []).filter((m: { enabled: boolean }) => m.enabled);
+        const mapped: AdminMsg[] = enabled.map((m: { id: string; content: string; effect?: string; type?: string; priority?: boolean }) => ({
+          id: m.id,
+          content: m.content,
+          effect: (m.effect || 'impact') as TextEffect,
+          type: (m.type || 'heavy_rotation') as 'heavy_rotation' | 'one_off',
+          priority: Boolean(m.priority),
+        }));
+        // Heavy rotation goes into the rotation pool
+        adminMessagesRef.current = mapped.filter(m => m.type === 'heavy_rotation');
+        // One-off priority messages jump the queue (only new ones not already queued)
+        const newPriority = mapped.filter(m => m.priority && !priorityQueueRef.current.some(p => p.id === m.id));
+        if (newPriority.length > 0) {
+          priorityQueueRef.current.push(...newPriority);
+        }
+      }
+    } catch {
+      // API not available yet - silent fail
+    }
+  }, []);
+
+  // Poll for new submissions
+  useEffect(() => {
+    fetchQueue();
+    pollRef.current = setInterval(fetchQueue, POLL_INTERVAL);
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [fetchQueue]);
+
+  // Queue processor - show next item every QUEUE_INTERVAL
+  useEffect(() => {
+    const checkQueue = setInterval(() => {
+      const now = Date.now();
+
+      // HIGHEST PRIORITY: one-off messages from DJ (skip all intervals)
+      if (priorityQueueRef.current.length > 0) {
+        const priorityMsg = priorityQueueRef.current.shift()!;
+        setActiveAdminMsg(priorityMsg);
+        setVisible(true);
+        lastShowRef.current = now;
+        setTimeout(() => {
+          setVisible(false);
+          setTimeout(() => setActiveAdminMsg(null), 2000);
+        }, DISPLAY_DURATION);
+        return;
+      }
+
+      const hasNew = newQueueRef.current.length > 0;
+      const interval = hasNew ? NEW_MSG_INTERVAL : OLD_MSG_INTERVAL;
+      if (now - lastShowRef.current < interval && lastShowRef.current > 0) return;
+
+      let submission: Submission | undefined;
+      let adminPick: AdminMsg | undefined;
+
+      // Priority: unshown submissions always jump the queue
+      if (hasNew) {
+        submission = newQueueRef.current.shift()!;
+        // Mark as shown on server
+        fetch(`/api/submissions/${submission.id}/shown`, { method: 'POST' }).catch(() => {});
+        // Move to shown pool for future rotation
+        shownQueueRef.current.push(submission);
+      } else if (shownQueueRef.current.length > 0 || adminMessagesRef.current.length > 0) {
+        // Rotate through previously shown submissions + admin messages (heavy rotation)
+        const userPool = shownQueueRef.current;
+        const adminPool = adminMessagesRef.current;
+        const totalPool = userPool.length + adminPool.length;
+        const idx = rotateIndexRef.current % totalPool;
+        if (idx < userPool.length) {
+          submission = userPool[idx];
+        } else {
+          adminPick = adminPool[idx - userPool.length];
+        }
+        rotateIndexRef.current = idx + 1;
+      }
+
+      if (!submission && !adminPick) return;
+      lastShowRef.current = now;
+
+      // Admin message: show full-screen effect
+      if (adminPick) {
+        setActiveAdminMsg(adminPick);
+        setVisible(true);
+        setTimeout(() => {
+          setVisible(false);
+          setTimeout(() => setActiveAdminMsg(null), 2000);
+        }, DISPLAY_DURATION);
+        return;
+      }
+
+      if (!submission) return;
+
+      // Create floating item with random starting position and velocity
+      const item: FloatingItem = {
+        submission,
+        x: 20 + Math.random() * 60, // % from left (avoid edges)
+        y: 20 + Math.random() * 60, // % from top
+        vx: (Math.random() - 0.5) * 0.3, // slow drift
+        vy: (Math.random() - 0.5) * 0.2,
+        scale: 0.6 + Math.random() * 0.4,
+        targetScale: 0.8 + Math.random() * 0.4,
+        rotation: (Math.random() - 0.5) * 10, // slight tilt
+        rotationSpeed: (Math.random() - 0.5) * 0.5,
+      };
+
+      itemRef.current = item;
+      setCurrentItem(item);
+      setVisible(true);
+
+      // Hide after display duration
+      setTimeout(() => {
+        setVisible(false);
+        setTimeout(() => {
+          setCurrentItem(null);
+          itemRef.current = null;
+        }, 2000); // fade out time
+      }, DISPLAY_DURATION);
+    }, 5000); // check every 5s
+
+    return () => clearInterval(checkQueue);
+  }, []);
+
+  // Animation loop for floating movement
+  useEffect(() => {
+    let lastTime = performance.now();
+
+    const animate = () => {
+      animRef.current = requestAnimationFrame(animate);
+      const now = performance.now();
+      const dt = (now - lastTime) / 1000;
+      lastTime = now;
+
+      const item = itemRef.current;
+      if (!item) return;
+
+      // Drift position
+      item.x += item.vx * dt * 10;
+      item.y += item.vy * dt * 10;
+
+      // Bounce off edges
+      if (item.x < 10 || item.x > 90) item.vx *= -1;
+      if (item.y < 10 || item.y > 90) item.vy *= -1;
+      item.x = Math.max(5, Math.min(95, item.x));
+      item.y = Math.max(5, Math.min(95, item.y));
+
+      // Slowly change scale
+      item.scale += (item.targetScale - item.scale) * dt * 0.5;
+      if (Math.abs(item.scale - item.targetScale) < 0.01) {
+        item.targetScale = 0.6 + Math.random() * 0.6;
+      }
+
+      // Slow rotation
+      item.rotation += item.rotationSpeed * dt;
+
+      // Trigger re-render
+      setCurrentItem({ ...item });
+    };
+
+    animRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animRef.current);
+  }, []);
+
+  if (!currentItem && !activeAdminMsg) return null;
+
+  // Admin message: full-screen dynamic text effect
+  if (activeAdminMsg) {
+    return (
+      <div
+        className={`fixed inset-0 z-30 pointer-events-none transition-opacity duration-[2000ms] ${
+          visible ? 'opacity-100' : 'opacity-0'
+        }`}
+      >
+        <DynamicTextDisplay text={activeAdminMsg.content} effect={activeAdminMsg.effect} visible={visible} />
+      </div>
+    );
+  }
+
+  const { submission, x, y, scale, rotation } = currentItem!;
+
+  return (
+    <div
+      className={`fixed inset-0 z-30 pointer-events-none transition-opacity duration-[2000ms] ${
+        visible ? 'opacity-100' : 'opacity-0'
+      }`}
+    >
+      <div
+        className="absolute transition-none"
+        style={{
+          left: `${x}%`,
+          top: `${y}%`,
+          transform: `translate(-50%, -50%) scale(${scale}) rotate(${rotation}deg)`,
+        }}
+      >
+        {submission.type === 'photo' && (
+          <div className="relative shadow-[0_0_40px_rgba(0,0,0,0.7)] opacity-65">
+            <img
+              src={submission.content}
+              alt={`From ${submission.name}`}
+              className="max-w-[40vw] max-h-[50vh] rounded-sm border border-cyan-500/30"
+            />
+            <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-md px-4 py-2">
+              <p className="text-cyan-300 text-sm font-mono tracking-wider">▶ {submission.name.toUpperCase()}</p>
+            </div>
+          </div>
+        )}
+
+        {submission.type === 'message' && (
+          <div className="bg-black/60 backdrop-blur-md rounded-sm px-8 py-6 max-w-[50vw] border border-cyan-500/30 shadow-[0_0_40px_rgba(0,0,0,0.7)] opacity-70">
+            <p className="text-white text-2xl md:text-4xl font-bold leading-relaxed uppercase tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] drop-shadow-[0_0_20px_rgba(0,255,255,0.3)]" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+              {submission.content}
+            </p>
+            <p className="text-cyan-300/80 text-sm mt-4 text-right tracking-[0.3em] uppercase" style={{ fontFamily: "'Press Start 2P', cursive" }}>— {submission.name}</p>
+          </div>
+        )}
+
+        {submission.type === 'video' && (
+          <div className="relative shadow-[0_0_40px_rgba(0,0,0,0.7)]">
+            <video
+              src={submission.content}
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="max-w-[50vw] max-h-[60vh] rounded-sm border border-cyan-500/30"
+            />
+            <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-md px-4 py-2">
+              <p className="text-cyan-300 text-sm font-mono tracking-wider">▶ {submission.name.toUpperCase()}</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
