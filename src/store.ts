@@ -29,6 +29,7 @@ export interface AppState {
   currentPhaseIndex: number;
   autoProgress: boolean;
   randomMode: boolean; // random effect cycling mode
+  directEffect: string | null; // when set, overrides phase-based effect selection
 
   isBlackout: boolean;
   isFreeze: boolean;
@@ -57,6 +58,7 @@ export interface AppState {
   stopCapture: () => void;
   setGenre: (genre: Genre) => void;
   setPhase: (index: number) => void;
+  setDirectEffect: (effect: string | null) => void;
   nextPhase: () => void;
   prevPhase: () => void;
   toggleBlackout: () => void;
@@ -102,7 +104,8 @@ export const useStore = create<AppState>((set, get) => ({
   currentGenre: 'deep-house',
   currentPhaseIndex: 0,
   autoProgress: true,
-  randomMode: false,
+  randomMode: true,
+  directEffect: null,
 
   isBlackout: false,
   isFreeze: false,
@@ -126,8 +129,9 @@ export const useStore = create<AppState>((set, get) => ({
   setAudioDevice: (id) => set({ audioDeviceId: id }),
   startCapture: () => set({ isCapturing: true }),
   stopCapture: () => set({ isCapturing: false }),
-  setGenre: (genre) => set({ currentGenre: genre, currentPhaseIndex: 0 }),
-  setPhase: (index) => set({ currentPhaseIndex: index }),
+  setGenre: (genre) => set({ currentGenre: genre, currentPhaseIndex: 0, directEffect: null }),
+  setPhase: (index) => set({ currentPhaseIndex: index, directEffect: null }),
+  setDirectEffect: (effect) => set({ directEffect: effect, randomMode: false }),
   nextPhase: () => {
     const { currentPhaseIndex } = get();
     set({ currentPhaseIndex: currentPhaseIndex + 1 });

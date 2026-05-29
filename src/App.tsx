@@ -21,6 +21,7 @@ export function App() {
   const phaseManagerRef = useRef(new PhaseManager());
   const prevPhaseIndexRef = useRef(-1);
   const prevGenreRef = useRef('');
+  const prevDirectEffectRef = useRef<string | null>(null);
   const autoProgressTimerRef = useRef(0);
   const randomTimerRef = useRef(0);
   const randomIntervalRef = useRef(0);
@@ -155,8 +156,13 @@ export function App() {
         useStore.getState().setPhase(0);
       }
 
-      // Detect phase/genre change
-      if (genre !== prevGenreRef.current || phaseIndex !== prevPhaseIndexRef.current) {
+      // Detect phase/genre change OR direct effect override
+      const directEffect = state.directEffect;
+      if (directEffect && directEffect !== prevDirectEffectRef.current) {
+        engine.setEffect(directEffect as EffectName);
+        prevDirectEffectRef.current = directEffect;
+        autoProgressTimerRef.current = now;
+      } else if (!directEffect && (genre !== prevGenreRef.current || phaseIndex !== prevPhaseIndexRef.current)) {
         const fromPhase = prevGenreRef.current
           ? pm.getPhase(prevGenreRef.current as any, prevPhaseIndexRef.current)
           : pm.getPhase(genre, phaseIndex);
@@ -174,6 +180,7 @@ export function App() {
 
         prevGenreRef.current = genre;
         prevPhaseIndexRef.current = phaseIndex;
+        prevDirectEffectRef.current = null;
         autoProgressTimerRef.current = now;
       }
 
@@ -211,7 +218,7 @@ export function App() {
         }
       }
 
-      // Random mode - pick a random effect every 45-90 seconds
+      // Random mode - pick a random effect every 15-30 seconds
       if (state.randomMode && !pm.transitioning) {
         if (now - randomTimerRef.current > randomIntervalRef.current || randomTimerRef.current === 0) {
           const allEffects = Object.keys(effectRegistry) as EffectName[];
@@ -222,7 +229,7 @@ export function App() {
           randomEffectRef.current = next;
           engine.setEffect(next);
           randomTimerRef.current = now;
-          randomIntervalRef.current = 45 + Math.random() * 45;
+          randomIntervalRef.current = 15 + Math.random() * 15;
         }
       }
 
