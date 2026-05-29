@@ -103,18 +103,13 @@ export function SubmitPage() {
 
         if (!res.ok) throw new Error('Failed to submit');
       } else if (mode === 'photo' && file) {
-        // Ensure HEIC/HEIF files have a proper content type (Chrome reports them as empty)
+        // Ensure all files have a content type Vercel Blob accepts
+        // Chrome doesn't assign MIME types to HEIC/HEIF; Vercel Blob rejects image/heic
         let uploadFile: File | Blob = file;
-        if (!file.type || file.type === 'application/octet-stream') {
-          const ext = file.name.split('.').pop()?.toLowerCase();
-          const mimeMap: Record<string, string> = {
-            heic: 'image/heic', heif: 'image/heif',
-            jpg: 'image/jpeg', jpeg: 'image/jpeg',
-            png: 'image/png', gif: 'image/gif', webp: 'image/webp',
-            mp4: 'video/mp4', mov: 'video/quicktime',
-          };
-          const contentType = (ext && mimeMap[ext]) || 'image/jpeg';
-          uploadFile = new File([file], file.name, { type: contentType });
+        const ext = file.name.split('.').pop()?.toLowerCase();
+        if (!file.type || file.type === 'application/octet-stream' || ext === 'heic' || ext === 'heif') {
+          // Map to image/jpeg — Blob stores raw bytes regardless
+          uploadFile = new File([file], file.name, { type: 'image/jpeg' });
         }
 
         // Upload file directly to Vercel Blob via client upload (no body size limit)
