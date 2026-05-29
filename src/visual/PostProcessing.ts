@@ -77,6 +77,48 @@ const VignetteShader = {
   `,
 };
 
+// Tone mapping + saturation enforcement — prevents HDR bloom from blowing out to white
+const ToneMappingShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    varying vec2 vUv;
+    
+    // ACES filmic tone mapping — compresses HDR into 0-1 while preserving colour
+    vec3 aces(vec3 x) {
+      float a = 2.51;
+      float b = 0.03;
+      float c = 2.43;
+      float d = 0.59;
+      float e = 0.14;
+      return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
+    }
+    
+    void main() {
+      vec3 col = texture2D(tDiffuse, vUv).rgb;
+      
+      // Apply ACES tone mapping to compress HDR bloom into visible range
+      col = aces(col);
+      
+      // Boost saturation to counteract bloom's desaturating effect
+      float luma = dot(col, vec3(0.299, 0.587, 0.114));
+      vec3 saturated = mix(vec3(luma), col, 1.4); // 40% saturation boost
+      col = clamp(saturated, 0.0, 1.0);
+      
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `,
+};
+
 // MilkDrop-style warp feedback - the KEY to constant motion
 const WarpFeedbackShader = {
   uniforms: {
@@ -286,6 +328,7 @@ export class PostProcessing {
   private composer: EffectComposer;
   private bloomPass: UnrealBloomPass;
   private chromaticPass: ShaderPass;
+  private toneMappingPass: ShaderPass;
   private kaleidoscopePass: ShaderPass;
   private feedbackPass: ShaderPass;
   private vignettePass: ShaderPass;
@@ -307,6 +350,10 @@ export class PostProcessing {
 
     this.bloomPass = new UnrealBloomPass(size, 1.0, 0.5, 0.5);
     this.composer.addPass(this.bloomPass);
+
+    // Tone mapping IMMEDIATELY after bloom — compresses HDR back to 0-1
+    this.toneMappingPass = new ShaderPass(ToneMappingShader);
+    this.composer.addPass(this.toneMappingPass);
 
     this.chromaticPass = new ShaderPass(ChromaticAberrationShader);
     this.composer.addPass(this.chromaticPass);
@@ -334,10 +381,10 @@ export class PostProcessing {
   }
 
   updateParams(params: PostProcessParams): void {
-    // Bloom pulses with bass — tightly capped to prevent white blowout
-    this.bloomPass.strength = Math.min(1.8, params.bloomStrength * 0.7 + this.bassEnergy * 0.4 + this.transient * 0.2);
-    this.bloomPass.threshold = Math.max(0.5, params.bloomThreshold + 0.1 - this.bassEnergy * 0.05);
-    this.bloomPass.radius = Math.min(0.7, params.bloomRadius * 0.8 + this.bassEnergy * 0.05);
+    // Bloom — ACES tone mapping after this prevents white blowout
+    this.bloomPass.strength = Math.min(2.0, params.bloomStrength * 0.8 + this.bassEnergy * 0.5 + this.transient * 0.3);
+    this.bloomPass.threshold = Math.max(0.45, params.bloomThreshold - this.bassEnergy * 0.05);
+    this.bloomPass.radius = Math.min(0.8, params.bloomRadius * 0.8 + this.bassEnergy * 0.05);
     this.chromaticPass.uniforms.uAmount.value = Math.min(0.03, params.chromaticAberration + this.bassEnergy * 0.005 + this.transient * 0.008);
     this.chromaticPass.uniforms.uTime.value = this.time;
     this.kaleidoscopePass.uniforms.uSegments.value = params.kaleidoscopeSegments;
