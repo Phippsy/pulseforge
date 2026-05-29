@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import heic2any from 'heic2any';
 
 interface Submission {
   id: string;
@@ -9,7 +10,7 @@ interface Submission {
   timestamp: number;
 }
 
-async function compressImage(file: File, maxBytes: number): Promise<Blob> {
+async function compressImage(file: File | Blob, maxBytes: number): Promise<Blob> {
   const bitmap = await createImageBitmap(file);
   let { width, height } = bitmap;
 
@@ -159,11 +160,16 @@ export function SubmitPage() {
           contentType = 'image/jpeg';
         }
 
-        // Always convert images through canvas to ensure browser-compatible format
-        // (HEIC/HEIF can't be displayed by most browsers) and fit within 4.5MB limit
+        // Convert HEIC/HEIF to JPEG using heic2any (Chrome can't decode HEIC natively)
         const MAX_BYTES = 4.5 * 1024 * 1024;
         let uploadBody: Blob | File = file;
-        if (contentType.startsWith('image/') && (file.size > MAX_BYTES || isHeic)) {
+        if (isHeic) {
+          const converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
+          const jpegBlob = Array.isArray(converted) ? converted[0] : converted;
+          // Compress further if still over limit
+          uploadBody = jpegBlob.size > MAX_BYTES ? await compressImage(jpegBlob, MAX_BYTES) : jpegBlob;
+          contentType = 'image/jpeg';
+        } else if (contentType.startsWith('image/') && file.size > MAX_BYTES) {
           uploadBody = await compressImage(file, MAX_BYTES);
           contentType = 'image/jpeg';
         }
