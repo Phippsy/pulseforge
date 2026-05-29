@@ -35,6 +35,9 @@ const ALL_EFFECTS: { id: EffectName; label: string }[] = [
   { id: 'nebula', label: 'Nebula' },
   { id: 'electricArc', label: 'Electric Arc' },
   { id: 'spaceInvaders', label: 'Space Invaders' },
+  { id: 'ceefax', label: 'Ceefax' },
+  { id: 'fireworks', label: 'Fireworks 50' },
+  { id: 'discoBall', label: 'Disco Ball' },
 ];
 
 export function PhaseList() {

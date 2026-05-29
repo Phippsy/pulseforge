@@ -78,7 +78,7 @@ export class VisualEngine {
     this.currentEffectName = name;
 
     // Fullscreen quad effects use ortho camera
-    const useOrtho = name === 'tunnel' || name === 'fractal' || name === 'metaballs' || name === 'plasma' || name === 'voronoi' || name === 'aurora' || name === 'geoKaleidoscope' || name === 'rings' || name === 'equaliser' || name === 'soundwaves' || name === 'fire' || name === 'superscope' || name === 'milkdrop' || name === 'waterRipple' || name === 'matrixRain' || name === 'rorschach' || name === 'spiralVortex' || name === 'nebula' || name === 'electricArc' || name === 'spaceInvaders';
+    const useOrtho = name === 'tunnel' || name === 'fractal' || name === 'metaballs' || name === 'plasma' || name === 'voronoi' || name === 'aurora' || name === 'geoKaleidoscope' || name === 'rings' || name === 'equaliser' || name === 'soundwaves' || name === 'fire' || name === 'superscope' || name === 'milkdrop' || name === 'waterRipple' || name === 'matrixRain' || name === 'rorschach' || name === 'spiralVortex' || name === 'nebula' || name === 'electricArc' || name === 'spaceInvaders' || name === 'ceefax' || name === 'fireworks' || name === 'discoBall';
     const cam = useOrtho ? this.orthoCamera : this.camera;
     this.currentEffect.init(this.scene, cam);
 
@@ -160,7 +160,7 @@ export class VisualEngine {
 
     // Aggressive camera motion for 3D effects - constant movement along all axes
     this.cameraTime += dt;
-    const useOrthoForEffect = this.currentEffectName === 'tunnel' || this.currentEffectName === 'fractal' || this.currentEffectName === 'metaballs' || this.currentEffectName === 'plasma' || this.currentEffectName === 'voronoi' || this.currentEffectName === 'aurora' || this.currentEffectName === 'geoKaleidoscope' || this.currentEffectName === 'rings' || this.currentEffectName === 'equaliser' || this.currentEffectName === 'soundwaves' || this.currentEffectName === 'fire' || this.currentEffectName === 'superscope' || this.currentEffectName === 'milkdrop' || this.currentEffectName === 'waterRipple' || this.currentEffectName === 'matrixRain' || this.currentEffectName === 'rorschach' || this.currentEffectName === 'spiralVortex' || this.currentEffectName === 'nebula' || this.currentEffectName === 'electricArc' || this.currentEffectName === 'spaceInvaders';
+    const useOrthoForEffect = this.currentEffectName === 'tunnel' || this.currentEffectName === 'fractal' || this.currentEffectName === 'metaballs' || this.currentEffectName === 'plasma' || this.currentEffectName === 'voronoi' || this.currentEffectName === 'aurora' || this.currentEffectName === 'geoKaleidoscope' || this.currentEffectName === 'rings' || this.currentEffectName === 'equaliser' || this.currentEffectName === 'soundwaves' || this.currentEffectName === 'fire' || this.currentEffectName === 'superscope' || this.currentEffectName === 'milkdrop' || this.currentEffectName === 'waterRipple' || this.currentEffectName === 'matrixRain' || this.currentEffectName === 'rorschach' || this.currentEffectName === 'spiralVortex' || this.currentEffectName === 'nebula' || this.currentEffectName === 'electricArc' || this.currentEffectName === 'spaceInvaders' || this.currentEffectName === 'ceefax' || this.currentEffectName === 'fireworks' || this.currentEffectName === 'discoBall';
     
     if (!useOrthoForEffect) {
       const speed = params.speed;
