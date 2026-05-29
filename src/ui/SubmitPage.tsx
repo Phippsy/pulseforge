@@ -102,22 +102,22 @@ export function SubmitPage() {
 
         if (!res.ok) throw new Error('Failed to submit');
       } else if (mode === 'photo' && file) {
-        // Convert file to data URL for upload
-        const dataUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
+        // Upload file to Vercel Blob, then create submission with the blob URL
+        const type = file.type.startsWith('video/') ? 'video' : 'photo';
+        const uploadRes = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+          method: 'POST',
+          body: file,
         });
 
-        // Then create submission with the data URL as content
-        const type = file.type.startsWith('video/') ? 'video' : 'photo';
+        if (!uploadRes.ok) throw new Error('Failed to upload file');
+        const { url } = await uploadRes.json();
+
         const res = await fetch('/api/submissions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             type,
-            content: dataUrl,
+            content: url,
             name: name.trim(),
           }),
         });
@@ -292,7 +292,7 @@ export function SubmitPage() {
                 <input
                   ref={fileRef}
                   type="file"
-                  accept="image/*,video/*"
+                  accept="image/*,video/*,.heic,.heif"
                   onChange={handleFileChange}
                   className="hidden"
                 />
