@@ -38,6 +38,13 @@ const ALL_EFFECTS: { id: EffectName; label: string }[] = [
   { id: 'ceefax', label: 'Ceefax' },
   { id: 'fireworks', label: 'Fireworks 50' },
   { id: 'discoBall', label: 'Disco Ball' },
+  { id: 'pacman', label: 'Pac-Man' },
+  { id: 'lavaLamp', label: 'Lava Lamp' },
+  { id: 'vhs', label: 'VHS' },
+  { id: 'synthwave', label: 'Synthwave' },
+  { id: 'acidSmiley', label: 'Acid Smiley' },
+  { id: 'neonSigns', label: 'Neon Signs' },
+  { id: 'lightning', label: 'Lightning' },
 ];
 
 export function PhaseList() {

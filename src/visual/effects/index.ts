@@ -35,8 +35,15 @@ import { SpaceInvadersEffect } from './SpaceInvadersEffect';
 import { CeefaxEffect } from './CeefaxEffect';
 import { FireworksEffect } from './FireworksEffect';
 import { DiscoBallEffect } from './DiscoBallEffect';
+import { PacManEffect } from './PacManEffect';
+import { LavaLampEffect } from './LavaLampEffect';
+import { VHSEffect } from './VHSEffect';
+import { SynthwaveGridEffect } from './SynthwaveGridEffect';
+import { AcidSmileyEffect } from './AcidSmileyEffect';
+import { NeonSignsEffect } from './NeonSignsEffect';
+import { LightningStormEffect } from './LightningStormEffect';
 
-export type EffectName = 'tunnel' | 'particles' | 'grid' | 'blob' | 'flowlines' | 'waveformRing' | 'fractal' | 'imageShatter' | 'metaballs' | 'helix' | 'starfield' | 'plasma' | 'voronoi' | 'aurora' | 'geoKaleidoscope' | 'rings' | 'equaliser' | 'soundwaves' | 'morphPoly' | 'warpedTorus' | 'psychedelicEQ' | 'laserShow' | 'fire' | 'superscope' | 'milkdrop' | 'waterRipple' | 'terrain' | 'matrixRain' | 'rorschach' | 'spiralVortex' | 'nebula' | 'electricArc' | 'spaceInvaders' | 'ceefax' | 'fireworks' | 'discoBall';
+export type EffectName = 'tunnel' | 'particles' | 'grid' | 'blob' | 'flowlines' | 'waveformRing' | 'fractal' | 'imageShatter' | 'metaballs' | 'helix' | 'starfield' | 'plasma' | 'voronoi' | 'aurora' | 'geoKaleidoscope' | 'rings' | 'equaliser' | 'soundwaves' | 'morphPoly' | 'warpedTorus' | 'psychedelicEQ' | 'laserShow' | 'fire' | 'superscope' | 'milkdrop' | 'waterRipple' | 'terrain' | 'matrixRain' | 'rorschach' | 'spiralVortex' | 'nebula' | 'electricArc' | 'spaceInvaders' | 'ceefax' | 'fireworks' | 'discoBall' | 'pacman' | 'lavaLamp' | 'vhs' | 'synthwave' | 'acidSmiley' | 'neonSigns' | 'lightning';
 
 export const effectRegistry: Record<EffectName, () => VisualEffect> = {
   tunnel: () => new TunnelEffect(),
@@ -75,6 +82,13 @@ export const effectRegistry: Record<EffectName, () => VisualEffect> = {
   ceefax: () => new CeefaxEffect(),
   fireworks: () => new FireworksEffect(),
   discoBall: () => new DiscoBallEffect(),
+  pacman: () => new PacManEffect(),
+  lavaLamp: () => new LavaLampEffect(),
+  vhs: () => new VHSEffect(),
+  synthwave: () => new SynthwaveGridEffect(),
+  acidSmiley: () => new AcidSmileyEffect(),
+  neonSigns: () => new NeonSignsEffect(),
+  lightning: () => new LightningStormEffect(),
 };
 
-export { TunnelEffect, ParticleField, WireframeGrid, BlobOrb, FlowLines, WaveformRing, FractalEffect, ImageShatter, MetaballsEffect, HelixEffect, StarfieldEffect, PlasmaWaveEffect, VoronoiCrystalEffect, AuroraEffect, GeoKaleidoscopeEffect, ConcentricRingsEffect, GraphicEqualiserEffect, SoundWavesEffect, MorphPolyhedronEffect, WarpedTorusEffect, PsychedelicEQEffect, LaserShowEffect, FireEffect, SuperScopeEffect, MilkDropWarpEffect, WaterRippleEffect, TerrainEffect, MatrixRainEffect, RorschachEffect, SpiralVortexEffect, NebulaCloudEffect, ElectricArcEffect, SpaceInvadersEffect, CeefaxEffect, FireworksEffect, DiscoBallEffect };
+export { TunnelEffect, ParticleField, WireframeGrid, BlobOrb, FlowLines, WaveformRing, FractalEffect, ImageShatter, MetaballsEffect, HelixEffect, StarfieldEffect, PlasmaWaveEffect, VoronoiCrystalEffect, AuroraEffect, GeoKaleidoscopeEffect, ConcentricRingsEffect, GraphicEqualiserEffect, SoundWavesEffect, MorphPolyhedronEffect, WarpedTorusEffect, PsychedelicEQEffect, LaserShowEffect, FireEffect, SuperScopeEffect, MilkDropWarpEffect, WaterRippleEffect, TerrainEffect, MatrixRainEffect, RorschachEffect, SpiralVortexEffect, NebulaCloudEffect, ElectricArcEffect, SpaceInvadersEffect, CeefaxEffect, FireworksEffect, DiscoBallEffect, PacManEffect, LavaLampEffect, VHSEffect, SynthwaveGridEffect, AcidSmileyEffect, NeonSignsEffect, LightningStormEffect };

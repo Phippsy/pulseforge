@@ -64,7 +64,9 @@ export function SubmissionDisplay() {
 
   const adminMessagesRef = useRef<AdminMsg[]>([]);
   const priorityQueueRef = useRef<AdminMsg[]>([]);
-  const shownPriorityIdsRef = useRef<Set<string>>(new Set());
+  const shownPriorityIdsRef = useRef<Set<string>>(new Set(
+    JSON.parse(sessionStorage.getItem('shownPriorityIds') || '[]')
+  ));
   const [activeAdminMsg, setActiveAdminMsg] = useState<AdminMsg | null>(null);
 
   // Fetch all submissions - separate into new (unshown) and shown
@@ -98,6 +100,7 @@ export function SubmissionDisplay() {
         if (newPriority.length > 0) {
           priorityQueueRef.current.push(...newPriority);
           newPriority.forEach(m => shownPriorityIdsRef.current.add(m.id));
+          sessionStorage.setItem('shownPriorityIds', JSON.stringify([...shownPriorityIdsRef.current]));
         }
       }
     } catch {
