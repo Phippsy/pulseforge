@@ -236,7 +236,15 @@ const WarpFeedbackShader = {
       float spiralAngle = dist * 3.0 + uTime * uWarpSpeed * 0.5;
       zoomed += vec2(cos(spiralAngle), sin(spiralAngle)) * spiralStrength * dist;
       
-      vec4 prev = texture2D(tPrev, zoomed);
+      // Completely discard feedback when UV goes out of bounds — prevents hard pixelated edges
+      vec4 prev = vec4(0.0);
+      if (zoomed.x > 0.01 && zoomed.x < 0.99 && zoomed.y > 0.01 && zoomed.y < 0.99) {
+        // Smooth fade near edges
+        float edgeFade = smoothstep(0.01, 0.12, zoomed.x) * smoothstep(0.99, 0.88, zoomed.x)
+                       * smoothstep(0.01, 0.12, zoomed.y) * smoothstep(0.99, 0.88, zoomed.y);
+        prev = texture2D(tPrev, zoomed);
+        prev.rgb *= edgeFade;
+      }
       
       // Colour decay — very aggressive to prevent brightness accumulation
       float decay = 0.82 - uAmount * 0.1 - uTransient * 0.12;
