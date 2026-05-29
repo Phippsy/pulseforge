@@ -100,19 +100,48 @@ void main() {
   float cs = cos(angle), sn = sin(angle);
   uv = mat2(cs, -sn, sn, cs) * uv;
   
-  // Julia constant drifts VERY SLOWLY through interesting regions
-  float driftT = uTime * uSpeed * 0.012; // Ultra-slow drift — shapes evolve gently
-  vec2 juliaC = vec2(
-    uJuliaReal + sin(driftT * 0.3) * 0.06 + sin(driftT * 0.8) * 0.02,
-    uJuliaImag + cos(driftT * 0.4) * 0.05 + cos(driftT * 0.9) * 0.015
-  );
-  // Audio perturbs the julia constant (very subtly)
-  juliaC.x += uMidEnergy * 0.02 * sin(uTime * 1.5);
-  juliaC.y += uHighEnergy * 0.015 * cos(uTime * 1.0);
-  juliaC += vec2(uTransient * 0.03, -uTransient * 0.02);
+  // Julia constant drifts through a GALLERY of known interesting regions
+  // Each region produces a distinctly different shape/pattern
+  float driftT = uTime * uSpeed * 0.025; // Faster drift for more shape change
   
-  // Morph between fractal types slowly
-  float morphTime = uTime * uSpeed * 0.008;
+  // Gallery of interesting Julia set coordinates (each gives unique shapes)
+  // Smoothly interpolate between them for continuous morphing
+  float regionTime = driftT * 0.15;
+  float regionIndex = mod(regionTime, 8.0);
+  float regionFrac = fract(regionIndex);
+  int regionA = int(floor(regionIndex));
+  int regionB = int(mod(float(regionA) + 1.0, 8.0));
+  
+  // 8 known fascinating Julia set regions
+  vec2 regions[8];
+  regions[0] = vec2(-0.7269, 0.1889);  // Classic dendrite
+  regions[1] = vec2(-0.4, 0.6);         // Rabbit ears / spiral
+  regions[2] = vec2(0.285, 0.01);       // Siegel disk
+  regions[3] = vec2(-0.8, 0.156);       // Cauliflower/tree
+  regions[4] = vec2(-0.12, 0.75);       // Tendrils
+  regions[5] = vec2(0.36, 0.36);        // Disconnected spirals
+  regions[6] = vec2(-0.52, 0.57);       // Star/flower
+  regions[7] = vec2(-0.1, 0.65);        // Lightning/fern
+  
+  vec2 targetA = regions[regionA];
+  vec2 targetB = regions[regionB];
+  
+  // Smooth cubic interpolation between regions
+  float smoothFrac = regionFrac * regionFrac * (3.0 - 2.0 * regionFrac);
+  vec2 juliaC = mix(targetA, targetB, smoothFrac);
+  
+  // Add wobble around the interpolated point for micro-variation
+  juliaC.x += sin(driftT * 1.3) * 0.04 + sin(driftT * 3.1) * 0.015;
+  juliaC.y += cos(driftT * 1.7) * 0.035 + cos(driftT * 2.7) * 0.01;
+  
+  // Audio perturbs the julia constant
+  juliaC.x += uMidEnergy * 0.03 * sin(uTime * 1.5);
+  juliaC.y += uHighEnergy * 0.025 * cos(uTime * 1.0);
+  juliaC += vec2(uTransient * 0.05, -uTransient * 0.04);
+  
+  // Morph between fractal types: Julia, Mandelbrot, Burning Ship
+  // Changes type every ~40 seconds for dramatic shape shifts
+  float morphTime = uTime * uSpeed * 0.02;
   float morphPhase = fract(morphTime);
   float morphType = floor(mod(morphTime, 3.0));
   
@@ -151,14 +180,27 @@ void main() {
       z = vec2(abs(z.x), abs(z.y));
     }
     
-    // z = z^2 + c with slight perturbation for variation
-    float zr = z.x * z.x - z.y * z.y + c.x;
-    float zi = 2.0 * z.x * z.y + c.y;
+    // z = z^2 + c with power morphing for shape variety
+    // Smoothly blend between z^2 and z^3 based on time
+    float powerBlend = sin(uTime * uSpeed * 0.03) * 0.5 + 0.5; // 0-1 oscillation
+    powerBlend *= 0.4; // max 40% toward cubic — keeps it recognizably fractal
     
-    // Add subtle higher-order term based on audio for organic deformation
-    float higherOrder = uBassEnergy * 0.02;
-    zr += higherOrder * (z.x * z.x * z.x - 3.0 * z.x * z.y * z.y);
-    zi += higherOrder * (3.0 * z.x * z.x * z.y - z.y * z.y * z.y);
+    // Standard z^2
+    float zr2 = z.x * z.x - z.y * z.y + c.x;
+    float zi2 = 2.0 * z.x * z.y + c.y;
+    
+    // z^3 term for shape variety (tri-symmetric patterns)
+    float zr3 = z.x * z.x * z.x - 3.0 * z.x * z.y * z.y + c.x;
+    float zi3 = 3.0 * z.x * z.x * z.y - z.y * z.y * z.y + c.y;
+    
+    // Blend between powers
+    float zr = mix(zr2, zr3, powerBlend);
+    float zi = mix(zi2, zi3, powerBlend);
+    
+    // Audio-reactive distortion adds organic feel
+    float distort = uBassEnergy * 0.03 + uTransient * 0.02;
+    zr += distort * sin(z.y * 3.0 + uTime);
+    zi += distort * cos(z.x * 3.0 - uTime * 0.7);
     
     z = vec2(zr, zi);
     

@@ -33,8 +33,8 @@ export function AudioSetup(_props?: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
       <div className="bg-gray-900 rounded-xl p-8 max-w-md w-full mx-4 shadow-2xl border border-white/10">
-        <h1 className="text-2xl font-bold text-white mb-1">PulseForge</h1>
-        <p className="text-white/50 text-sm mb-6">Audio-Reactive DJ Visualiser</p>
+        <h1 className="text-2xl font-bold text-white mb-1">🎉 DANFEST 50 🎉</h1>
+        <p className="text-white/50 text-sm mb-6">Dan's Birthday Visualiser • 8 Aug 2026</p>
 
         {error && (
           <div className="bg-red-900/50 border border-red-500/50 rounded p-3 mb-4 text-red-200 text-sm">
