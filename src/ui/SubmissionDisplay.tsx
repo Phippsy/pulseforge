@@ -46,7 +46,7 @@ const NEON_COLORS = [
   { text: '#ffffff', glow: 'rgba(255,255,255,0.3)' },   // white
 ];
 
-const DISPLAY_DURATION = 45000; // 45s per item
+function getDisplayDuration() { return 15000 + Math.random() * 5000; } // 15-20s randomised
 const NEW_MSG_INTERVAL = 8000; // 8s between new messages (prioritise)
 const OLD_MSG_INTERVAL = 60000; // 60s between recycled messages (visuals take priority)
 const POLL_INTERVAL = 8000; // poll API every 8s
@@ -134,7 +134,7 @@ export function SubmissionDisplay() {
             setActiveAdminMsg(null);
             showingRef.current = false;
           }, 2000);
-        }, DISPLAY_DURATION);
+        }, getDisplayDuration());
         return;
       }
 
@@ -183,7 +183,7 @@ export function SubmissionDisplay() {
             setActiveAdminMsg(null);
             showingRef.current = false;
           }, 2000);
-        }, DISPLAY_DURATION);
+        }, getDisplayDuration());
         return;
       }
 
@@ -218,7 +218,7 @@ export function SubmissionDisplay() {
           itemRef.current = null;
           showingRef.current = false;
         }, 2000); // fade out time
-      }, DISPLAY_DURATION);
+      }, getDisplayDuration());
     }, 5000); // check every 5s
 
     return () => clearInterval(checkQueue);

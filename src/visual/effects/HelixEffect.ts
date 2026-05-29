@@ -73,10 +73,10 @@ void main() {
   
   vec4 mvPos = modelViewMatrix * vec4(pos, 1.0);
   gl_Position = projectionMatrix * mvPos;
-  gl_PointSize = (3.0 + uIntensity * 3.0 + uBassEnergy * 2.0) * (200.0 / -mvPos.z);
+  gl_PointSize = (2.0 + uIntensity * 2.0 + uBassEnergy * 1.5) * (80.0 / -mvPos.z);
   
   if (aRung > 0.5) {
-    gl_PointSize *= 0.6;
+    gl_PointSize *= 0.5;
   }
 }
 `;
@@ -114,14 +114,19 @@ void main() {
   float waveBright = smoothstep(0.0, 0.05, wavePos) * smoothstep(0.1, 0.05, wavePos);
   col += waveBright * vec3(1.0, 0.9, 0.8) * 0.5;
   
-  col *= core * 2.0 + halo * 0.5;
-  col += vGlow * uColor1 * halo;
-  col += uBassEnergy * 0.2 * core * vec3(1.0);
+  col *= core * 4.0 + halo * 1.5;
+  col += vGlow * uColor1 * halo * 2.0;
+  col += uBassEnergy * 0.4 * core * vec3(1.0);
   
-  float alpha = (core + halo * 0.3) * (0.5 + uIntensity * 0.5);
+  // Bright, vivid particles with proper alpha for normal blending
+  col *= 1.5 + uIntensity;
+  
+  // Alpha: sharp core with soft halo falloff
+  float alpha = core * 0.9 + halo * 0.2;
+  alpha *= 0.7 + uIntensity * 0.3;
   if (alpha < 0.01) discard;
   
-  gl_FragColor = vec4(col, alpha);
+  gl_FragColor = vec4(col * alpha, alpha);
 }
 `;
 
@@ -132,8 +137,8 @@ export class HelixEffect implements VisualEffect {
   private geometry: THREE.BufferGeometry | null = null;
 
   init(scene: THREE.Scene, _camera: THREE.Camera): void {
-    const strandPoints = 400;
-    const rungPoints = 200;
+    const strandPoints = 150;
+    const rungPoints = 60;
     const totalPoints = strandPoints * 2 + rungPoints;
 
     const positions = new Float32Array(totalPoints * 3);
@@ -206,7 +211,7 @@ export class HelixEffect implements VisualEffect {
       },
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.NormalBlending,
     });
 
     this.points = new THREE.Points(this.geometry, this.material);

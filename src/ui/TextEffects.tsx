@@ -34,39 +34,54 @@ function ImpactEffect({ text, visible }: EffectProps) {
   );
 }
 
-// Scattered letters at random positions with glow
+// Scattered words at random positions with glow - keeps words readable
 function ScatteredEffect({ text, visible }: EffectProps) {
-  const letters = useMemo(() => {
-    return text.split('').filter(c => c !== ' ').map((char, i) => ({
-      char,
-      x: 10 + Math.random() * 80,
-      y: 15 + Math.random() * 70,
-      size: 2 + Math.random() * 6,
-      delay: i * 0.08,
-      glow: Math.random() > 0.5,
-      color: ['#ff00ff', '#00ffff', '#ffff00', '#ff6600', '#00ff88', '#ff3366', '#cc77ff'][Math.floor(Math.random() * 7)],
-    }));
+  const words = useMemo(() => {
+    const colors = ['#ff00ff', '#00ffff', '#ffff00', '#ff6600', '#00ff88', '#ff3366', '#cc77ff'];
+    const parts = text.split(/\s+/).filter(Boolean);
+    // Distribute words across screen zones to avoid overlap
+    const zones = parts.map((word, i) => {
+      const col = i % 2;
+      const row = Math.floor(i / 2);
+      const totalRows = Math.ceil(parts.length / 2);
+      return {
+        word,
+        x: 15 + col * 40 + (Math.random() * 20 - 10),
+        y: 15 + (row / Math.max(totalRows - 1, 1)) * 55 + (Math.random() * 10 - 5),
+        size: word.length <= 3 ? 4.5 : word.length <= 6 ? 3.5 : 2.5,
+        delay: i * 0.15,
+        color: colors[i % colors.length],
+        rotation: (Math.random() - 0.5) * 12,
+      };
+    });
+    return zones;
   }, [text]);
 
   return (
     <div className={`fixed inset-0 z-40 pointer-events-none transition-opacity duration-1000 ${visible ? 'opacity-100' : 'opacity-0'}`}>
-      {letters.map((l, i) => (
-        <span
+      {words.map((w, i) => (
+        <div
           key={i}
-          className="absolute font-black uppercase"
+          className="absolute"
           style={{
-            left: `${l.x}%`,
-            top: `${l.y}%`,
-            fontSize: `${l.size}rem`,
-            fontFamily: "'Monoton', display",
-            color: l.color,
-            textShadow: l.glow ? `0 0 20px ${l.color}, 0 0 40px ${l.color}80` : 'none',
-            transform: 'translate(-50%, -50%)',
-            animation: `scatterIn 0.5s ease-out ${l.delay}s both`,
+            left: `${w.x}%`,
+            top: `${w.y}%`,
+            transform: `translate(-50%, -50%) rotate(${w.rotation}deg)`,
           }}
         >
-          {l.char}
-        </span>
+          <span
+            className="font-black uppercase whitespace-nowrap inline-block"
+            style={{
+              fontSize: `${w.size}rem`,
+              fontFamily: "'Monoton', display",
+              color: w.color,
+              textShadow: `0 0 20px ${w.color}, 0 0 40px ${w.color}80, 0 2px 8px rgba(0,0,0,0.9)`,
+              animation: `scatterWordIn 0.5s ease-out ${w.delay}s both`,
+            }}
+          >
+            {w.word}
+          </span>
+        </div>
       ))}
     </div>
   );
@@ -75,7 +90,7 @@ function ScatteredEffect({ text, visible }: EffectProps) {
 // Constructivist grid with colored accent lines
 function GridEffect({ text, visible }: EffectProps) {
   const words = text.split(/\s+/);
-  const lineColors = ['#ffdd00', '#0044ff', '#ff0044', '#00ff88', '#ff8800'];
+  const lineColors = ['#ff00ff', '#00ffff', '#ffff00', '#ff3366', '#00ff88', '#cc77ff', '#ff6600'];
 
   const layout = useMemo(() => {
     return words.map((word, i) => ({
@@ -104,9 +119,10 @@ function GridEffect({ text, visible }: EffectProps) {
                   className="absolute"
                   style={{
                     backgroundColor: item.lineColor,
+                    boxShadow: `0 0 8px ${item.lineColor}, 0 0 16px ${item.lineColor}80`,
                     ...(item.vertical
-                      ? { width: '2px', height: '120%', top: '-10%', left: '-12px' }
-                      : { width: '100%', height: '2px', top: '-8px', left: 0 }),
+                      ? { width: '3px', height: '130%', top: '-15%', left: '-14px' }
+                      : { width: '110%', height: '3px', top: '-10px', left: '-5%' }),
                   }}
                 />
               )}
@@ -242,52 +258,100 @@ function ZoomEffect({ text, visible }: EffectProps) {
   );
 }
 
-// Digital glitch effect
+// Digital glitch effect - aggressive with scanlines and distortion
 function GlitchEffect({ text, visible }: EffectProps) {
   const [glitchFrame, setGlitchFrame] = useState(0);
+  const [scanlineOffset, setScanlineOffset] = useState(0);
 
   useEffect(() => {
     if (!visible) return;
     const interval = setInterval(() => {
       setGlitchFrame(f => f + 1);
-    }, 100);
+      // Random scanline jumps
+      if (Math.random() > 0.6) {
+        setScanlineOffset(Math.random() * 100);
+      }
+    }, 60); // faster frame rate for more intense glitch
     return () => clearInterval(interval);
   }, [visible]);
 
-  const offset1 = glitchFrame % 3 === 0 ? Math.random() * 8 - 4 : 0;
-  const offset2 = glitchFrame % 5 === 0 ? Math.random() * 8 - 4 : 0;
+  // More aggressive random offsets
+  const isHeavyGlitch = glitchFrame % 7 < 2; // ~30% of frames are heavy glitches
+  const isMediumGlitch = glitchFrame % 4 < 2;
+  const offset1x = isHeavyGlitch ? (Math.random() * 30 - 15) : isMediumGlitch ? (Math.random() * 10 - 5) : 0;
+  const offset1y = isHeavyGlitch ? (Math.random() * 12 - 6) : 0;
+  const offset2x = isHeavyGlitch ? (Math.random() * 30 - 15) : isMediumGlitch ? (Math.random() * 10 - 5) : 0;
+  const offset2y = isHeavyGlitch ? (Math.random() * 12 - 6) : 0;
+  const baseSkew = isHeavyGlitch ? (Math.random() * 4 - 2) : 0;
+  const baseShift = isMediumGlitch ? (Math.random() * 6 - 3) : 0;
+
+  // Random clip paths for slice effect
+  const slice1Top = Math.random() * 60;
+  const slice1Bottom = slice1Top + 10 + Math.random() * 30;
+  const slice2Top = Math.random() * 60;
+  const slice2Bottom = slice2Top + 10 + Math.random() * 30;
 
   return (
-    <div className={`fixed inset-0 z-40 pointer-events-none flex items-center justify-center transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}>
-      <div className="relative px-[5vw] text-center">
-        {/* Glitch layers */}
+    <div className={`fixed inset-0 z-40 pointer-events-none transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Background scanlines and noise */}
+      {isHeavyGlitch && (
+        <div className="absolute inset-0" style={{
+          background: `repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,0,68,0.03) 2px, rgba(255,0,68,0.03) 4px)`,
+          transform: `translateY(${scanlineOffset}%)`,
+        }} />
+      )}
+      {/* Horizontal glitch bars */}
+      {isHeavyGlitch && Array.from({ length: 3 }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute left-0 right-0"
+          style={{
+            top: `${20 + Math.random() * 60}%`,
+            height: `${2 + Math.random() * 8}px`,
+            backgroundColor: Math.random() > 0.5 ? 'rgba(0,255,255,0.15)' : 'rgba(255,0,68,0.15)',
+            transform: `translateX(${(Math.random() - 0.5) * 20}px)`,
+          }}
+        />
+      ))}
+
+      <div className="relative w-full h-full flex items-center justify-center px-[5vw] text-center">
+        {/* Red/magenta offset layer */}
         <h1
-          className="absolute inset-0 text-white font-black uppercase leading-[0.9] opacity-80"
+          className="absolute font-black uppercase leading-[0.9] opacity-80"
           style={{
             fontSize: 'clamp(3rem, 10vw, 8rem)',
-            transform: `translate(${offset1}px, ${offset2}px)`,
+            transform: `translate(${offset1x}px, ${offset1y}px)`,
             color: '#ff0044',
             mixBlendMode: 'screen',
-            clipPath: glitchFrame % 4 === 0 ? `inset(${Math.random() * 40}% 0 ${Math.random() * 40}% 0)` : 'none',
+            clipPath: isMediumGlitch ? `inset(${slice1Top}% 0 ${100 - slice1Bottom}% 0)` : 'none',
           }}
         >
           {text}
         </h1>
+        {/* Cyan offset layer */}
         <h1
-          className="absolute inset-0 text-white font-black uppercase leading-[0.9] opacity-80"
+          className="absolute font-black uppercase leading-[0.9] opacity-80"
           style={{
             fontSize: 'clamp(3rem, 10vw, 8rem)',
-            transform: `translate(${-offset1}px, ${-offset2}px)`,
+            transform: `translate(${offset2x}px, ${offset2y}px)`,
             color: '#00ffff',
             mixBlendMode: 'screen',
-            clipPath: glitchFrame % 3 === 0 ? `inset(${Math.random() * 40}% 0 ${Math.random() * 40}% 0)` : 'none',
+            clipPath: isMediumGlitch ? `inset(${slice2Top}% 0 ${100 - slice2Bottom}% 0)` : 'none',
           }}
         >
           {text}
         </h1>
+        {/* White base layer with its own jitter */}
         <h1
-          className="relative text-white font-black uppercase leading-[0.9]"
-          style={{ fontSize: 'clamp(3rem, 10vw, 8rem)' }}
+          className="relative font-black uppercase leading-[0.9]"
+          style={{
+            fontSize: 'clamp(3rem, 10vw, 8rem)',
+            color: '#ffffff',
+            transform: `translate(${baseShift}px, 0) skewX(${baseSkew}deg)`,
+            textShadow: isHeavyGlitch
+              ? '2px 0 #ff0044, -2px 0 #00ffff, 0 0 20px rgba(255,255,255,0.5)'
+              : '0 0 10px rgba(255,255,255,0.3)',
+          }}
         >
           {text}
         </h1>

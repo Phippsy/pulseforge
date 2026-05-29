@@ -76,6 +76,12 @@ html, body, #root {
   100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
 }
 
+@keyframes scatterWordIn {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
 @keyframes gridIn {
   0% { transform: scaleX(0); opacity: 0; }
   100% { transform: scaleX(1); opacity: 1; }

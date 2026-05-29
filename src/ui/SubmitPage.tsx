@@ -253,7 +253,7 @@ export function SubmitPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col font-mono">
+    <div className="min-h-screen bg-black flex flex-col font-mono" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <TeletextHeader />
       
       {/* Starfield background effect */}
@@ -284,7 +284,7 @@ export function SubmitPage() {
             <h1 className="text-2xl sm:text-3xl font-bold text-cyan-300 tracking-wider">
               ◀ DANFEST ▶
             </h1>
-            <h2 className="text-yellow-400 text-sm mt-1">
+            <h2 className="text-yellow-400 text-[11px] sm:text-sm mt-1">
               ■ TRANSMIT A MESSAGE TO THE BIG SCREEN ■
             </h2>
             <div className="text-white/30 text-xs mt-2">
@@ -293,15 +293,16 @@ export function SubmitPage() {
           </div>
 
           {/* Name input - teletext style */}
-          <div className="mb-4">
+          <div className="mb-3 sm:mb-4">
             <label className="block text-green-400 text-xs mb-1 tracking-widest">▶ CALL SIGN:</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="ENTER YOUR NAME"
-              className="w-full px-3 py-3 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 font-mono text-base focus:outline-none focus:border-cyan-400 uppercase tracking-wider"
+              className="w-full px-3 py-3 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 font-mono text-base focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 uppercase tracking-wider rounded-none"
               maxLength={100}
+              autoComplete="name"
             />
           </div>
 
@@ -310,22 +311,22 @@ export function SubmitPage() {
             <div className="space-y-3">
               <button
                 onClick={() => setMode('message')}
-                className="w-full px-4 py-5 bg-magenta-900 border-2 border-magenta-500 hover:bg-magenta-800 text-white text-left transition-colors group active:scale-[0.98]"
+                className="w-full px-4 py-4 sm:py-5 bg-magenta-900 border-2 border-magenta-500 hover:bg-magenta-800 text-white text-left transition-colors group active:scale-[0.98]"
                 style={{ borderColor: '#ff00ff55', backgroundColor: '#1a001a' }}
               >
                 <span className="text-yellow-300 text-xs block mb-1">OPTION 1</span>
-                <span className="text-xl text-magenta-200 group-hover:text-white" style={{ color: '#ff88ff' }}>
+                <span className="text-lg sm:text-xl text-magenta-200 group-hover:text-white" style={{ color: '#ff88ff' }}>
                   ✍ WRITE A MESSAGE
                 </span>
                 <span className="block text-xs text-white/40 mt-1">Text will appear on the party display</span>
               </button>
               <button
                 onClick={() => setMode('photo')}
-                className="w-full px-4 py-5 text-left transition-colors group active:scale-[0.98]"
+                className="w-full px-4 py-4 sm:py-5 text-left transition-colors group active:scale-[0.98]"
                 style={{ borderWidth: '2px', borderColor: '#00ffff55', backgroundColor: '#001a1a' }}
               >
                 <span className="text-yellow-300 text-xs block mb-1">OPTION 2</span>
-                <span className="text-xl group-hover:text-white" style={{ color: '#88ffff' }}>
+                <span className="text-lg sm:text-xl group-hover:text-white" style={{ color: '#88ffff' }}>
                   📡 BEAM A PHOTO
                 </span>
                 <span className="block text-xs text-white/40 mt-1">Image will be projected into the visuals</span>
@@ -342,7 +343,7 @@ export function SubmitPage() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="HAPPY BIRTHDAY DAN..."
-                  className="w-full px-3 py-3 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 font-mono text-base focus:outline-none focus:border-cyan-400 h-28 resize-none uppercase tracking-wide"
+                  className="w-full px-3 py-3 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 font-mono text-base focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 h-28 resize-none uppercase tracking-wide rounded-none"
                   maxLength={500}
                 />
                 <div className="flex justify-between text-xs mt-1">

@@ -77,19 +77,21 @@ void main() {
   vec2 uv = (vUv - 0.5) * 2.0;
   uv.x *= uAspect;
   
-  // CONTINUOUS DEEP ZOOM - exponentially zooming in forever
-  float zoomTime = uTime * uSpeed * 0.15;
-  float zoomLevel = uZoom * exp(-fract(zoomTime) * 3.0); // Cycles through zoom depths
+  // CONTINUOUS DEEP ZOOM - very slow continuous zoom, never resets abruptly
+  float zoomTime = uTime * uSpeed * 0.03; // 5x slower cycle
+  // Smooth triangle wave instead of fract() — no hard reset
+  float zoomPhase = abs(fract(zoomTime) * 2.0 - 1.0); // 0->1->0 smoothly
+  float zoomLevel = uZoom * exp(-zoomPhase * 1.5); // Max ~4.5x zoom (was 12x)
   
   // The zoom center wanders slowly - creates exploration feeling
-  float wanderT = uTime * uSpeed * 0.03;
+  float wanderT = uTime * uSpeed * 0.02;
   vec2 zoomCenter = vec2(
-    sin(wanderT * 0.7) * 0.3 + sin(wanderT * 1.3) * 0.1,
-    cos(wanderT * 0.5) * 0.25 + cos(wanderT * 1.1) * 0.08
+    sin(wanderT * 0.7) * 0.15 + sin(wanderT * 1.3) * 0.05,
+    cos(wanderT * 0.5) * 0.12 + cos(wanderT * 1.1) * 0.04
   );
   
   // Bass makes zoom pulsate
-  zoomLevel *= 1.0 - uBassPulse * 0.2;
+  zoomLevel *= 1.0 - uBassPulse * 0.15;
   
   uv = uv * zoomLevel + zoomCenter;
   
@@ -98,19 +100,19 @@ void main() {
   float cs = cos(angle), sn = sin(angle);
   uv = mat2(cs, -sn, sn, cs) * uv;
   
-  // Julia constant drifts continuously through interesting regions
-  float driftT = uTime * uSpeed * 0.08;
+  // Julia constant drifts SLOWLY through interesting regions
+  float driftT = uTime * uSpeed * 0.025; // Much slower drift — let shapes breathe
   vec2 juliaC = vec2(
-    uJuliaReal + sin(driftT * 0.7) * 0.15 + sin(driftT * 1.7) * 0.05,
-    uJuliaImag + cos(driftT * 0.9) * 0.12 + cos(driftT * 2.1) * 0.04
+    uJuliaReal + sin(driftT * 0.4) * 0.1 + sin(driftT * 1.1) * 0.03,
+    uJuliaImag + cos(driftT * 0.5) * 0.08 + cos(driftT * 1.3) * 0.025
   );
-  // Audio perturbs the julia constant
-  juliaC.x += uMidEnergy * 0.08 * sin(uTime * 2.0);
-  juliaC.y += uHighEnergy * 0.06 * cos(uTime * 1.5);
-  juliaC += vec2(uTransient * 0.1, -uTransient * 0.08);
+  // Audio perturbs the julia constant (subtly)
+  juliaC.x += uMidEnergy * 0.04 * sin(uTime * 1.5);
+  juliaC.y += uHighEnergy * 0.03 * cos(uTime * 1.0);
+  juliaC += vec2(uTransient * 0.05, -uTransient * 0.04);
   
-  // Morph between fractal types over time
-  float morphTime = uTime * uSpeed * 0.02;
+  // Morph between fractal types slowly
+  float morphTime = uTime * uSpeed * 0.008;
   float morphPhase = fract(morphTime);
   float morphType = floor(mod(morphTime, 3.0));
   

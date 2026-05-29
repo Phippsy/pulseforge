@@ -51,7 +51,7 @@ export const deepHouse: Journey = {
         bloomThreshold: 0.7,
         bloomRadius: 0.6,
         chromaticAberration: 0.004,
-        feedbackAmount: 0.4,
+        feedbackAmount: 0.2,
         vignetteAmount: 0.35,
         kaleidoscopeSegments: 0,
         warpSpeed: 0.8,

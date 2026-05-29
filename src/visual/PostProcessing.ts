@@ -97,23 +97,35 @@ const ToneMappingShader = {
     void main() {
       vec3 col = texture2D(tDiffuse, vUv).rgb;
       
-      // Highlight compression — only squish values above the knee
-      // This preserves dark/mid colours while preventing white blowout
-      float knee = 0.6;
+      // Highlight compression — aggressively squish anything above the knee
+      // This catches bloom output which spreads brightness across the image
+      float knee = 0.4;
       float maxBright = max(col.r, max(col.g, col.b));
       if (maxBright > knee) {
-        // Soft compression: maps knee..infinity to knee..1.0
-        float compressed = knee + (1.0 - knee) * (1.0 - exp(-(maxBright - knee) * 3.0));
+        // Soft compression: maps knee..infinity to knee..0.85
+        float compressed = knee + (0.85 - knee) * (1.0 - exp(-(maxBright - knee) * 4.0));
         col *= compressed / maxBright;
       }
       
-      // Saturation boost — counteracts bloom's desaturating effect
+      // Saturation boost — only for pixels that are actually visible (not dark residuals)
       float luma = dot(col, vec3(0.299, 0.587, 0.114));
-      float sat = length(col - vec3(luma));
-      // Boost more when saturation is low (bloom washed it out)
-      float boost = sat < 0.15 ? 1.8 : 1.4;
-      vec3 saturated = mix(vec3(luma), col, boost);
-      col = clamp(saturated, 0.0, 1.0);
+      if (luma > 0.15) {
+        float sat = length(col - vec3(luma));
+        // Moderate boost to counteract bloom's desaturation — don't amplify residuals
+        float boost = sat < 0.1 ? 1.5 : 1.25;
+        vec3 saturated = mix(vec3(luma), col, boost);
+        col = clamp(saturated, 0.0, 1.0);
+      }
+      
+      // Kill desaturated bright pixels — these cause white/grey blobs
+      // Only allow high luminance if the pixel has actual colour
+      luma = dot(col, vec3(0.299, 0.587, 0.114));
+      float satFinal = length(col - vec3(luma));
+      float maxAllowed = 0.35 + satFinal * 3.0; // saturated pixels can be brighter
+      maxAllowed = clamp(maxAllowed, 0.35, 0.7);
+      if (luma > maxAllowed) {
+        col *= maxAllowed / luma;
+      }
       
       gl_FragColor = vec4(col, 1.0);
     }
@@ -226,18 +238,18 @@ const WarpFeedbackShader = {
       
       vec4 prev = texture2D(tPrev, zoomed);
       
-      // Colour decay — aggressive to prevent brightness accumulation
-      float decay = 0.85 - uAmount * 0.08 - uTransient * 0.12;
+      // Colour decay — very aggressive to prevent brightness accumulation
+      float decay = 0.82 - uAmount * 0.1 - uTransient * 0.12;
       prev.r *= decay * 1.002;
       prev.g *= decay * 0.998;
       prev.b *= decay * 1.003;
       
       // Darken edges more - creates depth and prevents edge buildup
-      float edgeDarken = smoothstep(0.3, 0.6, dist) * 0.2;
+      float edgeDarken = smoothstep(0.25, 0.55, dist) * 0.25;
       prev.rgb *= 1.0 - edgeDarken;
       
       // Hard clamp — low enough that feedback can NEVER accumulate to white
-      prev.rgb = min(prev.rgb, vec3(0.55));
+      prev.rgb = min(prev.rgb, vec3(0.35));
       
       // Re-saturate: dim any pixel that's bright but has lost colour
       float luma = dot(prev.rgb, vec3(0.299, 0.587, 0.114));
@@ -246,7 +258,19 @@ const WarpFeedbackShader = {
         prev.rgb *= 0.6; // aggressively kill desaturated bright pixels
       }
       
-      gl_FragColor = mix(current, prev, uAmount);
+      vec4 result = mix(current, prev, uAmount);
+      
+      // Clamp the FINAL output — prevents grey/white blob accumulation
+      // Only saturated pixels are allowed to be bright
+      float finalLuma = dot(result.rgb, vec3(0.299, 0.587, 0.114));
+      float finalSat = length(result.rgb - vec3(finalLuma));
+      float limit = 0.3 + finalSat * 2.5; // grey pixels capped at 0.3, saturated up to 0.7
+      limit = clamp(limit, 0.3, 0.7);
+      if (finalLuma > limit) {
+        result.rgb *= limit / finalLuma;
+      }
+      
+      gl_FragColor = result;
     }
   `,
 };
@@ -382,11 +406,10 @@ export class PostProcessing {
   }
 
   updateParams(params: PostProcessParams): void {
-    // Bloom — hard-capped at 1.0 to prevent ANY white blowout
-    // Highlight compressor after bloom handles the rest
-    this.bloomPass.strength = Math.min(1.0, params.bloomStrength * 0.5 + this.bassEnergy * 0.2 + this.transient * 0.1);
-    this.bloomPass.threshold = Math.max(0.55, params.bloomThreshold);
-    this.bloomPass.radius = Math.min(0.6, params.bloomRadius * 0.6 + this.bassEnergy * 0.03);
+    // Bloom — very subtle. High threshold means only the absolute brightest pixels bloom
+    this.bloomPass.strength = Math.min(0.6, params.bloomStrength * 0.3 + this.bassEnergy * 0.1 + this.transient * 0.05);
+    this.bloomPass.threshold = Math.max(0.85, params.bloomThreshold + 0.2);
+    this.bloomPass.radius = Math.min(0.4, params.bloomRadius * 0.5);
     this.chromaticPass.uniforms.uAmount.value = Math.min(0.03, params.chromaticAberration + this.bassEnergy * 0.005 + this.transient * 0.008);
     this.chromaticPass.uniforms.uTime.value = this.time;
     this.kaleidoscopePass.uniforms.uSegments.value = params.kaleidoscopeSegments;
