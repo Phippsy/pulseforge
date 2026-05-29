@@ -183,19 +183,25 @@ const WarpFeedbackShader = {
       
       vec4 prev = texture2D(tPrev, zoomed);
       
-      // Aggressive colour decay - prevents saturation/whiteout
-      // Decay is gentler to avoid black accumulation
-      float decay = 0.92 - uAmount * 0.05 - uTransient * 0.08;
-      prev.r *= decay * 1.002; // Subtle hue shift on decay
+      // Colour decay — aggressive enough to prevent white accumulation
+      float decay = 0.88 - uAmount * 0.06 - uTransient * 0.1;
+      prev.r *= decay * 1.002;
       prev.g *= decay * 0.998;
       prev.b *= decay * 1.003;
       
       // Darken edges more - creates depth and prevents edge buildup
-      float edgeDarken = smoothstep(0.4, 0.8, dist) * 0.1;
+      float edgeDarken = smoothstep(0.35, 0.7, dist) * 0.15;
       prev.rgb *= 1.0 - edgeDarken;
       
-      // Soft clamp to prevent saturation buildup
-      prev.rgb = min(prev.rgb, vec3(0.9));
+      // Hard clamp to prevent white buildup
+      prev.rgb = min(prev.rgb, vec3(0.7));
+      
+      // Re-saturate: if colour is washing out toward white, pull it back
+      float luma = dot(prev.rgb, vec3(0.299, 0.587, 0.114));
+      float sat = length(prev.rgb - vec3(luma));
+      if (luma > 0.4 && sat < 0.1) {
+        prev.rgb *= 0.7; // dim desaturated (near-white) pixels aggressively
+      }
       
       gl_FragColor = mix(current, prev, uAmount);
     }
@@ -328,10 +334,10 @@ export class PostProcessing {
   }
 
   updateParams(params: PostProcessParams): void {
-    // Bloom pulses with bass for explosive brightness on hits - CAPPED to prevent whiteout
-    this.bloomPass.strength = Math.min(3.5, params.bloomStrength + this.bassEnergy * 1.0 + this.transient * 0.5);
-    this.bloomPass.threshold = Math.max(0.2, params.bloomThreshold - this.bassEnergy * 0.15);
-    this.bloomPass.radius = Math.min(1.0, params.bloomRadius + this.bassEnergy * 0.1);
+    // Bloom pulses with bass — tightly capped to prevent white blowout
+    this.bloomPass.strength = Math.min(1.8, params.bloomStrength * 0.7 + this.bassEnergy * 0.4 + this.transient * 0.2);
+    this.bloomPass.threshold = Math.max(0.5, params.bloomThreshold + 0.1 - this.bassEnergy * 0.05);
+    this.bloomPass.radius = Math.min(0.7, params.bloomRadius * 0.8 + this.bassEnergy * 0.05);
     this.chromaticPass.uniforms.uAmount.value = Math.min(0.03, params.chromaticAberration + this.bassEnergy * 0.005 + this.transient * 0.008);
     this.chromaticPass.uniforms.uTime.value = this.time;
     this.kaleidoscopePass.uniforms.uSegments.value = params.kaleidoscopeSegments;
