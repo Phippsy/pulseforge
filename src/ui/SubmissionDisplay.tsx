@@ -40,6 +40,7 @@ export function SubmissionDisplay() {
 
   const adminMessagesRef = useRef<AdminMsg[]>([]);
   const priorityQueueRef = useRef<AdminMsg[]>([]);
+  const shownPriorityIdsRef = useRef<Set<string>>(new Set());
   const [activeAdminMsg, setActiveAdminMsg] = useState<AdminMsg | null>(null);
 
   // Fetch all submissions - separate into new (unshown) and shown
@@ -68,10 +69,11 @@ export function SubmissionDisplay() {
         }));
         // Heavy rotation goes into the rotation pool
         adminMessagesRef.current = mapped.filter(m => m.type === 'heavy_rotation');
-        // One-off priority messages jump the queue (only new ones not already queued)
-        const newPriority = mapped.filter(m => m.priority && !priorityQueueRef.current.some(p => p.id === m.id));
+        // One-off priority messages jump the queue (only new ones never shown before)
+        const newPriority = mapped.filter(m => m.priority && !shownPriorityIdsRef.current.has(m.id));
         if (newPriority.length > 0) {
           priorityQueueRef.current.push(...newPriority);
+          newPriority.forEach(m => shownPriorityIdsRef.current.add(m.id));
         }
       }
     } catch {
@@ -88,23 +90,32 @@ export function SubmissionDisplay() {
     };
   }, [fetchQueue]);
 
+  const showingRef = useRef(false);
+
   // Queue processor - show next item every QUEUE_INTERVAL
   useEffect(() => {
     const checkQueue = setInterval(() => {
       const now = Date.now();
 
       // HIGHEST PRIORITY: one-off messages from DJ (skip all intervals)
-      if (priorityQueueRef.current.length > 0) {
+      if (priorityQueueRef.current.length > 0 && !showingRef.current) {
         const priorityMsg = priorityQueueRef.current.shift()!;
+        showingRef.current = true;
         setActiveAdminMsg(priorityMsg);
         setVisible(true);
         lastShowRef.current = now;
         setTimeout(() => {
           setVisible(false);
-          setTimeout(() => setActiveAdminMsg(null), 2000);
+          setTimeout(() => {
+            setActiveAdminMsg(null);
+            showingRef.current = false;
+          }, 2000);
         }, DISPLAY_DURATION);
         return;
       }
+
+      // Don't show anything new while something is currently displayed
+      if (showingRef.current) return;
 
       const hasNew = newQueueRef.current.length > 0;
       const interval = hasNew ? NEW_MSG_INTERVAL : OLD_MSG_INTERVAL;
@@ -136,6 +147,7 @@ export function SubmissionDisplay() {
 
       if (!submission && !adminPick) return;
       lastShowRef.current = now;
+      showingRef.current = true;
 
       // Admin message: show full-screen effect
       if (adminPick) {
@@ -143,7 +155,10 @@ export function SubmissionDisplay() {
         setVisible(true);
         setTimeout(() => {
           setVisible(false);
-          setTimeout(() => setActiveAdminMsg(null), 2000);
+          setTimeout(() => {
+            setActiveAdminMsg(null);
+            showingRef.current = false;
+          }, 2000);
         }, DISPLAY_DURATION);
         return;
       }
@@ -173,6 +188,7 @@ export function SubmissionDisplay() {
         setTimeout(() => {
           setCurrentItem(null);
           itemRef.current = null;
+          showingRef.current = false;
         }, 2000); // fade out time
       }, DISPLAY_DURATION);
     }, 5000); // check every 5s
