@@ -50,68 +50,83 @@ void main() {
   float t = uTime * uSpeed;
   
   // Grid of columns
-  float columns = 40.0;
-  float charHeight = columns * 2.0; // aspect ratio of characters
+  float columns = 50.0;
+  float rows = columns * 2.5; // taller chars
   
-  vec2 gridUv = vec2(uv.x * columns, uv.y * charHeight);
+  vec2 gridUv = vec2(uv.x * columns, uv.y * rows);
   float col = floor(gridUv.x);
   float row = floor(gridUv.y);
   vec2 cellUv = fract(gridUv);
   
   // Each column has a random speed and phase
   float colSeed = hash(col * 7.3 + 0.5);
-  float speed = 2.0 + colSeed * 4.0;
-  speed *= 1.0 + uBassEnergy * 0.5; // bass speeds up rain
+  float speed = 3.0 + colSeed * 5.0;
+  speed *= 1.0 + uBassEnergy * 1.0; // bass speeds up rain
   
-  float phase = hash(col * 13.7) * 100.0;
+  float phase = hash(col * 13.7) * 200.0;
   
-  // Scrolling position for this column
+  // Scrolling - row offset over time (rain falls DOWN so we subtract)
   float scroll = t * speed + phase;
-  float currentRow = row + floor(scroll);
-  float charSeed = hash(col * 31.0 + currentRow * 17.0);
   
-  // Character changes periodically
-  float charChange = floor(t * (1.0 + hash(col * 5.0) * 2.0));
-  float finalSeed = hash(charSeed + charChange * 0.01);
+  // Current logical row (for character selection, wraps)
+  float logicalRow = row + floor(scroll);
+  float charSeed = hash(col * 31.0 + logicalRow * 17.0);
   
-  // Draw character
+  // Character changes periodically for flicker effect
+  float charChange = floor(t * (2.0 + hash(col * 5.0) * 3.0));
+  float finalSeed = hash(charSeed + charChange * 0.1);
+  
+  // Draw character glyph
   float ch = charPattern(cellUv, finalSeed * 100.0);
   
-  // Brightness: trail fading from top (head) to bottom (tail)
-  float trailLength = 15.0 + uMidEnergy * 10.0;
-  float headPos = fract(scroll) + trailLength;
-  float distFromHead = mod(headPos - fract(gridUv.y / charHeight * trailLength), trailLength + 5.0);
+  // Rain drop brightness - multiple drops per column
+  float trailLen = 20.0 + uMidEnergy * 10.0;
+  float brightness = 0.0;
+  float isHead = 0.0;
   
-  // Fade along trail
-  float brightness = smoothstep(trailLength, 0.0, distFromHead);
-  brightness = pow(brightness, 1.5);
+  // 3 drops per column at different offsets
+  for (int d = 0; d < 3; d++) {
+    float dropPhase = hash(col * 3.7 + float(d) * 11.3) * rows;
+    float dropSpeed = speed * (0.8 + hash(col * 2.1 + float(d) * 7.7) * 0.4);
+    // Head position falls from top (rows-1) to bottom (0)
+    float headPos = mod(t * dropSpeed + dropPhase, rows);
+    // Distance: how far below the head is this row?
+    // headPos counts DOWN, so current position in column for the head
+    float dist = mod(headPos - row, rows);
+    // dist=0 means at the head, dist>0 means head has passed (trail above)
+    float b = smoothstep(trailLen, 0.0, dist);
+    float h = smoothstep(1.5, 0.0, dist);
+    brightness = max(brightness, b);
+    isHead = max(isHead, h);
+  }
   
-  // Head is white/bright, tail is coloured
-  float isHead = smoothstep(1.5, 0.0, distFromHead);
+  // Ensure always visible - minimum brightness for active chars
+  brightness = max(brightness, 0.08 * ch);
   
-  // Colour
-  vec3 trailColor = uColor1;
-  vec3 headColor = mix(uColor2, vec3(1.0), 0.5);
+  // Colour: iconic green Matrix rain - palette adds subtle tint only
+  vec3 baseGreen = vec3(0.0, 1.0, 0.3);
+  vec3 trailColor = mix(baseGreen, uColor1, 0.2) * 1.5;
+  vec3 headColor = vec3(0.9, 1.0, 0.95);
   vec3 charColor = mix(trailColor, headColor, isHead);
   
   // Random highlight flicker
-  float flicker = step(0.97, hash2(vec2(col, currentRow + t * 0.5)));
-  charColor += vec3(0.3) * flicker;
+  float flicker = step(0.93, hash2(vec2(col, logicalRow + t * 0.3)));
+  charColor += vec3(0.5, 1.0, 0.5) * flicker;
   
   // Bass pulse brightens everything
-  charColor += uColor1 * uBassEnergy * 0.2;
+  charColor += baseGreen * uBassEnergy * 0.5;
   
-  // Transient flash
-  charColor += vec3(0.5) * uTransient * isHead;
+  // Transient flash at heads
+  charColor += vec3(0.8, 1.0, 0.8) * uTransient * isHead;
   
-  vec3 finalCol = charColor * ch * brightness;
+  vec3 finalCol = charColor * ch * brightness * 1.3;
   
-  // Subtle background glow in columns
-  float bgGlow = brightness * 0.02 * (1.0 - ch);
-  finalCol += uColor1 * bgGlow;
+  // Background column glow (always slightly visible)
+  float bgGlow = brightness * 0.05;
+  finalCol += baseGreen * bgGlow * 0.4;
   
-  // High energy adds extra brightness variance
-  finalCol *= 1.0 + uHighEnergy * flicker * 0.5;
+  // High energy adds sparkle
+  finalCol *= 1.0 + uHighEnergy * flicker * 0.8;
   
   finalCol *= uIntensity;
   
