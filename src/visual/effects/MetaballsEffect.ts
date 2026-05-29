@@ -30,33 +30,44 @@ uniform vec3 uColor2;
 uniform vec3 uColor3;
 uniform vec3 uColor4;
 
-#define MAX_BLOBS 12
+#define MAX_BLOBS 20
 
-// Smooth noise for blob movement
 float hash(float n) { return fract(sin(n) * 43758.5453); }
 float hash2(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 
 vec2 blobPos(int i, float t) {
   float fi = float(i);
-  float speed = 0.2 + hash(fi * 7.3) * 0.3;
-  float radius = 0.4 + hash(fi * 13.1) * 0.6;
+  float speed = 0.15 + hash(fi * 7.3) * 0.35;
+  float radius = 0.3 + hash(fi * 13.1) * 0.7;
   float phase = hash(fi * 19.7) * 6.28;
   float phase2 = hash(fi * 31.1) * 6.28;
+  float phase3 = hash(fi * 43.7) * 6.28;
   
-  return vec2(
-    sin(t * speed + phase) * radius + sin(t * speed * 1.7 + phase2) * radius * 0.3,
-    cos(t * speed * 0.9 + phase * 1.3) * radius + cos(t * speed * 1.3 + phase2 * 0.7) * radius * 0.25
+  // Complex Lissajous paths for organic movement
+  vec2 pos = vec2(
+    sin(t * speed + phase) * radius + sin(t * speed * 1.7 + phase2) * radius * 0.4,
+    cos(t * speed * 0.8 + phase * 1.3) * radius + cos(t * speed * 1.4 + phase3) * radius * 0.35
   );
+  
+  // Slow drift cycle: blobs cluster then spread (congealing)
+  float cycle = sin(t * 0.1 + fi * 0.5) * 0.3;
+  pos *= 0.8 + cycle;
+  
+  return pos;
 }
 
-float blobRadius(int i, float t, float bass, float mid) {
+float blobRadius(int i, float t, float bass, float mid, float high) {
   float fi = float(i);
-  float base = 0.25 + hash(fi * 23.3) * 0.15;
-  // Pulse with bass
-  base += bass * 0.1 * (1.0 + sin(t * 2.0 + fi * 1.5));
+  float base = 0.2 + hash(fi * 23.3) * 0.2;
+  // Larger pulsing with bass
+  base += bass * 0.15 * (1.0 + sin(t * 2.5 + fi * 1.5));
   // Breathe with mid
-  base += sin(t * 1.5 + fi * 0.7) * 0.03 * (1.0 + mid);
-  return base;
+  base += sin(t * 1.5 + fi * 0.7) * 0.05 * (1.0 + mid);
+  // High shimmer
+  base += high * 0.03 * sin(t * 5.0 + fi * 3.0);
+  // Size variation over time
+  base *= 0.7 + sin(t * 0.3 + fi * 2.1) * 0.4;
+  return max(base, 0.05);
 }
 
 void main() {
@@ -66,73 +77,82 @@ void main() {
   float t = uTime * uSpeed;
   int count = int(uBlobCount);
   
-  // Accumulate metaball field
   float field = 0.0;
-  float closestBlob = -1.0;
-  float closestDist = 100.0;
+  vec3 weightedColor = vec3(0.0);
+  float totalWeight = 0.0;
+  
+  // Bass drives attraction toward center (congeal)
+  float attract = uBassEnergy * 0.4;
+  // Transient scatters blobs apart
+  float scatter = uTransient * 0.6;
   
   for (int i = 0; i < MAX_BLOBS; i++) {
     if (i >= count) break;
     
+    float fi = float(i);
     vec2 pos = blobPos(i, t);
-    float r = blobRadius(i, t, uBassEnergy, uMidEnergy);
+    float r = blobRadius(i, t, uBassEnergy, uMidEnergy, uHighEnergy);
     
-    // Transient kicks certain blobs
-    if (uTransient > 0.3 && hash(float(i) * 5.0) > 0.5) {
-      pos *= 1.0 + uTransient * 0.3;
-      r *= 1.0 + uTransient * 0.5;
-    }
+    // Congeal on bass, scatter on transient
+    pos *= 1.0 - attract * 0.3 + scatter * hash(fi * 5.0);
     
     float dist = length(uv - pos);
-    // Normalized metaball: max contribution = 1.0 per blob
-    float contribution = r * r / (dist * dist + r * r);
+    float contribution = r * r / (dist * dist + r * 0.01);
     field += contribution;
     
-    if (dist < closestDist) {
-      closestDist = dist;
-      closestBlob = float(i);
-    }
+    // Weighted colour blend based on contribution
+    float colorPhase = fract(fi * 0.17 + t * 0.03);
+    vec3 blobCol;
+    if (colorPhase < 0.25) blobCol = mix(uColor1, uColor2, colorPhase * 4.0);
+    else if (colorPhase < 0.5) blobCol = mix(uColor2, uColor3, (colorPhase - 0.25) * 4.0);
+    else if (colorPhase < 0.75) blobCol = mix(uColor3, uColor4, (colorPhase - 0.5) * 4.0);
+    else blobCol = mix(uColor4, uColor1, (colorPhase - 0.75) * 4.0);
+    
+    weightedColor += blobCol * contribution;
+    totalWeight += contribution;
   }
   
-  // Threshold creates the blob surface
+  if (totalWeight > 0.0) weightedColor /= totalWeight;
+  
   float threshold = uThreshold;
-  float surface = smoothstep(threshold - 0.2, threshold + 0.05, field);
-  float edge = smoothstep(threshold - 0.05, threshold, field) - smoothstep(threshold, threshold + 0.15, field);
-  float inner = smoothstep(threshold + 0.2, threshold + 1.5, field);
+  float surface = smoothstep(threshold * 0.6, threshold, field);
+  float edge = smoothstep(threshold * 0.85, threshold, field) - smoothstep(threshold, threshold * 1.2, field);
+  float inner = smoothstep(threshold * 1.5, threshold * 4.0, field);
   
-  // Color by which blob we're closest to + field strength
-  float blobMix = fract(closestBlob * 0.25 + uTime * 0.05);
-  vec3 col;
-  if (blobMix < 0.25) col = mix(uColor1, uColor2, blobMix * 4.0);
-  else if (blobMix < 0.5) col = mix(uColor2, uColor3, (blobMix - 0.25) * 4.0);
-  else if (blobMix < 0.75) col = mix(uColor3, uColor4, (blobMix - 0.5) * 4.0);
-  else col = mix(uColor4, uColor1, (blobMix - 0.75) * 4.0);
+  // Colour = weighted blend of all contributing blobs
+  vec3 col = weightedColor;
   
-  // Inner glow - brighter at center
-  vec3 innerColor = mix(col, vec3(1.0, 0.95, 0.9), inner * 0.5);
+  // Inner: brighter, slightly white hot-center
+  col = mix(col, col + vec3(0.3, 0.25, 0.2), inner * 0.6);
   
-  // Edge highlight
-  vec3 edgeColor = mix(uColor1, uColor4, sin(uTime * 0.7) * 0.5 + 0.5);
+  // Edge glow
+  vec3 edgeColor = mix(uColor1, uColor3, sin(t * 0.5) * 0.5 + 0.5);
+  col += edgeColor * edge * 1.5;
   
-  vec3 finalCol = innerColor * surface + edgeColor * edge * 2.0;
+  // Apply surface mask
+  vec3 finalCol = col * surface;
   
-  // Background: subtle field visualization
-  float bgField = field * 0.2;
-  vec3 bgCol = mix(uColor3, uColor4, bgField) * 0.05;
-  finalCol += bgCol * (1.0 - surface);
+  // Background: subtle energy field
+  float bgGlow = smoothstep(0.0, threshold * 0.5, field) * (1.0 - surface);
+  vec3 bgCol = weightedColor * bgGlow * 0.12;
+  finalCol += bgCol;
   
-  // Bass pulse glow
-  finalCol += uBassPulse * 0.15 * uColor1 * surface;
+  // Bass pulse glow on surface
+  finalCol += uBassPulse * 0.2 * uColor1 * surface;
   
-  // High energy sparkle
-  float sparkle = hash2(uv * 50.0 + uTime * 0.1);
-  finalCol += step(0.99, sparkle) * uHighEnergy * 0.5 * surface;
+  // Iridescent sheen on edges
+  float iri = sin(field * 8.0 + t * 2.0) * 0.5 + 0.5;
+  finalCol += edge * iri * 0.3 * mix(uColor2, uColor4, iri);
+  
+  // Sparkle in high regions
+  float sparkle = hash2(uv * 80.0 + t * 0.2);
+  finalCol += step(0.985, sparkle) * uHighEnergy * 0.6 * surface;
   
   // Transient flash
-  finalCol += uTransient * 0.2 * vec3(1.0) * surface;
+  finalCol += uTransient * 0.3 * vec3(1.0, 0.95, 0.9) * surface;
   
   finalCol *= 0.5 + uIntensity * 1.0;
-  finalCol = finalCol / (1.0 + finalCol * 0.3);
+  finalCol = finalCol / (1.0 + finalCol * 0.25);
   
   gl_FragColor = vec4(finalCol, 1.0);
 }
@@ -156,7 +176,7 @@ export class MetaballsEffect implements VisualEffect {
         uTransient: { value: 0 },
         uIntensity: { value: 0.7 },
         uSpeed: { value: 0.5 },
-        uBlobCount: { value: 8 },
+        uBlobCount: { value: 16 },
         uThreshold: { value: 2.0 },
         uAspect: { value: window.innerWidth / window.innerHeight },
         uColor1: { value: new THREE.Color('#FF6B6B') },
@@ -181,7 +201,7 @@ export class MetaballsEffect implements VisualEffect {
     u.uTransient.value = signals.transientPulse * params.onsetReactivity;
     u.uIntensity.value = params.intensity;
     u.uSpeed.value = params.speed;
-    u.uBlobCount.value = params.effectParams.blobCount ?? 8;
+    u.uBlobCount.value = params.effectParams.blobCount ?? 16;
     u.uThreshold.value = params.effectParams.threshold ?? 1.0;
     u.uAspect.value = window.innerWidth / window.innerHeight;
     u.uColor1.value.set(params.colors[0]);

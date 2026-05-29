@@ -3,8 +3,9 @@ import type { ControlSignals } from '../../store';
 import type { VisualEffect, EffectParams } from './types';
 
 /**
- * Graphic Equaliser - classic Winamp-style vertical bars
- * rendered as a fullscreen shader using FFT data passed via uniforms
+ * Graphic Equaliser - Full spectrum analyser with 64 bands
+ * Peak hold indicators, proper logarithmic frequency mapping,
+ * Winamp-style segmented bars with glow effects
  */
 
 const vertexShader = `
@@ -31,68 +32,103 @@ uniform vec3 uColor2;
 uniform vec3 uColor3;
 uniform vec3 uColor4;
 uniform float uAspect;
-uniform float uBands[32];
+uniform float uBands[64];
+uniform float uPeaks[64];
 
 void main() {
   vec2 uv = vUv;
   
-  float t = uTime * uSpeed;
+  // Slight padding at edges
+  float margin = 0.02;
+  vec2 area = vec2(1.0 - margin * 2.0, 1.0 - margin * 2.0);
+  vec2 local = (uv - margin) / area;
   
-  // Which band are we in?
-  float bandF = uv.x * 32.0;
+  if (local.x < 0.0 || local.x > 1.0 || local.y < 0.0 || local.y > 1.0) {
+    gl_FragColor = vec4(vec3(0.01), 1.0);
+    return;
+  }
+  
+  // 64 bands
+  float bandF = local.x * 64.0;
   int band = int(floor(bandF));
   float bandFrac = fract(bandF);
   
-  // Get the height for this band (with smoothing between neighbors)
+  // Get band height
   float h = 0.0;
-  if (band >= 0 && band < 32) h = uBands[band];
-  
-  // Smooth edges of each bar
-  float barWidth = 0.7;
-  float barMask = smoothstep(0.0, 0.15, bandFrac) * smoothstep(1.0, 0.85, bandFrac);
-  
-  // Bar height from bottom
-  float barHeight = h * 0.85;
-  float inBar = step(uv.y, barHeight) * barMask;
-  
-  // Color gradient based on height - green at bottom, yellow middle, red top
-  float heightRatio = uv.y / max(barHeight, 0.001);
-  vec3 barColor;
-  if (heightRatio < 0.5) {
-    barColor = mix(uColor1, uColor2, heightRatio * 2.0);
-  } else {
-    barColor = mix(uColor2, uColor3, (heightRatio - 0.5) * 2.0);
+  float peakH = 0.0;
+  if (band >= 0 && band < 64) {
+    h = uBands[band];
+    peakH = uPeaks[band];
   }
   
-  // Peak indicator - small bright dot at the top of each bar
-  float peakY = barHeight;
-  float peakDist = abs(uv.y - peakY);
-  float peak = smoothstep(0.015, 0.005, peakDist) * barMask * step(0.05, barHeight);
+  // Segmented bar appearance (like real hardware EQ)
+  float numSegments = 24.0;
+  float segY = local.y * numSegments;
+  float segFrac = fract(segY);
+  float segGap = smoothstep(0.0, 0.08, segFrac) * smoothstep(1.0, 0.92, segFrac);
   
-  // Glow beneath bars
-  float glow = exp(-(uv.y - barHeight) * 8.0) * step(barHeight, uv.y) * barMask * barHeight;
+  // Bar width with gap between bars
+  float barWidth = smoothstep(0.0, 0.1, bandFrac) * smoothstep(1.0, 0.9, bandFrac);
   
-  // Reflection below (mirror)
-  float reflectY = -uv.y * 0.3;
-  float inReflect = step(reflectY, barHeight * 0.3) * step(0.0, reflectY) * barMask;
+  // Is this pixel within the active bar height?
+  float barHeight = h * 0.95;
+  float inBar = step(local.y, barHeight) * barWidth * segGap;
   
+  // Colour: frequency-based gradient
+  // Low = deep blue/purple, mid = green/cyan, high = orange/red/white
+  float freqRatio = local.x;
+  vec3 barColor;
+  if (freqRatio < 0.2) {
+    barColor = mix(vec3(0.2, 0.0, 0.8), uColor1, freqRatio * 5.0);
+  } else if (freqRatio < 0.5) {
+    barColor = mix(uColor1, uColor2, (freqRatio - 0.2) / 0.3);
+  } else if (freqRatio < 0.8) {
+    barColor = mix(uColor2, uColor3, (freqRatio - 0.5) / 0.3);
+  } else {
+    barColor = mix(uColor3, uColor4, (freqRatio - 0.8) / 0.2);
+  }
+  
+  // Brightness increases with height (hot at top)
+  float heightBright = 0.6 + local.y * 0.6;
+  barColor *= heightBright;
+  
+  // Peak indicator - floating dot that slowly falls
+  float peakPos = peakH * 0.95;
+  float peakDist = abs(local.y - peakPos);
+  float peak = smoothstep(0.012, 0.004, peakDist) * barWidth * step(0.03, peakH);
+  vec3 peakColor = vec3(1.0, 1.0, 1.0);
+  
+  // Build final colour
   vec3 col = vec3(0.0);
-  col += barColor * inBar * (0.8 + uBassEnergy * 0.4);
-  col += uColor4 * peak * 2.0;
-  col += barColor * glow * 0.4;
   
-  // Mirror reflection at bottom
-  float mirrorH = (1.0 - uv.y) * barHeight * 0.2;
-  float mirrorMask = step(1.0 - uv.y, 0.15) * barMask;
-  col += barColor * mirrorMask * 0.15 * h;
+  // Active bar segments
+  col += barColor * inBar;
+  
+  // Glow above bar (soft bloom look)
+  float aboveBar = smoothstep(barHeight, barHeight + 0.08, local.y) * smoothstep(barHeight + 0.15, barHeight + 0.01, local.y);
+  col += barColor * aboveBar * 0.3 * barWidth * h;
+  
+  // Peak dot
+  col += peakColor * peak;
+  
+  // Subtle reflection below (bottom 15%)
+  if (local.y < 0.15) {
+    float mirrorY = 0.15 - local.y;
+    float mirrorH = barHeight;
+    float mirrorIn = step(mirrorY, mirrorH * 0.3) * barWidth * segGap;
+    col += barColor * mirrorIn * 0.08 * (1.0 - local.y / 0.15);
+  }
+  
+  // Background: very subtle grid
+  float gridH = smoothstep(0.001, 0.0, abs(segFrac - 0.5) - 0.49) * 0.03;
+  float gridV = smoothstep(0.001, 0.0, abs(bandFrac - 0.5) - 0.49) * 0.02;
+  col += vec3(gridH + gridV) * 0.5;
+  
+  // Bass pulse background throb
+  col += uColor1 * uBassEnergy * 0.02;
   
   // Transient flash
-  col += uColor4 * uTransient * 0.3 * inBar;
-  
-  // Background grid lines
-  float gridH = smoothstep(0.002, 0.0, abs(fract(uv.y * 10.0) - 0.5) - 0.48);
-  float gridV = smoothstep(0.002, 0.0, abs(bandFrac - 0.5) - 0.48);
-  col += vec3(0.02) * (gridH + gridV);
+  col += vec3(0.15) * uTransient * 0.4 * inBar;
   
   col *= uIntensity;
   
@@ -104,8 +140,10 @@ export class GraphicEqualiserEffect implements VisualEffect {
   name = 'equaliser';
   private mesh!: THREE.Mesh;
   private material!: THREE.ShaderMaterial;
-  private bandValues = new Float32Array(32);
-  private smoothBands = new Float32Array(32);
+  private bandValues = new Float32Array(64);
+  private smoothBands = new Float32Array(64);
+  private peakValues = new Float32Array(64);
+  private peakDecay = new Float32Array(64);
   private fftData: Float32Array | null = null;
 
   init(scene: THREE.Scene, _camera: THREE.Camera): void {
@@ -119,11 +157,12 @@ export class GraphicEqualiserEffect implements VisualEffect {
         uSpeed: { value: 1.0 },
         uIntensity: { value: 1.0 },
         uColor1: { value: new THREE.Color('#00ff66') },
-        uColor2: { value: new THREE.Color('#ffcc00') },
-        uColor3: { value: new THREE.Color('#ff3300') },
-        uColor4: { value: new THREE.Color('#ffffff') },
+        uColor2: { value: new THREE.Color('#00ccff') },
+        uColor3: { value: new THREE.Color('#ffcc00') },
+        uColor4: { value: new THREE.Color('#ff3300') },
         uAspect: { value: 1.0 },
-        uBands: { value: new Float32Array(32) },
+        uBands: { value: new Float32Array(64) },
+        uPeaks: { value: new Float32Array(64) },
       },
       vertexShader,
       fragmentShader,
@@ -153,43 +192,80 @@ export class GraphicEqualiserEffect implements VisualEffect {
     u.uColor4.value.set(params.colors[3]);
     u.uAspect.value = window.innerWidth / window.innerHeight;
 
-    // Process FFT data into 32 bands
+    // Process FFT data into 64 logarithmically-distributed bands
+    // Covers full audible range: ~20Hz to ~20kHz
     if (this.fftData && this.fftData.length > 0) {
       const binCount = this.fftData.length;
-      // Logarithmic frequency distribution
-      for (let i = 0; i < 32; i++) {
-        const startBin = Math.floor(Math.pow(i / 32, 2) * binCount);
-        const endBin = Math.floor(Math.pow((i + 1) / 32, 2) * binCount);
+      const numBands = 64;
+      // Logarithmic mapping: low bands get fewer bins (bass is concentrated)
+      // High bands span more bins (treble is spread across many)
+      const minFreq = 20; // Hz
+      const maxFreq = 20000; // Hz
+      const logMin = Math.log10(minFreq);
+      const logMax = Math.log10(maxFreq);
+      
+      for (let i = 0; i < numBands; i++) {
+        const freqLow = Math.pow(10, logMin + (logMax - logMin) * (i / numBands));
+        const freqHigh = Math.pow(10, logMin + (logMax - logMin) * ((i + 1) / numBands));
+        
+        // Convert frequency to FFT bin (assuming 44100/48000 sample rate, ~22050 Nyquist)
+        const nyquist = 22050;
+        const startBin = Math.floor((freqLow / nyquist) * binCount);
+        const endBin = Math.ceil((freqHigh / nyquist) * binCount);
+        
         let sum = 0;
-        const count = Math.max(1, endBin - startBin);
-        for (let j = startBin; j < Math.min(endBin, binCount); j++) {
+        let count = 0;
+        for (let j = Math.max(0, startBin); j < Math.min(endBin, binCount); j++) {
           sum += this.fftData[j];
+          count++;
         }
-        this.bandValues[i] = sum / count;
+        // Normalise and apply slight boost to higher bands (perceptual weighting)
+        const avg = count > 0 ? sum / count : 0;
+        const freqBoost = 1.0 + (i / numBands) * 0.5; // +50% boost at highest band
+        this.bandValues[i] = Math.min(1.0, avg * freqBoost);
       }
     } else {
-      // Fake bands from control signals when no FFT data
-      for (let i = 0; i < 32; i++) {
-        const f = i / 32;
-        if (f < 0.25) this.bandValues[i] = signals.bassEnergy * (0.7 + Math.sin(time * 2 + i) * 0.3);
-        else if (f < 0.6) this.bandValues[i] = signals.midEnergy * (0.6 + Math.sin(time * 3 + i * 0.5) * 0.3);
-        else this.bandValues[i] = signals.highEnergy * (0.5 + Math.sin(time * 4 + i * 0.3) * 0.3);
+      // Synthesise bands from control signals when no FFT data available
+      for (let i = 0; i < 64; i++) {
+        const f = i / 64;
+        if (f < 0.2) {
+          this.bandValues[i] = signals.bassEnergy * (0.7 + Math.sin(time * 2 + i * 0.5) * 0.3);
+        } else if (f < 0.55) {
+          this.bandValues[i] = signals.midEnergy * (0.6 + Math.sin(time * 3 + i * 0.3) * 0.3);
+        } else {
+          this.bandValues[i] = signals.highEnergy * (0.5 + Math.sin(time * 4 + i * 0.2) * 0.3);
+        }
       }
     }
 
-    // Smooth bands with fast attack, slow decay
-    const attack = 1.0 - Math.exp(-dt * 20);
-    const decay = 1.0 - Math.exp(-dt * 5);
-    for (let i = 0; i < 32; i++) {
+    // Smooth bands: fast attack, moderate decay
+    const attack = 1.0 - Math.exp(-dt * 25);
+    const decay = 1.0 - Math.exp(-dt * 8);
+    
+    for (let i = 0; i < 64; i++) {
       const target = this.bandValues[i];
       if (target > this.smoothBands[i]) {
         this.smoothBands[i] += (target - this.smoothBands[i]) * attack;
       } else {
         this.smoothBands[i] += (target - this.smoothBands[i]) * decay;
       }
+      
+      // Peak hold: rises instantly, holds briefly, then falls slowly
+      if (this.smoothBands[i] > this.peakValues[i]) {
+        this.peakValues[i] = this.smoothBands[i];
+        this.peakDecay[i] = 0; // reset hold timer
+      } else {
+        this.peakDecay[i] += dt;
+        // Hold for 0.5s, then fall
+        if (this.peakDecay[i] > 0.5) {
+          this.peakValues[i] -= dt * 0.8; // fall speed
+          this.peakValues[i] = Math.max(this.peakValues[i], 0);
+        }
+      }
     }
 
     u.uBands.value = this.smoothBands;
+    u.uPeaks.value = this.peakValues;
   }
 
   dispose(): void {

@@ -186,6 +186,7 @@ export class BlobOrb implements VisualEffect {
     this.material = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
+      side: THREE.DoubleSide,
       uniforms: {
         uTime: { value: 0 },
         uBassEnergy: { value: 0 },

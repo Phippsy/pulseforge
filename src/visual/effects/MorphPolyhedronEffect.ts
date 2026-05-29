@@ -143,6 +143,7 @@ export class MorphPolyhedronEffect implements VisualEffect {
     const geometry = new THREE.IcosahedronGeometry(1.8, 5);
     
     this.material = new THREE.ShaderMaterial({
+      side: THREE.DoubleSide,
       uniforms: {
         uTime: { value: 0 },
         uBassEnergy: { value: 0 },

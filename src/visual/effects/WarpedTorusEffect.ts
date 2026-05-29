@@ -148,6 +148,7 @@ export class WarpedTorusEffect implements VisualEffect {
     const geometry = new THREE.TorusKnotGeometry(1.2, 0.4, 200, 32, 3, 5);
     
     this.material = new THREE.ShaderMaterial({
+      side: THREE.DoubleSide,
       uniforms: {
         uTime: { value: 0 },
         uBassEnergy: { value: 0 },

@@ -8,6 +8,7 @@ import { WaveformRing } from './effects/WaveformRing';
 import { ImageShatter } from './effects/ImageShatter';
 import { GraphicEqualiserEffect } from './effects/GraphicEqualiserEffect';
 import { PsychedelicEQEffect } from './effects/PsychedelicEQEffect';
+import { CompositeEffect, createRandomComposite } from './effects/CompositeEffect';
 
 export class VisualEngine {
   private renderer: THREE.WebGLRenderer;
@@ -21,14 +22,22 @@ export class VisualEngine {
   private imageTexture: THREE.Texture | null = null;
   private cameraTime = 0;
 
+  // Adaptive quality
+  private frameTimeSamples: number[] = [];
+  private currentPixelRatio: number;
+  private targetPixelRatio: number;
+  private qualityCheckInterval = 0;
+
   constructor(canvas: HTMLCanvasElement) {
     this.renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: true,
+      antialias: false, // disable for performance - post-processing handles smoothing
       alpha: false,
       powerPreference: 'high-performance',
     });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.currentPixelRatio = Math.min(window.devicePixelRatio, 2);
+    this.targetPixelRatio = this.currentPixelRatio;
+    this.renderer.setPixelRatio(this.currentPixelRatio);
     this.renderer.setClearColor(0x000000);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -69,7 +78,7 @@ export class VisualEngine {
     this.currentEffectName = name;
 
     // Fullscreen quad effects use ortho camera
-    const useOrtho = name === 'tunnel' || name === 'fractal' || name === 'metaballs' || name === 'plasma' || name === 'voronoi' || name === 'aurora' || name === 'geoKaleidoscope' || name === 'rings' || name === 'equaliser' || name === 'soundwaves';
+    const useOrtho = name === 'tunnel' || name === 'fractal' || name === 'metaballs' || name === 'plasma' || name === 'voronoi' || name === 'aurora' || name === 'geoKaleidoscope' || name === 'rings' || name === 'equaliser' || name === 'soundwaves' || name === 'fire' || name === 'superscope' || name === 'milkdrop' || name === 'waterRipple' || name === 'matrixRain' || name === 'rorschach' || name === 'spiralVortex' || name === 'nebula' || name === 'electricArc';
     const cam = useOrtho ? this.orthoCamera : this.camera;
     this.currentEffect.init(this.scene, cam);
 
@@ -86,6 +95,41 @@ export class VisualEngine {
 
   setFFTData(data: Float32Array): void {
     this.fftData = data;
+  }
+
+  /** Activate a composite (layered) effect combining 2-3 effects */
+  setCompositeEffect(effectNames?: EffectName[], blendMode?: 'add' | 'screen' | 'multiply' | 'overlay', opacities?: number[]): void {
+    if (this.currentEffect) {
+      this.currentEffect.dispose();
+    }
+    while (this.scene.children.length > 0) {
+      this.scene.remove(this.scene.children[0]);
+    }
+
+    let effects: EffectName[];
+    let blend: 'add' | 'screen' | 'multiply' | 'overlay';
+    let ops: number[];
+
+    if (effectNames && effectNames.length >= 2) {
+      effects = effectNames;
+      blend = blendMode || 'screen';
+      ops = opacities || [1.0, 0.7, 0.5];
+    } else {
+      const random = createRandomComposite();
+      effects = random.effects;
+      blend = random.blend;
+      ops = random.opacities;
+    }
+
+    const composite = new CompositeEffect(effects, blend, ops);
+    composite.init(this.scene, this.orthoCamera);
+    composite.setRenderer(this.renderer);
+    this.currentEffect = composite;
+    this.currentEffectName = null; // composite doesn't have a single name
+
+    this.postProcessing.dispose();
+    this.postProcessing = new PostProcessing(this.renderer, this.scene, this.orthoCamera);
+    this.postProcessing.setSize(window.innerWidth, window.innerHeight);
   }
 
   setImageTexture(dataUrl: string): void {
@@ -116,7 +160,7 @@ export class VisualEngine {
 
     // Aggressive camera motion for 3D effects - constant movement along all axes
     this.cameraTime += dt;
-    const useOrthoForEffect = this.currentEffectName === 'tunnel' || this.currentEffectName === 'fractal' || this.currentEffectName === 'metaballs' || this.currentEffectName === 'plasma' || this.currentEffectName === 'voronoi' || this.currentEffectName === 'aurora' || this.currentEffectName === 'geoKaleidoscope' || this.currentEffectName === 'rings' || this.currentEffectName === 'equaliser' || this.currentEffectName === 'soundwaves';
+    const useOrthoForEffect = this.currentEffectName === 'tunnel' || this.currentEffectName === 'fractal' || this.currentEffectName === 'metaballs' || this.currentEffectName === 'plasma' || this.currentEffectName === 'voronoi' || this.currentEffectName === 'aurora' || this.currentEffectName === 'geoKaleidoscope' || this.currentEffectName === 'rings' || this.currentEffectName === 'equaliser' || this.currentEffectName === 'soundwaves' || this.currentEffectName === 'fire' || this.currentEffectName === 'superscope' || this.currentEffectName === 'milkdrop' || this.currentEffectName === 'waterRipple' || this.currentEffectName === 'matrixRain' || this.currentEffectName === 'rorschach' || this.currentEffectName === 'spiralVortex' || this.currentEffectName === 'nebula' || this.currentEffectName === 'electricArc';
     
     if (!useOrthoForEffect) {
       const speed = params.speed;
@@ -157,6 +201,27 @@ export class VisualEngine {
     this.currentEffect.update(signals, params, dt, time);
     this.postProcessing.updateParams(postParams);
     this.postProcessing.render(this.renderer);
+
+    // Adaptive quality: reduce pixel ratio if framerate drops
+    this.frameTimeSamples.push(dt);
+    if (this.frameTimeSamples.length > 60) this.frameTimeSamples.shift();
+    this.qualityCheckInterval += dt;
+    if (this.qualityCheckInterval > 2.0) { // check every 2 seconds
+      this.qualityCheckInterval = 0;
+      const avgDt = this.frameTimeSamples.reduce((a, b) => a + b, 0) / this.frameTimeSamples.length;
+      const avgFps = 1 / avgDt;
+      const maxRatio = Math.min(window.devicePixelRatio, 2);
+      if (avgFps < 24 && this.targetPixelRatio > 1.0) {
+        this.targetPixelRatio = Math.max(1.0, this.targetPixelRatio - 0.25);
+      } else if (avgFps > 50 && this.targetPixelRatio < maxRatio) {
+        this.targetPixelRatio = Math.min(maxRatio, this.targetPixelRatio + 0.125);
+      }
+      if (Math.abs(this.currentPixelRatio - this.targetPixelRatio) > 0.1) {
+        this.currentPixelRatio = this.targetPixelRatio;
+        this.renderer.setPixelRatio(this.currentPixelRatio);
+        this.postProcessing.setSize(window.innerWidth, window.innerHeight);
+      }
+    }
   }
 
   getRenderer(): THREE.WebGLRenderer {
