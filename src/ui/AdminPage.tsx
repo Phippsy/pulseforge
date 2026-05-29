@@ -128,23 +128,23 @@ export function AdminPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-cyan-500/20 px-4">
+      <div className="flex border-b border-cyan-500/20">
         {(['system', 'submissions', 'settings'] as AdminTab[]).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-xs font-bold tracking-wider border-b-2 transition-colors ${
+            className={`flex-1 px-2 py-3 text-xs font-bold tracking-wider border-b-2 transition-colors ${
               activeTab === tab
                 ? 'border-cyan-400 text-cyan-300'
                 : 'border-transparent text-white/40 hover:text-white/60'
             }`}
           >
-            {tab === 'system' ? '▶ SYSTEM MSGS' : tab === 'submissions' ? '▶ USER MSGS' : '▶ SETTINGS'}
+            {tab === 'system' ? 'SYSTEM' : tab === 'submissions' ? 'USER' : 'SETTINGS'}
           </button>
         ))}
       </div>
 
-      <div className="max-w-2xl mx-auto p-6">
+      <div className="max-w-2xl mx-auto px-3 py-4 sm:p-6">
         {/* SYSTEM MESSAGES TAB */}
         {activeTab === 'system' && (
           <>
@@ -154,30 +154,30 @@ export function AdminPage() {
             </div>
 
             {/* Add new message */}
-            <div className="mb-8 border border-cyan-500/20 p-4 bg-black/50">
+            <div className="mb-8 border border-cyan-500/20 p-3 sm:p-4 bg-black/50">
               <label className="block text-yellow-400 text-xs mb-2 tracking-widest">NEW MESSAGE:</label>
 
               {/* Type selector */}
               <div className="flex gap-2 mb-3">
                 <button
                   onClick={() => setNewType('heavy_rotation')}
-                  className={`flex-1 px-3 py-2 text-[10px] font-bold tracking-wider border transition-colors ${
+                  className={`flex-1 px-2 py-2.5 text-[10px] font-bold tracking-wider border transition-colors active:scale-95 ${
                     newType === 'heavy_rotation'
                       ? 'border-green-400 bg-green-900/40 text-green-200'
                       : 'border-white/10 text-white/40 hover:border-white/30'
                   }`}
                 >
-                  🔁 HEAVY ROTATION
+                  🔁 ROTATION
                 </button>
                 <button
                   onClick={() => setNewType('one_off')}
-                  className={`flex-1 px-3 py-2 text-[10px] font-bold tracking-wider border transition-colors ${
+                  className={`flex-1 px-2 py-2.5 text-[10px] font-bold tracking-wider border transition-colors active:scale-95 ${
                     newType === 'one_off'
                       ? 'border-orange-400 bg-orange-900/40 text-orange-200'
                       : 'border-white/10 text-white/40 hover:border-white/30'
                   }`}
                 >
-                  ⚡ ONE-OFF (PRIORITY)
+                  ⚡ ONE-OFF
                 </button>
               </div>
               <p className="text-white/30 text-[9px] mb-3">
@@ -186,35 +186,35 @@ export function AdminPage() {
                   : 'Shown ASAP as priority — perfect for track-specific shoutouts'}
               </p>
 
-              <div className="flex gap-3 mb-3">
+              <div className="flex flex-col sm:flex-row gap-2 mb-3">
                 <input
                   type="text"
                   value={newContent}
                   onChange={(e) => setNewContent(e.target.value)}
                   placeholder={newType === 'one_off' ? 'THIS TUNE IS FOR...' : 'WELCOME TO DANFEST...'}
-                  className="flex-1 px-3 py-2 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 text-sm focus:outline-none focus:border-cyan-400 uppercase tracking-wide"
+                  className="flex-1 px-3 py-3 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 text-base focus:outline-none focus:border-cyan-400 uppercase tracking-wide"
                   maxLength={500}
                   onKeyDown={(e) => e.key === 'Enter' && addMessage()}
                 />
                 <button
                   onClick={addMessage}
                   disabled={!newContent.trim()}
-                  className={`px-4 py-2 border text-xs font-bold tracking-wider transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
+                  className={`px-4 py-3 border text-xs font-bold tracking-wider transition-colors disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 ${
                     newType === 'one_off'
                       ? 'bg-orange-900/80 border-orange-500/50 text-orange-200 hover:bg-orange-800'
                       : 'bg-green-900/80 border-green-500/50 text-green-200 hover:bg-green-800'
                   }`}
                 >
-                  {newType === 'one_off' ? '⚡ SEND NOW' : '+ ADD'}
+                  {newType === 'one_off' ? '⚡ SEND' : '+ ADD'}
                 </button>
               </div>
               <label className="block text-yellow-400/70 text-[10px] mb-1 tracking-widest">EFFECT:</label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1">
+              <div className="grid grid-cols-4 gap-1">
                 {TEXT_EFFECTS.map(eff => (
                   <button
                     key={eff.id}
                     onClick={() => setNewEffect(eff.id)}
-                    className={`px-2 py-1.5 text-[10px] font-bold tracking-wider border transition-colors ${
+                    className={`px-2 py-2 text-[10px] font-bold tracking-wider border transition-colors active:scale-95 ${
                       newEffect === eff.id
                         ? 'border-cyan-400 bg-cyan-900/40 text-cyan-200'
                         : 'border-white/10 text-white/40 hover:border-white/30 hover:text-white/60'
@@ -251,35 +251,21 @@ export function AdminPage() {
                   >
                     {editingId === msg.id ? (
                       <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            value={editContent}
-                            onChange={(e) => setEditContent(e.target.value)}
-                            className="flex-1 px-3 py-2 bg-black border border-cyan-500/30 text-cyan-100 text-sm focus:outline-none focus:border-cyan-400 uppercase tracking-wide"
-                            maxLength={500}
-                            onKeyDown={(e) => e.key === 'Enter' && saveEdit(msg.id)}
-                            autoFocus
-                          />
-                          <button
-                            onClick={() => saveEdit(msg.id)}
-                            className="px-3 py-2 bg-green-900/80 border border-green-500/50 text-green-200 text-xs font-bold"
-                          >
-                            SAVE
-                          </button>
-                          <button
-                            onClick={() => setEditingId(null)}
-                            className="px-3 py-2 border border-white/20 text-white/60 text-xs"
-                          >
-                            ESC
-                          </button>
-                        </div>
+                        <input
+                          type="text"
+                          value={editContent}
+                          onChange={(e) => setEditContent(e.target.value)}
+                          className="w-full px-3 py-3 bg-black border border-cyan-500/30 text-cyan-100 text-base focus:outline-none focus:border-cyan-400 uppercase tracking-wide"
+                          maxLength={500}
+                          onKeyDown={(e) => e.key === 'Enter' && saveEdit(msg.id)}
+                          autoFocus
+                        />
                         <div className="grid grid-cols-4 gap-1">
                           {TEXT_EFFECTS.map(eff => (
                             <button
                               key={eff.id}
                               onClick={() => setEditEffect(eff.id)}
-                              className={`px-2 py-1 text-[10px] font-bold tracking-wider border transition-colors ${
+                              className={`px-2 py-2 text-[10px] font-bold tracking-wider border transition-colors active:scale-95 ${
                                 editEffect === eff.id
                                   ? 'border-cyan-400 bg-cyan-900/40 text-cyan-200'
                                   : 'border-white/10 text-white/40 hover:border-white/30'
@@ -289,50 +275,71 @@ export function AdminPage() {
                             </button>
                           ))}
                         </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => saveEdit(msg.id)}
+                            className="flex-1 px-3 py-2.5 bg-green-900/80 border border-green-500/50 text-green-200 text-xs font-bold active:scale-95"
+                          >
+                            SAVE
+                          </button>
+                          <button
+                            onClick={() => setEditingId(null)}
+                            className="px-4 py-2.5 border border-white/20 text-white/60 text-xs active:scale-95"
+                          >
+                            CANCEL
+                          </button>
+                        </div>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => toggleEnabled(msg)}
-                          className={`w-8 h-5 border flex items-center transition-colors ${
-                            msg.enabled
-                              ? 'border-green-500/50 bg-green-900/50 justify-end'
-                              : 'border-white/20 bg-black justify-start'
-                          }`}
-                        >
-                          <div className={`w-3 h-3 mx-0.5 ${msg.enabled ? 'bg-green-400' : 'bg-white/30'}`} />
-                        </button>
-                        <span className={`text-[9px] font-bold tracking-wider px-1.5 py-0.5 border ${
-                          msg.type === 'one_off'
-                            ? 'text-orange-400/80 border-orange-500/30'
-                            : 'text-green-400/60 border-green-500/20'
-                        }`}>
-                          {msg.type === 'one_off' ? '⚡' : '🔁'}
-                        </span>
-                        <span className={`flex-1 text-sm tracking-wide ${msg.enabled ? 'text-cyan-100' : 'text-white/40'}`}>
-                          {msg.content}
-                        </span>
-                        <span className="text-[9px] text-yellow-500/60 font-bold tracking-wider border border-yellow-500/20 px-1.5 py-0.5">
-                          {(msg.effect || 'impact').toUpperCase()}
-                        </span>
-                        <button
-                          onClick={() => setPreviewEffect({ text: msg.content, effect: msg.effect || 'impact' })}
-                          className="px-2 py-1 border border-yellow-500/30 text-yellow-400 hover:bg-yellow-900/30 text-[10px] font-bold tracking-wider"
-                        >
-                          ▶
-                        </button>
-                        <button
-                          onClick={() => { setEditingId(msg.id); setEditContent(msg.content); setEditEffect(msg.effect || 'impact'); }}
-                          className="px-2 py-1 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-900/30 text-[10px] font-bold tracking-wider"
-                        >
-                          EDIT
-                        </button>
-                        <button
-                          onClick={() => deleteMessage(msg.id)}
-                          className="px-2 py-1 border border-red-500/30 text-red-400 hover:bg-red-900/30 text-[10px] font-bold tracking-wider"
-                        >
-                          DEL
-                        </button>
+                      <div className="space-y-2">
+                        {/* Top row: toggle, type, content */}
+                        <div className="flex items-start gap-2">
+                          <button
+                            onClick={() => toggleEnabled(msg)}
+                            className={`w-10 h-6 border flex items-center transition-colors shrink-0 mt-0.5 ${
+                              msg.enabled
+                                ? 'border-green-500/50 bg-green-900/50 justify-end'
+                                : 'border-white/20 bg-black justify-start'
+                            }`}
+                          >
+                            <div className={`w-4 h-4 mx-0.5 ${msg.enabled ? 'bg-green-400' : 'bg-white/30'}`} />
+                          </button>
+                          <span className={`text-[9px] font-bold tracking-wider px-1.5 py-0.5 border shrink-0 mt-0.5 ${
+                            msg.type === 'one_off'
+                              ? 'text-orange-400/80 border-orange-500/30'
+                              : 'text-green-400/60 border-green-500/20'
+                          }`}>
+                            {msg.type === 'one_off' ? '⚡' : '🔁'}
+                          </span>
+                          <span className={`flex-1 text-sm tracking-wide break-words ${msg.enabled ? 'text-cyan-100' : 'text-white/40'}`}>
+                            {msg.content}
+                          </span>
+                        </div>
+                        {/* Bottom row: effect badge + actions */}
+                        <div className="flex items-center gap-2 pl-12">
+                          <span className="text-[9px] text-yellow-500/60 font-bold tracking-wider border border-yellow-500/20 px-1.5 py-0.5">
+                            {(msg.effect || 'impact').toUpperCase()}
+                          </span>
+                          <div className="flex-1" />
+                          <button
+                            onClick={() => setPreviewEffect({ text: msg.content, effect: msg.effect || 'impact' })}
+                            className="px-3 py-1.5 border border-yellow-500/30 text-yellow-400 hover:bg-yellow-900/30 text-[10px] font-bold tracking-wider active:scale-95"
+                          >
+                            ▶
+                          </button>
+                          <button
+                            onClick={() => { setEditingId(msg.id); setEditContent(msg.content); setEditEffect(msg.effect || 'impact'); }}
+                            className="px-3 py-1.5 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-900/30 text-[10px] font-bold tracking-wider active:scale-95"
+                          >
+                            EDIT
+                          </button>
+                          <button
+                            onClick={() => deleteMessage(msg.id)}
+                            className="px-3 py-1.5 border border-red-500/30 text-red-400 hover:bg-red-900/30 text-[10px] font-bold tracking-wider active:scale-95"
+                          >
+                            DEL
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -376,34 +383,40 @@ export function AdminPage() {
                         : 'border-cyan-500/30 bg-black/50'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => togglePaused(sub)}
-                        className={`w-8 h-5 border flex items-center transition-colors ${
-                          !sub.paused
-                            ? 'border-green-500/50 bg-green-900/50 justify-end'
-                            : 'border-orange-500/30 bg-black justify-start'
-                        }`}
-                        title={sub.paused ? 'Unpause' : 'Pause'}
-                      >
-                        <div className={`w-3 h-3 mx-0.5 ${!sub.paused ? 'bg-green-400' : 'bg-orange-400'}`} />
-                      </button>
-                      <span className="text-[10px] text-yellow-400/80 font-bold border border-yellow-500/20 px-1.5 py-0.5 uppercase">
-                        {sub.type}
-                      </span>
-                      <span className="text-cyan-400/60 text-xs font-bold">{sub.name}</span>
-                      <span className={`flex-1 text-sm tracking-wide truncate ${sub.paused ? 'text-white/30' : 'text-cyan-100'}`}>
-                        {sub.type === 'photo' ? '📷 [photo]' : sub.content}
-                      </span>
-                      {sub.paused && (
-                        <span className="text-[9px] text-orange-400 font-bold tracking-wider">PAUSED</span>
-                      )}
-                      <button
-                        onClick={() => deleteSubmission(sub.id)}
-                        className="px-2 py-1 border border-red-500/30 text-red-400 hover:bg-red-900/30 text-[10px] font-bold tracking-wider"
-                      >
-                        DEL
-                      </button>
+                    <div className="space-y-2">
+                      {/* Top row: toggle + meta */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => togglePaused(sub)}
+                          className={`w-10 h-6 border flex items-center transition-colors shrink-0 active:scale-95 ${
+                            !sub.paused
+                              ? 'border-green-500/50 bg-green-900/50 justify-end'
+                              : 'border-orange-500/30 bg-black justify-start'
+                          }`}
+                          title={sub.paused ? 'Unpause' : 'Pause'}
+                        >
+                          <div className={`w-4 h-4 mx-0.5 ${!sub.paused ? 'bg-green-400' : 'bg-orange-400'}`} />
+                        </button>
+                        <span className="text-[10px] text-yellow-400/80 font-bold border border-yellow-500/20 px-1.5 py-0.5 uppercase">
+                          {sub.type}
+                        </span>
+                        <span className="text-cyan-400/60 text-xs font-bold truncate">{sub.name}</span>
+                        {sub.paused && (
+                          <span className="text-[9px] text-orange-400 font-bold tracking-wider ml-auto">PAUSED</span>
+                        )}
+                      </div>
+                      {/* Content + delete */}
+                      <div className="flex items-center gap-2 pl-12">
+                        <span className={`flex-1 text-sm tracking-wide truncate ${sub.paused ? 'text-white/30' : 'text-cyan-100'}`}>
+                          {sub.type === 'photo' ? '📷 [photo]' : sub.content}
+                        </span>
+                        <button
+                          onClick={() => deleteSubmission(sub.id)}
+                          className="px-3 py-1.5 border border-red-500/30 text-red-400 hover:bg-red-900/30 text-[10px] font-bold tracking-wider active:scale-95 shrink-0"
+                        >
+                          DEL
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))

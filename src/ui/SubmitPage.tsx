@@ -187,11 +187,11 @@ export function SubmitPage() {
         ))}
       </div>
 
-      <div className="flex-1 flex flex-col items-center p-4 relative z-10 overflow-y-auto">
+      <div className="flex-1 flex flex-col items-center px-3 py-3 sm:p-4 relative z-10 overflow-y-auto">
         <div className="w-full max-w-md">
           
           {/* Title block - Ceefax style */}
-          <div className="mb-6 text-center">
+          <div className="mb-4 sm:mb-6 text-center">
             <div className="bg-yellow-500 text-black px-3 py-1 inline-block font-bold text-xs mb-2">
               PAGE 888
             </div>
@@ -207,14 +207,14 @@ export function SubmitPage() {
           </div>
 
           {/* Name input - teletext style */}
-          <div className="mb-5">
+          <div className="mb-4">
             <label className="block text-green-400 text-xs mb-1 tracking-widest">▶ CALL SIGN:</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="ENTER YOUR NAME"
-              className="w-full px-3 py-3 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 font-mono text-sm focus:outline-none focus:border-cyan-400 uppercase tracking-wider"
+              className="w-full px-3 py-3 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 font-mono text-base focus:outline-none focus:border-cyan-400 uppercase tracking-wider"
               maxLength={100}
             />
           </div>
@@ -224,22 +224,22 @@ export function SubmitPage() {
             <div className="space-y-3">
               <button
                 onClick={() => setMode('message')}
-                className="w-full px-4 py-4 bg-magenta-900 border-2 border-magenta-500 hover:bg-magenta-800 text-white text-left transition-colors group"
+                className="w-full px-4 py-5 bg-magenta-900 border-2 border-magenta-500 hover:bg-magenta-800 text-white text-left transition-colors group active:scale-[0.98]"
                 style={{ borderColor: '#ff00ff55', backgroundColor: '#1a001a' }}
               >
                 <span className="text-yellow-300 text-xs block mb-1">OPTION 1</span>
-                <span className="text-lg text-magenta-200 group-hover:text-white" style={{ color: '#ff88ff' }}>
+                <span className="text-xl text-magenta-200 group-hover:text-white" style={{ color: '#ff88ff' }}>
                   ✍ WRITE A MESSAGE
                 </span>
                 <span className="block text-xs text-white/40 mt-1">Text will appear on the party display</span>
               </button>
               <button
                 onClick={() => setMode('photo')}
-                className="w-full px-4 py-4 text-left transition-colors group"
+                className="w-full px-4 py-5 text-left transition-colors group active:scale-[0.98]"
                 style={{ borderWidth: '2px', borderColor: '#00ffff55', backgroundColor: '#001a1a' }}
               >
                 <span className="text-yellow-300 text-xs block mb-1">OPTION 2</span>
-                <span className="text-lg group-hover:text-white" style={{ color: '#88ffff' }}>
+                <span className="text-xl group-hover:text-white" style={{ color: '#88ffff' }}>
                   📡 BEAM A PHOTO
                 </span>
                 <span className="block text-xs text-white/40 mt-1">Image will be projected into the visuals</span>
@@ -256,7 +256,7 @@ export function SubmitPage() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="HAPPY BIRTHDAY DAN..."
-                  className="w-full px-3 py-3 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 font-mono text-sm focus:outline-none focus:border-cyan-400 h-32 resize-none uppercase tracking-wide"
+                  className="w-full px-3 py-3 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 font-mono text-base focus:outline-none focus:border-cyan-400 h-28 resize-none uppercase tracking-wide"
                   maxLength={500}
                 />
                 <div className="flex justify-between text-xs mt-1">
@@ -267,14 +267,14 @@ export function SubmitPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setMode('choose')}
-                  className="px-4 py-3 border border-white/20 text-white/60 hover:text-white hover:border-white/40 text-sm transition-colors"
+                  className="px-4 py-3 border border-white/20 text-white/60 hover:text-white hover:border-white/40 text-sm transition-colors active:scale-95"
                 >
                   ◀ BACK
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="flex-1 px-4 py-3 bg-green-900 border-2 border-green-500 text-green-200 hover:bg-green-800 disabled:opacity-40 disabled:cursor-not-allowed text-sm transition-colors font-bold tracking-wider"
+                  className="flex-1 px-4 py-4 bg-green-900 border-2 border-green-500 text-green-200 hover:bg-green-800 disabled:opacity-40 disabled:cursor-not-allowed text-base transition-colors font-bold tracking-wider active:scale-95"
                 >
                   {submitting ? '▶ TRANSMITTING...' : '▶▶ TRANSMIT ▶▶'}
                 </button>
@@ -325,14 +325,14 @@ export function SubmitPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => { setMode('choose'); setFile(null); setPreview(null); }}
-                  className="px-4 py-3 border border-white/20 text-white/60 hover:text-white hover:border-white/40 text-sm transition-colors"
+                  className="px-4 py-3 border border-white/20 text-white/60 hover:text-white hover:border-white/40 text-sm transition-colors active:scale-95"
                 >
                   ◀ BACK
                 </button>
                 <button
                   onClick={handleSubmit}
                   disabled={submitting || !file}
-                  className="flex-1 px-4 py-3 bg-green-900 border-2 border-green-500 text-green-200 hover:bg-green-800 disabled:opacity-40 disabled:cursor-not-allowed text-sm transition-colors font-bold tracking-wider"
+                  className="flex-1 px-4 py-4 bg-green-900 border-2 border-green-500 text-green-200 hover:bg-green-800 disabled:opacity-40 disabled:cursor-not-allowed text-base transition-colors font-bold tracking-wider active:scale-95"
                 >
                   {submitting ? '▶ BEAMING...' : '▶▶ BEAM IT ▶▶'}
                 </button>
