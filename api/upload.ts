@@ -1,5 +1,11 @@
-import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
+import { put } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -7,25 +13,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const body = req.body as HandleUploadBody;
+    const filename = req.headers['x-filename'] as string;
+    const contentType = (req.headers['content-type'] as string) || 'image/jpeg';
 
-    const jsonResponse = await handleUpload({
-      body,
-      request: req,
-      onBeforeGenerateToken: async (pathname) => {
-        return {
-          maximumSizeInBytes: 50 * 1024 * 1024, // 50MB max
-        };
-      },
-      onUploadCompleted: async ({ blob }) => {
-        // Could store metadata here if needed
-      },
+    if (!filename) {
+      return res.status(400).json({ error: 'Missing x-filename header' });
+    }
+
+    const blob = await put(`danfest/${Date.now()}-${filename}`, req, {
+      access: 'public',
+      contentType,
     });
 
-    return res.status(200).json(jsonResponse);
+    return res.status(200).json({ url: blob.url });
   } catch (error) {
     const msg = (error as Error).message;
     console.error('Upload error:', msg);
-    return res.status(400).json({ error: msg });
+    return res.status(500).json({ error: msg });
   }
 }

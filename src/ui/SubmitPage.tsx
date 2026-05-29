@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from 'react';
-import { upload } from '@vercel/blob/client';
 
 interface Submission {
   id: string;
@@ -103,20 +102,25 @@ export function SubmitPage() {
 
         if (!res.ok) throw new Error('Failed to submit');
       } else if (mode === 'photo' && file) {
-        // Ensure all files have a content type Vercel Blob accepts
-        // Chrome doesn't assign MIME types to HEIC/HEIF; Vercel Blob rejects image/heic
-        let uploadFile: File | Blob = file;
+        // Determine content type (Chrome doesn't assign MIME to HEIC/HEIF)
+        let contentType = file.type;
         const ext = file.name.split('.').pop()?.toLowerCase();
-        if (!file.type || file.type === 'application/octet-stream' || ext === 'heic' || ext === 'heif') {
-          // Map to image/jpeg — Blob stores raw bytes regardless
-          uploadFile = new File([file], file.name, { type: 'image/jpeg' });
+        if (!contentType || contentType === 'application/octet-stream' || ext === 'heic' || ext === 'heif') {
+          contentType = 'image/jpeg';
         }
 
-        // Upload file directly to Vercel Blob via client upload (no body size limit)
-        const blob = await upload(`danfest/${Date.now()}-${file.name}`, uploadFile, {
-          access: 'public',
-          handleUploadUrl: '/api/upload',
+        // Upload file directly to server which streams to Vercel Blob
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'content-type': contentType,
+            'x-filename': file.name,
+          },
+          body: file,
         });
+
+        if (!uploadRes.ok) throw new Error('Failed to upload file');
+        const { url } = await uploadRes.json();
 
         const type = file.type.startsWith('video/') ? 'video' : 'photo';
         const res = await fetch('/api/submissions', {
@@ -124,7 +128,7 @@ export function SubmitPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             type,
-            content: blob.url,
+            content: url,
             name: name.trim(),
           }),
         });
