@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { upload } from '@vercel/blob/client';
 
 interface Submission {
   id: string;
@@ -102,22 +103,19 @@ export function SubmitPage() {
 
         if (!res.ok) throw new Error('Failed to submit');
       } else if (mode === 'photo' && file) {
-        // Upload file to Vercel Blob, then create submission with the blob URL
-        const type = file.type.startsWith('video/') ? 'video' : 'photo';
-        const uploadRes = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
-          method: 'POST',
-          body: file,
+        // Upload file directly to Vercel Blob via client upload (no body size limit)
+        const blob = await upload(`danfest/${Date.now()}-${file.name}`, file, {
+          access: 'public',
+          handleUploadUrl: '/api/upload',
         });
 
-        if (!uploadRes.ok) throw new Error('Failed to upload file');
-        const { url } = await uploadRes.json();
-
+        const type = file.type.startsWith('video/') ? 'video' : 'photo';
         const res = await fetch('/api/submissions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             type,
-            content: url,
+            content: blob.url,
             name: name.trim(),
           }),
         });

@@ -1,26 +1,31 @@
-import { put } from '@vercel/blob';
+import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const filename = req.query.filename as string;
-  if (!filename) {
-    return res.status(400).json({ error: 'Missing filename query parameter' });
+  try {
+    const body = req.body as HandleUploadBody;
+
+    const jsonResponse = await handleUpload({
+      body,
+      request: req,
+      onBeforeGenerateToken: async (pathname) => {
+        // Validate the upload
+        return {
+          allowedContentTypes: ['image/*', 'video/*', 'image/heic', 'image/heif'],
+          maximumSizeInBytes: 50 * 1024 * 1024, // 50MB max
+        };
+      },
+      onUploadCompleted: async ({ blob }) => {
+        // Could store metadata here if needed
+      },
+    });
+
+    return res.status(200).json(jsonResponse);
+  } catch (error) {
+    return res.status(400).json({ error: (error as Error).message });
   }
-
-  // Stream the body directly to Vercel Blob
-  const blob = await put(`danfest/${Date.now()}-${filename}`, req, {
-    access: 'public',
-  });
-
-  return res.status(200).json({ url: blob.url });
 }
