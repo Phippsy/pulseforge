@@ -1,5 +1,11 @@
-import { useStore } from '../store';
+import { useStore, type Genre } from '../store';
 import { palettes } from '../visual/palettes';
+
+const GENRES: { id: Genre; label: string }[] = [
+  { id: 'deep-house', label: 'Deep House' },
+  { id: 'future-disco', label: 'Future Disco' },
+  { id: 'peak-techno', label: 'Peak Techno' },
+];
 
 export function TransportBar() {
   const isBlackout = useStore((s) => s.isBlackout);
@@ -10,6 +16,7 @@ export function TransportBar() {
   const fullscreenMode = useStore((s) => s.fullscreenMode);
   const paletteCycling = useStore((s) => s.paletteCycling);
   const paletteIndex = useStore((s) => s.paletteIndex);
+  const currentGenre = useStore((s) => s.currentGenre);
   const toggleBlackout = useStore((s) => s.toggleBlackout);
   const toggleFreeze = useStore((s) => s.toggleFreeze);
   const toggleAutoProgress = useStore((s) => s.toggleAutoProgress);
@@ -18,6 +25,7 @@ export function TransportBar() {
   const togglePaletteCycling = useStore((s) => s.togglePaletteCycling);
   const nextPalette = useStore((s) => s.nextPalette);
   const setIntensity = useStore((s) => s.setIntensity);
+  const setGenre = useStore((s) => s.setGenre);
 
   const currentPalette = palettes[paletteIndex % palettes.length];
 
@@ -99,6 +107,21 @@ export function TransportBar() {
           <div key={i} className="w-2 h-2 border border-white/20" style={{ backgroundColor: c, boxShadow: `0 0 4px ${c}40` }} />
         ))}
       </div>
+
+      <div className="w-px h-4 bg-cyan-500/20 mx-1" />
+
+      <span className="text-cyan-500/50 text-[10px] tracking-wider">SET</span>
+      {GENRES.map((g) => (
+        <button
+          key={g.id}
+          onClick={() => setGenre(g.id)}
+          className={`px-2 py-1.5 font-bold tracking-wider uppercase text-[10px] transition-all duration-200 border ${
+            currentGenre === g.id ? 'bg-cyan-900/80 border-cyan-500/50 text-cyan-200 shadow-[0_0_10px_rgba(6,182,212,0.3)]' : 'border-white/10 text-white/50 hover:bg-white/10 hover:text-white/80'
+          }`}
+        >
+          {g.label}
+        </button>
+      ))}
     </div>
   );
 }
