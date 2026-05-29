@@ -1,5 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getRedis } from './_lib/redis.js';
+import { Redis } from '@upstash/redis';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
 
 const ADMIN_MESSAGES_KEY = 'danfest:admin-messages';
 
@@ -14,7 +19,6 @@ interface AdminMessage {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const redis = getRedis();
 
   // Route: /api/admin-messages/[id] — extract id from URL
   const url = req.url || '';

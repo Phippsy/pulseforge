@@ -1,9 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getRedis, SUBMISSIONS_KEY } from './_lib/redis.js';
+import { Redis } from '@upstash/redis';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+const SUBMISSIONS_KEY = 'danfest:submissions';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const redis = getRedis();
-
   if (req.method === 'GET') {
     // Fetch all submissions, optionally filter unshown
     const all = await redis.lrange(SUBMISSIONS_KEY, 0, -1);

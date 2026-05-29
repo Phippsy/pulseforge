@@ -1,5 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getRedis, SUBMISSIONS_KEY } from '../_lib/redis.js';
+import { Redis } from '@upstash/redis';
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+const SUBMISSIONS_KEY = 'danfest:submissions';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -11,7 +18,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Missing submission id' });
   }
 
-  const redis = getRedis();
   const all = await redis.lrange(SUBMISSIONS_KEY, 0, -1);
 
   // Find and update the submission
