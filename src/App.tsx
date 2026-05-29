@@ -184,9 +184,9 @@ export function App() {
         autoProgressTimerRef.current = now;
       }
 
-      // Auto-progress with shuffle - every 90 seconds, pick next from shuffled order
+      // Auto-progress with shuffle - every ~112 seconds, pick next from shuffled order
       if (state.autoProgress && !state.randomMode && !pm.transitioning) {
-        const phaseInterval = 90; // Fixed 90 seconds between phase changes
+        const phaseInterval = 112; // ~25% longer phases for better immersion
         if (now - autoProgressTimerRef.current > phaseInterval) {
           // Initialize or reshuffle if needed
           if (shuffledPhasesRef.current.length !== phaseCount) {
