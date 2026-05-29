@@ -109,6 +109,7 @@ export function App() {
       // Audio analysis
       let signals: ControlSignals = state.controlSignals;
       if (analyzerRef.current && !state.isFreeze) {
+        analyzerRef.current.sensitivity = state.sensitivity;
         const features = analyzerRef.current.analyze(now);
         signals = signalProcessorRef.current.update(features, now);
         useStore.getState().updateControlSignals(signals);

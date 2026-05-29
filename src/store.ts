@@ -33,6 +33,7 @@ export interface AppState {
   isBlackout: boolean;
   isFreeze: boolean;
   intensity: number;
+  sensitivity: number; // audio gain multiplier (1 = default, higher = more reactive)
 
   showUI: boolean;
   fps: number;
@@ -63,6 +64,7 @@ export interface AppState {
   toggleAutoProgress: () => void;
   toggleRandomMode: () => void;
   setIntensity: (value: number) => void;
+  setSensitivity: (value: number) => void;
   toggleUI: () => void;
   toggleFullscreen: () => void;
   setPaletteIndex: (index: number) => void;
@@ -105,6 +107,7 @@ export const useStore = create<AppState>((set, get) => ({
   isBlackout: false,
   isFreeze: false,
   intensity: 1.0,
+  sensitivity: 2.0,
 
   showUI: true,
   fps: 0,
@@ -138,6 +141,7 @@ export const useStore = create<AppState>((set, get) => ({
   toggleAutoProgress: () => set((s) => ({ autoProgress: !s.autoProgress })),
   toggleRandomMode: () => set((s) => ({ randomMode: !s.randomMode })),
   setIntensity: (value) => set({ intensity: Math.max(0, Math.min(1, value)) }),
+  setSensitivity: (value) => set({ sensitivity: Math.max(0.5, Math.min(5, value)) }),
   toggleUI: () => set((s) => ({ showUI: !s.showUI })),
   toggleFullscreen: () => {
     const next = !get().fullscreenMode;

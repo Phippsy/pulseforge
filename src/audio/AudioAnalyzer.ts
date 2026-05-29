@@ -23,6 +23,7 @@ export class AudioAnalyzer {
   private onsetTimes: number[] = [];
   private lastOnsetTime = 0;
   private rollingMax = 1;
+  sensitivity = 2.0; // gain multiplier, can be updated externally
 
   constructor(analyser: AnalyserNode, sampleRate: number) {
     this.analyser = analyser;
@@ -70,7 +71,7 @@ export class AudioAnalyzer {
 
     // Normalise against rolling max
     const rawEnergy = sub + bass + lowMid + mid + highMid + treble;
-    this.rollingMax = Math.max(this.rollingMax * 0.999, rawEnergy);
+    this.rollingMax = Math.max(this.rollingMax * 0.995, rawEnergy); // faster decay
     const normFactor = this.rollingMax > 0 ? 1 / this.rollingMax : 1;
 
     // Spectral flux (onset detection)
@@ -121,7 +122,7 @@ export class AudioAnalyzer {
     const beatInterval = 60 / bpm;
     const beatPhase = ((time % beatInterval) / beatInterval);
 
-    const norm = (v: number) => Math.min(1, v * normFactor * 6);
+    const norm = (v: number) => Math.min(1, v * normFactor * 6 * this.sensitivity);
 
     return {
       sub: norm(sub),
@@ -130,7 +131,7 @@ export class AudioAnalyzer {
       mid: norm(mid),
       highMid: norm(highMid),
       treble: norm(treble),
-      energy: Math.min(1, rms * 10),
+      energy: Math.min(1, rms * 10 * this.sensitivity),
       spectralFlux: flux,
       onset,
       onsetStrength: flux / Math.max(onsetThreshold, 0.001),
