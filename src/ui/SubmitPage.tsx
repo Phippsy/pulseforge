@@ -293,16 +293,15 @@ export function SubmitPage() {
                   ref={fileRef}
                   type="file"
                   accept="image/*,video/*"
-                  capture="environment"
                   onChange={handleFileChange}
                   className="hidden"
                 />
                 {preview ? (
                   <div className="relative border-2 border-cyan-700">
                     {file?.type.startsWith('video/') ? (
-                      <video src={preview} className="w-full" controls />
+                      <video src={preview} className="w-full max-h-[30vh] object-contain" controls />
                     ) : (
-                      <img src={preview} alt="Preview" className="w-full" />
+                      <img src={preview} alt="Preview" className="w-full max-h-[30vh] object-contain" />
                     )}
                     <button
                       onClick={() => { setFile(null); setPreview(null); }}
