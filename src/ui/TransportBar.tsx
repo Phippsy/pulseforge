@@ -2,16 +2,12 @@ import { useStore } from '../store';
 import { palettes } from '../visual/palettes';
 
 export function TransportBar() {
-  const isBlackout = useStore((s) => s.isBlackout);
-  const isFreeze = useStore((s) => s.isFreeze);
   const autoProgress = useStore((s) => s.autoProgress);
   const randomMode = useStore((s) => s.randomMode);
   const intensity = useStore((s) => s.intensity);
   const fullscreenMode = useStore((s) => s.fullscreenMode);
   const paletteCycling = useStore((s) => s.paletteCycling);
   const paletteIndex = useStore((s) => s.paletteIndex);
-  const toggleBlackout = useStore((s) => s.toggleBlackout);
-  const toggleFreeze = useStore((s) => s.toggleFreeze);
   const toggleAutoProgress = useStore((s) => s.toggleAutoProgress);
   const toggleRandomMode = useStore((s) => s.toggleRandomMode);
   const toggleFullscreen = useStore((s) => s.toggleFullscreen);
@@ -23,24 +19,6 @@ export function TransportBar() {
 
   return (
     <div className="pointer-events-auto bg-black/60 border border-cyan-500/20 backdrop-blur-md px-4 py-2.5 flex items-center gap-3 text-xs font-mono shadow-[0_0_20px_rgba(0,0,0,0.6)]">
-      <button
-        onClick={toggleBlackout}
-        title="Kill all visuals (B)"
-        className={`px-3 py-2 font-bold tracking-wider uppercase text-[11px] transition-all duration-200 border ${
-          isBlackout ? 'bg-red-900/80 border-red-500/50 text-red-200 shadow-[0_0_10px_rgba(239,68,68,0.3)]' : 'border-white/20 text-white/60 hover:bg-white/10 hover:text-white/90'
-        }`}
-      >
-        Blackout
-      </button>
-      <button
-        onClick={toggleFreeze}
-        title="Freeze current frame (Z)"
-        className={`px-3 py-2 font-bold tracking-wider uppercase text-[11px] transition-all duration-200 border ${
-          isFreeze ? 'bg-blue-900/80 border-blue-500/50 text-blue-200 shadow-[0_0_10px_rgba(59,130,246,0.3)]' : 'border-white/20 text-white/60 hover:bg-white/10 hover:text-white/90'
-        }`}
-      >
-        Freeze
-      </button>
       <button
         onClick={toggleAutoProgress}
         title="Auto-cycle phases (A)"

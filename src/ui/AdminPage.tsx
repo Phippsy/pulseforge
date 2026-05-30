@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TEXT_EFFECTS, DynamicTextDisplay, type TextEffect } from './TextEffects';
+import { palettes, type ColorPalette } from '../visual/palettes';
 
 interface AdminMessage {
   id: string;
@@ -21,7 +22,7 @@ interface UserSubmission {
   paused: boolean;
 }
 
-type AdminTab = 'system' | 'submissions' | 'settings';
+type AdminTab = 'system' | 'submissions' | 'settings' | 'palettes';
 
 export function AdminPage() {
   const [messages, setMessages] = useState<AdminMessage[]>([]);
@@ -35,6 +36,11 @@ export function AdminPage() {
   const [editEffect, setEditEffect] = useState<TextEffect>('impact');
   const [previewEffect, setPreviewEffect] = useState<{ text: string; effect: TextEffect } | null>(null);
   const [displayFrequency, setDisplayFrequency] = useState<number>(8); // seconds between items
+  const [paletteOverrides, setPaletteOverrides] = useState<Record<string, Partial<ColorPalette>>>(() => {
+    try { return JSON.parse(localStorage.getItem('paletteOverrides') || '{}'); } catch { return {}; }
+  });
+  const [editingPaletteId, setEditingPaletteId] = useState<string | null>(null);
+  const [paletteFilter, setPaletteFilter] = useState('');
 
   const fetchMessages = async () => {
     try {
@@ -129,7 +135,7 @@ export function AdminPage() {
 
       {/* Tabs */}
       <div className="flex border-b border-cyan-500/20">
-        {(['system', 'submissions', 'settings'] as AdminTab[]).map(tab => (
+        {(['system', 'submissions', 'palettes', 'settings'] as AdminTab[]).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -139,7 +145,7 @@ export function AdminPage() {
                 : 'border-transparent text-white/40 hover:text-white/60'
             }`}
           >
-            {tab === 'system' ? 'SYSTEM' : tab === 'submissions' ? 'USER' : 'SETTINGS'}
+            {tab === 'system' ? 'SYSTEM' : tab === 'submissions' ? 'USER' : tab === 'palettes' ? 'PALETTES' : 'SETTINGS'}
           </button>
         ))}
       </div>
@@ -450,6 +456,162 @@ export function AdminPage() {
                 className="w-full accent-cyan-400"
               />
               <p className="text-white/30 text-[10px]">How quickly new submissions appear. Lower = more frequent.</p>
+            </div>
+          </>
+        )}
+
+        {/* PALETTES TAB */}
+        {activeTab === 'palettes' && (
+          <>
+            <div className="mb-6">
+              <h1 className="text-xl text-cyan-300 tracking-wider mb-1">▶ PALETTES</h1>
+              <p className="text-white/40 text-xs">{palettes.length} colour palettes — click to edit colours, names and backgrounds</p>
+            </div>
+
+            <input
+              type="text"
+              value={paletteFilter}
+              onChange={(e) => setPaletteFilter(e.target.value)}
+              placeholder="Filter palettes..."
+              className="w-full mb-4 px-3 py-2 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 text-xs focus:outline-none focus:border-cyan-400 tracking-wide"
+            />
+
+            {Object.keys(paletteOverrides).length > 0 && (
+              <button
+                onClick={() => { setPaletteOverrides({}); localStorage.removeItem('paletteOverrides'); }}
+                className="mb-4 px-3 py-2 border border-orange-500/40 text-orange-400 hover:bg-orange-900/20 text-[10px] font-bold tracking-wider"
+              >
+                RESET ALL OVERRIDES ({Object.keys(paletteOverrides).length})
+              </button>
+            )}
+
+            <div className="space-y-2">
+              {palettes
+                .filter(pal => !paletteFilter || pal.name.toLowerCase().includes(paletteFilter.toLowerCase()) || pal.id.toLowerCase().includes(paletteFilter.toLowerCase()))
+                .map((pal, idx) => {
+                  const override = paletteOverrides[pal.id] || {};
+                  const effectivePal = { ...pal, ...override, colors: override.colors || pal.colors };
+                  const isEditing = editingPaletteId === pal.id;
+                  const hasOverride = !!paletteOverrides[pal.id];
+
+                  return (
+                    <div
+                      key={pal.id}
+                      className={`border p-3 transition-colors ${
+                        isEditing ? 'border-cyan-400/50 bg-cyan-950/20' : hasOverride ? 'border-yellow-500/30 bg-yellow-950/10' : 'border-cyan-500/20 bg-black/40'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-white/30 text-[10px] w-6 text-right">{idx + 1}</span>
+                        {/* Color swatches */}
+                        <div className="flex gap-1">
+                          {effectivePal.colors.map((c: string, ci: number) => (
+                            <div
+                              key={ci}
+                              className="w-6 h-6 border border-white/20 rounded-sm cursor-pointer hover:scale-110 transition-transform"
+                              style={{ backgroundColor: c, boxShadow: `0 0 8px ${c}40` }}
+                              title={c}
+                            />
+                          ))}
+                          <div
+                            className="w-6 h-6 border border-white/10 rounded-sm"
+                            style={{ backgroundColor: effectivePal.backgroundColor }}
+                            title={`BG: ${effectivePal.backgroundColor}`}
+                          />
+                        </div>
+                        <span className={`text-xs tracking-wide flex-1 ${hasOverride ? 'text-yellow-300' : 'text-cyan-100'}`}>
+                          {effectivePal.name}
+                          {hasOverride && <span className="text-yellow-500/60 text-[9px] ml-2">EDITED</span>}
+                        </span>
+                        <button
+                          onClick={() => setEditingPaletteId(isEditing ? null : pal.id)}
+                          className={`px-2 py-1 text-[10px] font-bold tracking-wider border transition-colors ${
+                            isEditing ? 'border-cyan-400 text-cyan-300' : 'border-white/20 text-white/40 hover:text-white/70'
+                          }`}
+                        >
+                          {isEditing ? 'CLOSE' : 'EDIT'}
+                        </button>
+                        {hasOverride && (
+                          <button
+                            onClick={() => {
+                              const next = { ...paletteOverrides };
+                              delete next[pal.id];
+                              setPaletteOverrides(next);
+                              localStorage.setItem('paletteOverrides', JSON.stringify(next));
+                            }}
+                            className="px-2 py-1 text-[10px] font-bold tracking-wider border border-red-500/30 text-red-400 hover:bg-red-900/20"
+                          >
+                            RESET
+                          </button>
+                        )}
+                      </div>
+
+                      {isEditing && (
+                        <div className="mt-3 pt-3 border-t border-cyan-500/10 space-y-3">
+                          {/* Name */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-white/40 text-[10px] tracking-wider w-12">NAME</span>
+                            <input
+                              type="text"
+                              defaultValue={effectivePal.name}
+                              onBlur={(e) => {
+                                const val = e.target.value.trim();
+                                if (val && val !== pal.name) {
+                                  const next = { ...paletteOverrides, [pal.id]: { ...override, name: val } };
+                                  setPaletteOverrides(next);
+                                  localStorage.setItem('paletteOverrides', JSON.stringify(next));
+                                }
+                              }}
+                              className="flex-1 px-2 py-1 bg-black/50 border border-cyan-500/30 text-cyan-100 text-xs focus:outline-none focus:border-cyan-400"
+                            />
+                          </div>
+                          {/* Colors */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-white/40 text-[10px] tracking-wider w-12">COLS</span>
+                            {effectivePal.colors.map((c: string, ci: number) => (
+                              <div key={ci} className="flex items-center gap-1">
+                                <input
+                                  type="color"
+                                  value={c}
+                                  onChange={(e) => {
+                                    const newColors = [...effectivePal.colors] as [string, string, string, string];
+                                    newColors[ci] = e.target.value;
+                                    const next = { ...paletteOverrides, [pal.id]: { ...override, colors: newColors } };
+                                    setPaletteOverrides(next);
+                                    localStorage.setItem('paletteOverrides', JSON.stringify(next));
+                                  }}
+                                  className="w-8 h-8 border-0 cursor-pointer bg-transparent"
+                                />
+                                <span className="text-white/30 text-[9px] hidden sm:inline">{c}</span>
+                              </div>
+                            ))}
+                          </div>
+                          {/* Background */}
+                          <div className="flex items-center gap-2">
+                            <span className="text-white/40 text-[10px] tracking-wider w-12">BG</span>
+                            <input
+                              type="color"
+                              value={effectivePal.backgroundColor}
+                              onChange={(e) => {
+                                const next = { ...paletteOverrides, [pal.id]: { ...override, backgroundColor: e.target.value } };
+                                setPaletteOverrides(next);
+                                localStorage.setItem('paletteOverrides', JSON.stringify(next));
+                              }}
+                              className="w-8 h-8 border-0 cursor-pointer bg-transparent"
+                            />
+                            <span className="text-white/30 text-[9px]">{effectivePal.backgroundColor}</span>
+                          </div>
+                          {/* Preview strip */}
+                          <div className="flex h-4 rounded overflow-hidden border border-white/10">
+                            {effectivePal.colors.map((c: string, ci: number) => (
+                              <div key={ci} className="flex-1" style={{ backgroundColor: c }} />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           </>
         )}

@@ -19,8 +19,6 @@ const EFFECT_LABELS: Record<string, string> = {
 };
 
 export function TopBar() {
-  const isBlackout = useStore((s) => s.isBlackout);
-  const isFreeze = useStore((s) => s.isFreeze);
   const fps = useStore((s) => s.fps);
   const activeEffectName = useStore((s) => s.activeEffectName);
   const randomMode = useStore((s) => s.randomMode);
@@ -41,10 +39,6 @@ export function TopBar() {
 
       {/* Spacer */}
       <div className="flex-1" />
-
-      {/* Status alerts */}
-      {isBlackout && <span className="bg-red-900/80 border border-red-500/50 px-3 py-1 text-[10px] font-bold tracking-widest uppercase animate-pulse text-red-200">BLACKOUT</span>}
-      {isFreeze && !isBlackout && <span className="bg-blue-900/80 border border-blue-500/50 px-3 py-1 text-[10px] font-bold tracking-widest uppercase text-blue-200">FREEZE</span>}
 
       {/* FPS */}
       <span className={`text-[10px] tracking-wider ${fps < 30 ? 'text-red-400' : fps < 50 ? 'text-yellow-400/70' : 'text-white/30'}`}>

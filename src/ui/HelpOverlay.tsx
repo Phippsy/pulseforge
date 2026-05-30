@@ -2,9 +2,7 @@ import { useStore } from '../store';
 
 const shortcuts = [
   { key: 'H', desc: 'Toggle UI visibility' },
-  { key: 'B', desc: 'Blackout (kill visuals)' },
   { key: 'F', desc: 'Fullscreen mode' },
-  { key: 'Z', desc: 'Freeze current frame' },
   { key: 'R', desc: 'Toggle random mode' },
   { key: 'A', desc: 'Toggle auto-progress' },
   { key: 'P', desc: 'Next palette' },
