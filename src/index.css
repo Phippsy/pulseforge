@@ -9,8 +9,12 @@
 html, body, #root {
   width: 100%;
   height: 100%;
-  overflow: hidden;
   background: #000;
+}
+
+/* Only lock scrolling on the main visualiser page */
+html.no-scroll, html.no-scroll body, html.no-scroll #root {
+  overflow: hidden;
 }
 
 /* Text animation keyframes */

@@ -10,6 +10,11 @@ const path = window.location.pathname;
 const isSubmitPage = path === '/submit' || path.startsWith('/submit/');
 const isAdminPage = path === '/admin' || path.startsWith('/admin/');
 
+// Lock scrolling only on the main visualiser page
+if (!isSubmitPage && !isAdminPage) {
+  document.documentElement.classList.add('no-scroll');
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     {isSubmitPage ? <SubmitPage /> : isAdminPage ? <AdminPage /> : <App />}

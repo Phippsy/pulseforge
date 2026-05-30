@@ -24,213 +24,247 @@ uniform float uAspect;
 
 #define PI 3.14159265
 
-// Pac-Man shape: circle with mouth
+/* ── Maze layout ──
+   28x31 grid inspired by the classic Pac-Man maze.
+   1 = wall, 0 = corridor. Uses symmetry.              */
+
+float mazeWall(vec2 cell) {
+  if (cell.x < 0.0 || cell.x > 27.0 || cell.y < 0.0 || cell.y > 30.0) return 1.0;
+  int cx = int(cell.x);
+  int cy = int(cell.y);
+  int mx = cx;
+  if (mx > 13) mx = 27 - mx;
+  int my = cy;
+  if (my > 15) my = 30 - my;
+  if (my == 0 || my == 15) return 1.0;
+  if (mx == 0) return 1.0;
+  if (my == 1) return 0.0;
+  if (my == 2 || my == 3) {
+    if (mx >= 2 && mx <= 4) return 1.0;
+    if (mx >= 6 && mx <= 7) return 1.0;
+    if (mx >= 9 && mx <= 13) return 1.0;
+    return 0.0;
+  }
+  if (my == 4) return 0.0;
+  if (my == 5) {
+    if (mx >= 2 && mx <= 4) return 1.0;
+    if (mx == 6) return 1.0;
+    if (mx >= 8 && mx <= 10) return 1.0;
+    if (mx >= 12 && mx <= 13) return 1.0;
+    return 0.0;
+  }
+  if (my == 6) {
+    if (mx == 6) return 1.0;
+    if (mx >= 9 && mx <= 10) return 1.0;
+    if (mx >= 12 && mx <= 13) return 1.0;
+    return 0.0;
+  }
+  if (my == 7) {
+    if (mx >= 1 && mx <= 4) return 1.0;
+    if (mx == 6) return 1.0;
+    if (mx == 8) return 1.0;
+    return 0.0;
+  }
+  if (my == 8 || my == 9) {
+    if (my == 8 && mx >= 1 && mx <= 4) return 1.0;
+    if (mx == 6 && my == 9) return 1.0;
+    if (mx == 8 && my == 9) return 1.0;
+    if (mx >= 9 && mx <= 13) return (mx >= 10 && mx <= 12) ? 0.0 : 1.0;
+    return 0.0;
+  }
+  if (my == 10) {
+    if (mx == 6) return 1.0;
+    if (mx >= 9 && mx <= 13) return 1.0;
+    return 0.0;
+  }
+  if (my == 11) {
+    if (mx >= 2 && mx <= 4) return 1.0;
+    if (mx == 6) return 1.0;
+    if (mx >= 8 && mx <= 10) return 1.0;
+    if (mx >= 12 && mx <= 13) return 1.0;
+    return 0.0;
+  }
+  if (my == 12) return 0.0;
+  if (my == 13) {
+    if (mx >= 2 && mx <= 7) return 1.0;
+    if (mx >= 9 && mx <= 13) return 1.0;
+    return 0.0;
+  }
+  if (my == 14) return 0.0;
+  return 0.0;
+}
+
 float pacman(vec2 p, float radius, float mouthAngle) {
   float d = length(p);
   float angle = atan(p.y, p.x);
   float mouth = smoothstep(mouthAngle - 0.05, mouthAngle + 0.05, abs(angle));
-  return smoothstep(radius + 0.005, radius - 0.005, d) * mouth;
+  return smoothstep(radius + 0.004, radius - 0.004, d) * mouth;
 }
 
-// Ghost shape
 float ghost(vec2 p, float size) {
-  // Body (rounded top rectangle)
-  float body = 0.0;
   vec2 top = p - vec2(0.0, size * 0.1);
-  float dome = length(top);
-  body = smoothstep(size + 0.003, size - 0.003, dome);
-  
-  // Skirt bottom (wavy)
+  float body = smoothstep(size + 0.003, size - 0.003, length(top));
   if (p.y < -size * 0.3) {
-    float skirtX = p.x / size;
-    float wave = sin(skirtX * PI * 3.0) * size * 0.15;
-    float bottomEdge = -size * 0.9 + wave;
-    body *= smoothstep(bottomEdge - 0.003, bottomEdge + 0.003, p.y);
+    float wave = sin(p.x / size * PI * 3.0) * size * 0.15;
+    body *= smoothstep(-size * 0.9 + wave - 0.003, -size * 0.9 + wave + 0.003, p.y);
   }
-  
-  // Eyes
-  float eyeL = smoothstep(size * 0.22, size * 0.18, length(p - vec2(-size * 0.3, size * 0.15)));
-  float eyeR = smoothstep(size * 0.22, size * 0.18, length(p - vec2(size * 0.3, size * 0.15)));
-  float pupilL = smoothstep(size * 0.12, size * 0.08, length(p - vec2(-size * 0.25, size * 0.12)));
-  float pupilR = smoothstep(size * 0.12, size * 0.08, length(p - vec2(size * 0.25, size * 0.12)));
-  
   return body;
 }
 
 float ghostEyes(vec2 p, float size) {
-  float eyeL = smoothstep(size * 0.22, size * 0.18, length(p - vec2(-size * 0.3, size * 0.15)));
-  float eyeR = smoothstep(size * 0.22, size * 0.18, length(p - vec2(size * 0.3, size * 0.15)));
-  return eyeL + eyeR;
+  return smoothstep(size * 0.22, size * 0.18, length(p - vec2(-size * 0.3, size * 0.15)))
+       + smoothstep(size * 0.22, size * 0.18, length(p - vec2(size * 0.3, size * 0.15)));
 }
 
-float ghostPupils(vec2 p, float size) {
-  float pupilL = smoothstep(size * 0.12, size * 0.08, length(p - vec2(-size * 0.25, size * 0.12)));
-  float pupilR = smoothstep(size * 0.12, size * 0.08, length(p - vec2(size * 0.25, size * 0.12)));
-  return pupilL + pupilR;
+float ghostPupils(vec2 p, float size, vec2 look) {
+  vec2 off = look * size * 0.08;
+  return smoothstep(size * 0.12, size * 0.08, length(p - vec2(-size * 0.25, size * 0.12) - off))
+       + smoothstep(size * 0.12, size * 0.08, length(p - vec2(size * 0.25, size * 0.12) - off));
 }
 
-// Pellet dot
 float pelletDot(vec2 p, float radius) {
   return smoothstep(radius + 0.003, radius - 0.003, length(p));
 }
 
-// Power pellet (larger, pulsing)
 float powerPellet(vec2 p, float radius, float time) {
-  float pulse = 0.8 + 0.2 * sin(time * 6.0);
+  float pulse = 0.7 + 0.3 * sin(time * 5.0);
   return smoothstep(radius * pulse + 0.003, radius * pulse - 0.003, length(p));
 }
 
 void main() {
   vec2 uv = vUv;
   vec2 p = (uv - 0.5) * vec2(uAspect, 1.0);
-  
-  vec3 col = vec3(0.0, 0.0, 0.02); // Dark blue-black background (classic arcade)
-  
-  // Maze walls (simplified grid pattern)
-  vec2 mazeUv = uv * 14.0;
-  vec2 mazeCell = floor(mazeUv);
-  vec2 mazeFrac = fract(mazeUv) - 0.5;
-  
-  // Create maze-like corridors
-  float mazeHash = fract(sin(dot(mazeCell, vec2(127.1, 311.7))) * 43758.5453);
-  float wallThick = 0.35;
-  float isWall = 0.0;
-  
-  // Horizontal walls
-  if (mazeHash > 0.6 && abs(mazeFrac.y) > wallThick) {
-    isWall = 1.0;
+  vec3 col = vec3(0.0, 0.0, 0.02);
+
+  // Map to maze grid (28x31)
+  float mazeScale = 1.05;
+  vec2 mazeOrigin = vec2(-0.5 * uAspect, -0.5) * mazeScale;
+  float cellSize = mazeScale / 31.0;
+  vec2 mazeP = (p - mazeOrigin) / cellSize;
+  vec2 mazeCell = floor(mazeP);
+  vec2 mazeFrac = fract(mazeP) - 0.5;
+
+  float isWall = mazeWall(mazeCell);
+  float wallR = mazeWall(mazeCell + vec2(1.0, 0.0));
+  float wallL = mazeWall(mazeCell + vec2(-1.0, 0.0));
+  float wallU = mazeWall(mazeCell + vec2(0.0, 1.0));
+  float wallD = mazeWall(mazeCell + vec2(0.0, -1.0));
+
+  col += vec3(0.0, 0.0, 0.08) * isWall;
+  float edgeBrt = 0.7 + 0.3 * uBassEnergy;
+  vec3 wCol = vec3(0.15, 0.3, 1.0) * edgeBrt;
+  if (isWall > 0.5) {
+    float et = 0.42;
+    if (wallR < 0.5) col += wCol * smoothstep(et, et + 0.08, mazeFrac.x);
+    if (wallL < 0.5) col += wCol * smoothstep(et, et + 0.08, -mazeFrac.x);
+    if (wallU < 0.5) col += wCol * smoothstep(et, et + 0.08, mazeFrac.y);
+    if (wallD < 0.5) col += wCol * smoothstep(et, et + 0.08, -mazeFrac.y);
   }
-  // Vertical walls
-  if (mazeHash < 0.4 && abs(mazeFrac.x) > wallThick) {
-    isWall = 1.0;
-  }
-  
-  // Border walls
-  if (uv.x < 0.03 || uv.x > 0.97 || uv.y < 0.03 || uv.y > 0.97) {
-    isWall = 1.0;
-  }
-  
-  // Maze wall color (deep blue with neon edge)
-  float wallEdge = smoothstep(0.4, 0.35, abs(mazeFrac.x)) * smoothstep(0.4, 0.35, abs(mazeFrac.y));
-  col += vec3(0.0, 0.0, 0.15) * isWall;
-  col += vec3(0.1, 0.2, 0.8) * isWall * wallEdge * 0.5;
-  
-  // Pac-Man position (moves in a circle, speed based on mid energy)
-  float pacSpeed = uTime * (1.5 + uMidEnergy * 2.0);
-  float pacRadius = 0.3 + uBassEnergy * 0.1;
-  vec2 pacPos = vec2(
-    cos(pacSpeed * 0.7) * pacRadius,
-    sin(pacSpeed * 1.1) * pacRadius * 0.6
-  );
-  
-  // Pac-Man facing direction
-  float pacAngle = atan(
-    cos(pacSpeed * 1.1 + 0.01) * pacRadius * 0.6 - sin(pacSpeed * 1.1) * pacRadius * 0.6,
-    -sin(pacSpeed * 0.7 + 0.01) * pacRadius - cos(pacSpeed * 0.7) * pacRadius
-  );
-  
-  // Rotate point to pac-man's local space
+
+  // Pac-Man grid-based movement
+  float moveSpeed = 4.0 + uMidEnergy * 3.0;
+  float t = uTime * moveSpeed;
+  float segLen = 5.0;
+  float totalPath = segLen * 8.0;
+  float pathT = mod(t, totalPath);
+  int seg = int(pathT / segLen);
+  float sf = mod(pathT, segLen);
+
+  vec2 pacGrid; vec2 pacDir;
+  if (seg == 0) { pacGrid = vec2(1.0 + sf * 2.0, 1.0); pacDir = vec2(1.0, 0.0); }
+  else if (seg == 1) { pacGrid = vec2(11.0, 1.0 + sf * 2.0); pacDir = vec2(0.0, 1.0); }
+  else if (seg == 2) { pacGrid = vec2(11.0 + sf * 2.0, 11.0); pacDir = vec2(1.0, 0.0); }
+  else if (seg == 3) { pacGrid = vec2(21.0, 11.0 + sf * 2.0); pacDir = vec2(0.0, 1.0); }
+  else if (seg == 4) { pacGrid = vec2(21.0 - sf * 2.0, 21.0); pacDir = vec2(-1.0, 0.0); }
+  else if (seg == 5) { pacGrid = vec2(11.0, 21.0 + sf * 1.6); pacDir = vec2(0.0, 1.0); }
+  else if (seg == 6) { pacGrid = vec2(11.0 - sf * 2.0, 29.0); pacDir = vec2(-1.0, 0.0); }
+  else { pacGrid = vec2(1.0, 29.0 - sf * 4.0); pacDir = vec2(0.0, -1.0); }
+  pacGrid = clamp(pacGrid, vec2(1.0), vec2(26.0, 29.0));
+
+  vec2 pacPos = mazeOrigin + pacGrid * cellSize + cellSize * 0.5;
   vec2 toPac = p - pacPos;
-  float cosA = cos(-pacAngle);
-  float sinA = sin(-pacAngle);
+  float pacAngle = atan(pacDir.y, pacDir.x);
+  float cosA = cos(-pacAngle); float sinA = sin(-pacAngle);
   vec2 pacLocal = vec2(toPac.x * cosA - toPac.y * sinA, toPac.x * sinA + toPac.y * cosA);
-  
-  // Mouth animation (chomps faster with more energy)
-  float chompSpeed = 8.0 + uMidEnergy * 12.0;
-  float mouthAngle = 0.15 + abs(sin(uTime * chompSpeed)) * 0.7;
-  
-  float pacShape = pacman(pacLocal, 0.06 + uBassEnergy * 0.01, mouthAngle);
-  col += vec3(1.0, 0.9, 0.0) * pacShape; // Classic yellow
-  
-  // Pac-Man eye
-  float eyeDist = length(pacLocal - vec2(0.01, 0.025));
-  col += vec3(0.0) * smoothstep(0.012, 0.008, eyeDist) * pacShape;
-  col -= vec3(1.0, 0.9, 0.0) * smoothstep(0.012, 0.008, eyeDist) * pacShape;
-  
-  // Ghosts (4 of them, different colours)
-  float scared = smoothstep(0.5, 0.8, uBassEnergy); // Ghosts turn blue on heavy bass
-  
+
+  float chompRate = 10.0 + uMidEnergy * 8.0;
+  float mouthAngle = 0.1 + abs(sin(uTime * chompRate)) * 0.65;
+  float pacSize = cellSize * 0.42;
+  float pacShape = pacman(pacLocal, pacSize, mouthAngle);
+  col += vec3(1.0, 0.92, 0.0) * pacShape;
+  vec2 eyeP = vec2(0.003, pacSize * 0.45);
+  col -= vec3(1.0, 0.92, 0.0) * smoothstep(pacSize * 0.2, pacSize * 0.12, length(pacLocal - eyeP)) * pacShape;
+
+  // Ghosts (grid-based with patrol routes)
+  float scared = smoothstep(0.5, 0.9, uBassEnergy);
   for (int i = 0; i < 4; i++) {
     float fi = float(i);
-    float ghostSpeed = uTime * (0.8 + fi * 0.2) + fi * PI * 0.5;
-    float ghostR = 0.25 + fi * 0.05;
-    vec2 ghostPos = vec2(
-      sin(ghostSpeed * 0.6 + fi * 1.5) * ghostR,
-      cos(ghostSpeed * 0.8 + fi * 2.0) * ghostR * 0.5
-    );
-    
-    vec2 toGhost = p - ghostPos;
-    float gSize = 0.05 + uHighEnergy * 0.005;
-    float gBody = ghost(toGhost, gSize);
-    
-    // Ghost colour (blue when scared)
-    vec3 baseGhostCol;
-    if (i == 0) baseGhostCol = vec3(1.0, 0.0, 0.0);
-    else if (i == 1) baseGhostCol = vec3(1.0, 0.7, 0.8);
-    else if (i == 2) baseGhostCol = vec3(0.0, 1.0, 1.0);
-    else baseGhostCol = vec3(1.0, 0.6, 0.0);
-    
-    vec3 gColor = mix(baseGhostCol, vec3(0.2, 0.2, 1.0), scared);
-    col += gColor * gBody;
-    
-    // White eyes
-    float eyes = ghostEyes(toGhost, gSize);
-    col += vec3(1.0) * eyes * gBody;
-    
-    // Dark pupils
-    float pupils = ghostPupils(toGhost, gSize);
-    col -= gColor * pupils * gBody;
-    col -= vec3(0.5) * pupils * gBody;
+    float gSpeed = uTime * (2.5 + fi * 0.3 + uHighEnergy * 1.5);
+    float gPathLen = 6.0 + fi * 0.8;
+    float gTotal = gPathLen * 4.0;
+    float gT = mod(gSpeed + fi * 7.0, gTotal);
+    int gSeg = int(gT / gPathLen);
+    float gF = mod(gT, gPathLen);
+    float bx = 5.0 + fi * 5.0;
+    float by = 4.0 + fi * 3.0;
+    vec2 gGrid; vec2 gDir;
+    if (gSeg == 0) { gGrid = vec2(bx + gF * 2.0, by); gDir = vec2(1.0, 0.0); }
+    else if (gSeg == 1) { gGrid = vec2(bx + gPathLen * 2.0, by + gF * 2.5); gDir = vec2(0.0, 1.0); }
+    else if (gSeg == 2) { gGrid = vec2(bx + gPathLen * 2.0 - gF * 2.0, by + gPathLen * 2.5); gDir = vec2(-1.0, 0.0); }
+    else { gGrid = vec2(bx, by + gPathLen * 2.5 - gF * 2.5); gDir = vec2(0.0, -1.0); }
+    gGrid = clamp(gGrid, vec2(1.0), vec2(26.0, 29.0));
+    vec2 gPos = mazeOrigin + gGrid * cellSize + cellSize * 0.5;
+    vec2 toG = p - gPos;
+    float gSize = cellSize * 0.4;
+    float gBody = ghost(toG, gSize);
+    vec3 gc;
+    if (i == 0) gc = vec3(1.0, 0.0, 0.0);
+    else if (i == 1) gc = vec3(1.0, 0.7, 0.85);
+    else if (i == 2) gc = vec3(0.0, 1.0, 1.0);
+    else gc = vec3(1.0, 0.6, 0.1);
+    gc = mix(gc, vec3(0.2, 0.2, 1.0), scared);
+    if (scared > 0.3) {
+      float sm = smoothstep(gSize * 0.06, gSize * 0.02, abs(toG.y + gSize * 0.15)) *
+                 step(abs(toG.x), gSize * 0.5) * (0.5 + 0.5 * sin(toG.x * 80.0));
+      gc = mix(gc, vec3(0.8, 0.8, 1.0), sm * gBody * scared);
+    }
+    col += gc * gBody;
+    col += vec3(1.0) * ghostEyes(toG, gSize) * gBody;
+    vec2 lk = normalize(pacPos - gPos);
+    col -= gc * ghostPupils(toG, gSize, lk) * gBody;
+    col -= vec3(0.5) * ghostPupils(toG, gSize, lk) * gBody;
   }
-  
-  // Dots (scattered in a grid)
-  for (int dx = -4; dx <= 4; dx++) {
-    for (int dy = -3; dy <= 3; dy++) {
-      vec2 dotPos = vec2(float(dx), float(dy)) * 0.09;
-      float dotDist = length(p - dotPos);
-      
-      // Skip dots near pac-man (eaten!)
-      float nearPac = length(dotPos - pacPos);
-      float eaten = smoothstep(0.08, 0.12, nearPac);
-      
-      float d = pelletDot(p - dotPos, 0.006) * eaten;
-      col += vec3(1.0, 0.85, 0.6) * d;
+
+  // Dots in corridors
+  for (int dx = 1; dx <= 26; dx++) {
+    for (int dy = 1; dy <= 29; dy++) {
+      vec2 dc = vec2(float(dx), float(dy));
+      if (mazeWall(dc) > 0.5) continue;
+      if ((dx + dy) % 2 != 0) continue;
+      vec2 dw = mazeOrigin + dc * cellSize + cellSize * 0.5;
+      float eaten = smoothstep(cellSize * 1.5, cellSize * 2.5, length(dw - pacPos));
+      col += vec3(1.0, 0.85, 0.6) * pelletDot(p - dw, cellSize * 0.08) * eaten;
     }
   }
-  
-  // Power pellets in corners
+
+  // Power pellets in 4 corners
   for (int i = 0; i < 4; i++) {
-    vec2 pelletPos = vec2(
-      (i < 2) ? -0.35 : 0.35,
-      (i == 0 || i == 2) ? -0.25 : 0.25
-    );
-    float nearPac2 = length(pelletPos - pacPos);
-    float eaten2 = smoothstep(0.08, 0.12, nearPac2);
-    float pp = powerPellet(p - pelletPos, 0.012, uTime) * eaten2;
-    col += vec3(1.0, 0.85, 0.6) * pp;
+    vec2 cp = mazeOrigin + vec2(i < 2 ? 1.0 : 26.0, (i == 0 || i == 2) ? 1.0 : 29.0) * cellSize + cellSize * 0.5;
+    float ep = smoothstep(cellSize * 1.5, cellSize * 2.5, length(cp - pacPos));
+    col += vec3(1.0, 0.85, 0.6) * powerPellet(p - cp, cellSize * 0.18, uTime) * ep;
   }
-  
-  // Transient flash (fruit bonus!)
-  if (uTransient > 0.5) {
-    vec2 fruitPos = vec2(sin(uTime * 0.3) * 0.1, cos(uTime * 0.4) * 0.1);
-    float cherry = smoothstep(0.02, 0.015, length(p - fruitPos));
-    col += vec3(1.0, 0.0, 0.2) * cherry * uTransient;
-    float cherry2 = smoothstep(0.02, 0.015, length(p - fruitPos - vec2(0.02, 0.01)));
-    col += vec3(1.0, 0.0, 0.2) * cherry2 * uTransient;
+
+  // Fruit on transient
+  if (uTransient > 0.4) {
+    vec2 fp = mazeOrigin + vec2(14.0, 15.0) * cellSize;
+    col += vec3(1.0, 0.1, 0.2) * smoothstep(cellSize * 0.6, cellSize * 0.3, length(p - fp)) * uTransient;
+    col += vec3(1.0, 0.1, 0.2) * smoothstep(cellSize * 0.6, cellSize * 0.3, length(p - fp - vec2(cellSize * 0.4, cellSize * 0.2))) * uTransient;
   }
-  
-  // Score text area glow at top
-  float scoreGlow = smoothstep(0.48, 0.5, uv.y) * smoothstep(0.52, 0.5, uv.y) * 0.1;
-  col += vec3(1.0) * scoreGlow * uHighEnergy;
-  
+
   // CRT scanlines
-  float scanline = sin(uv.y * 800.0) * 0.03;
-  col -= scanline;
-  
+  col -= sin(uv.y * 800.0) * 0.04;
   // Vignette
-  float vig = 1.0 - length((uv - 0.5) * 1.3);
-  col *= smoothstep(0.0, 0.7, vig);
-  
+  col *= smoothstep(0.0, 0.7, 1.0 - length((uv - 0.5) * 1.3));
   col *= uIntensity;
   gl_FragColor = vec4(col, 1.0);
 }
