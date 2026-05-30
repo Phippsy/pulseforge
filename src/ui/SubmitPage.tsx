@@ -299,8 +299,8 @@ export function SubmitPage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="ENTER YOUR NAME"
-              className="w-full px-4 py-4 bg-[#0a1628] border-2 border-cyan-400/60 text-white placeholder-cyan-700 font-mono text-base focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 uppercase tracking-wider rounded-none shadow-[0_0_8px_rgba(0,255,255,0.15)]"
+              placeholder="TAP HERE — TYPE YOUR NAME"
+              className="w-full px-4 py-4 bg-[#0d2847] border-2 border-cyan-300 text-white placeholder-cyan-400/70 font-mono text-base focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/50 focus:bg-[#122e52] uppercase tracking-wider rounded-none shadow-[0_0_14px_rgba(0,255,255,0.25)] animate-[pulse_3s_ease-in-out_infinite]"
               maxLength={100}
               autoComplete="name"
             />
@@ -342,8 +342,8 @@ export function SubmitPage() {
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="HAPPY BIRTHDAY DAN..."
-                  className="w-full px-4 py-4 bg-[#0a1628] border-2 border-cyan-400/60 text-white placeholder-cyan-700 font-mono text-base focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 h-32 resize-none uppercase tracking-wide rounded-none shadow-[0_0_8px_rgba(0,255,255,0.15)]"
+                  placeholder="TAP HERE — TYPE YOUR MESSAGE TO DAN..."
+                  className="w-full px-4 py-4 bg-[#0d2847] border-2 border-cyan-300 text-white placeholder-cyan-400/70 font-mono text-base focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/50 focus:bg-[#122e52] h-32 resize-none uppercase tracking-wide rounded-none shadow-[0_0_14px_rgba(0,255,255,0.25)] animate-[pulse_3s_ease-in-out_infinite]"
                   maxLength={500}
                 />
                 <div className="flex justify-between text-xs mt-2">
@@ -401,11 +401,11 @@ export function SubmitPage() {
                 ) : (
                   <button
                     onClick={() => fileRef.current?.click()}
-                    className="w-full py-10 border-2 border-dashed border-cyan-400/60 text-cyan-300 hover:border-yellow-400 hover:text-yellow-300 transition-all bg-[#0a1628] shadow-[0_0_8px_rgba(0,255,255,0.15)]"
+                    className="w-full py-10 border-2 border-dashed border-cyan-300 text-cyan-200 hover:border-yellow-400 hover:text-yellow-300 transition-all bg-[#0d2847] shadow-[0_0_14px_rgba(0,255,255,0.25)] animate-[pulse_3s_ease-in-out_infinite]"
                   >
                     <div className="text-3xl mb-2">📡</div>
-                    <div className="text-sm tracking-wider">TAP TO CAPTURE / SELECT</div>
-                    <div className="text-xs text-white/30 mt-1">PHOTO OR VIDEO</div>
+                    <div className="text-sm tracking-wider font-bold">TAP HERE TO SELECT PHOTO</div>
+                    <div className="text-xs text-cyan-400/60 mt-1">PHOTO OR VIDEO FROM YOUR PHONE</div>
                   </button>
                 )}
               </div>
