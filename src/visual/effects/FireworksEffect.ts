@@ -188,7 +188,6 @@ void main() {
           float trailDist = length(uv - trailPos);
           col += pCol * 0.3 * exp(-trailDist * trailDist * 40000.0) * fade;
         }
-        }
       }
     }
   }
