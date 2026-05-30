@@ -53,6 +53,9 @@ export interface AppState {
   paletteIndex: number;
   paletteCycling: boolean;
 
+  // Effect weights for random selection (1 = normal, higher = more likely)
+  effectWeights: Record<string, number>;
+
   setAudioDevice: (id: string) => void;
   startCapture: () => void;
   stopCapture: () => void;
@@ -72,6 +75,7 @@ export interface AppState {
   setPaletteIndex: (index: number) => void;
   nextPalette: () => void;
   togglePaletteCycling: () => void;
+  setEffectWeight: (effectId: string, weight: number) => void;
   updateControlSignals: (signals: ControlSignals) => void;
   updateFps: (fps: number) => void;
   addImage: (dataUrl: string) => void;
@@ -126,6 +130,8 @@ export const useStore = create<AppState>((set, get) => ({
   paletteIndex: 0,
   paletteCycling: true,
 
+  effectWeights: { ceefax: 3 },
+
   setAudioDevice: (id) => set({ audioDeviceId: id }),
   startCapture: () => set({ isCapturing: true }),
   stopCapture: () => set({ isCapturing: false }),
@@ -159,6 +165,9 @@ export const useStore = create<AppState>((set, get) => ({
   setPaletteIndex: (index) => set({ paletteIndex: index }),
   nextPalette: () => set((s) => ({ paletteIndex: s.paletteIndex + 1 })),
   togglePaletteCycling: () => set((s) => ({ paletteCycling: !s.paletteCycling })),
+  setEffectWeight: (effectId, weight) => set((s) => ({
+    effectWeights: { ...s.effectWeights, [effectId]: weight },
+  })),
   updateControlSignals: (signals) => set({ controlSignals: signals }),
   updateFps: (fps) => set({ fps }),
   addImage: (dataUrl) => set((s) => ({ userImages: [...s.userImages, dataUrl], activeImageIndex: s.userImages.length })),

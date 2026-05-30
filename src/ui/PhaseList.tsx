@@ -1,5 +1,6 @@
 import { useStore } from '../store';
 import { type EffectName } from '../visual/effects/index';
+import { useState } from 'react';
 
 const ALL_EFFECTS: { id: EffectName; label: string }[] = [
   { id: 'tunnel', label: 'Tunnel' },
@@ -51,26 +52,56 @@ export function PhaseList() {
   const directEffect = useStore((s) => s.directEffect);
   const randomMode = useStore((s) => s.randomMode);
   const setDirectEffect = useStore((s) => s.setDirectEffect);
+  const effectWeights = useStore((s) => s.effectWeights);
+  const setEffectWeight = useStore((s) => s.setEffectWeight);
+  const [showWeights, setShowWeights] = useState(false);
 
   return (
     <div className="pointer-events-auto bg-black/50 border border-cyan-500/20 backdrop-blur-md p-3 self-start font-mono shadow-[0_0_20px_rgba(0,0,0,0.6)] max-h-[85vh] overflow-y-auto">
-      <h3 className="text-yellow-400 text-[10px] font-bold uppercase tracking-[0.25em] mb-2 border-b border-cyan-500/20 pb-1">EFFECTS</h3>
+      <div className="flex items-center justify-between mb-2 border-b border-cyan-500/20 pb-1">
+        <h3 className="text-yellow-400 text-[10px] font-bold uppercase tracking-[0.25em]">EFFECTS</h3>
+        <button
+          onClick={() => setShowWeights(!showWeights)}
+          className={`text-[9px] px-1.5 py-0.5 rounded ${showWeights ? 'bg-cyan-700/40 text-cyan-200' : 'text-white/40 hover:text-white/70'}`}
+          title="Toggle probability sliders"
+        >
+          %
+        </button>
+      </div>
       <ul className="space-y-0.5">
-        {ALL_EFFECTS.map((effect, i) => (
-          <li key={effect.id}>
-            <button
-              onClick={() => setDirectEffect(effect.id)}
-              className={`w-full text-left px-2 py-1 text-xs transition-all duration-200 ${
-                directEffect === effect.id && !randomMode
-                  ? 'bg-cyan-900/40 text-cyan-200 border-l-2 border-cyan-400'
-                  : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04] border-l-2 border-transparent'
-              }`}
-            >
-              <span className="text-[10px] text-yellow-500/60 mr-2">{String(i + 1).padStart(2, '0')}</span>
-              <span className="tracking-wide">{effect.label}</span>
-            </button>
-          </li>
-        ))}
+        {ALL_EFFECTS.map((effect, i) => {
+          const weight = effectWeights[effect.id] ?? 1;
+          return (
+            <li key={effect.id}>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setDirectEffect(effect.id)}
+                  className={`flex-1 text-left px-2 py-1 text-xs transition-all duration-200 ${
+                    directEffect === effect.id && !randomMode
+                      ? 'bg-cyan-900/40 text-cyan-200 border-l-2 border-cyan-400'
+                      : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04] border-l-2 border-transparent'
+                  }`}
+                >
+                  <span className="text-[10px] text-yellow-500/60 mr-2">{String(i + 1).padStart(2, '0')}</span>
+                  <span className="tracking-wide">{effect.label}</span>
+                  {weight !== 1 && <span className="ml-1 text-[9px] text-cyan-400/70">×{weight}</span>}
+                </button>
+                {showWeights && (
+                  <input
+                    type="range"
+                    min="0"
+                    max="5"
+                    step="0.5"
+                    value={weight}
+                    onChange={(e) => setEffectWeight(effect.id, parseFloat(e.target.value))}
+                    className="w-12 h-3 accent-cyan-400 cursor-pointer opacity-70 hover:opacity-100"
+                    title={`Weight: ${weight}× (0=never, 5=very frequent)`}
+                  />
+                )}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

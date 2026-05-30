@@ -218,13 +218,21 @@ export function App() {
         }
       }
 
-      // Random mode - pick a random effect every 15-30 seconds
+      // Random mode - pick a weighted random effect every 15-30 seconds
       if (state.randomMode && !pm.transitioning) {
         if (now - randomTimerRef.current > randomIntervalRef.current || randomTimerRef.current === 0) {
           const allEffects = Object.keys(effectRegistry) as EffectName[];
+          const weights = allEffects.map((e) => state.effectWeights[e] ?? 1);
+          const totalWeight = weights.reduce((sum, w) => sum + w, 0);
           let next: EffectName;
           do {
-            next = allEffects[Math.floor(Math.random() * allEffects.length)];
+            let r = Math.random() * totalWeight;
+            let idx = 0;
+            for (let i = 0; i < weights.length; i++) {
+              r -= weights[i];
+              if (r <= 0) { idx = i; break; }
+            }
+            next = allEffects[idx];
           } while (next === randomEffectRef.current && allEffects.length > 1);
           randomEffectRef.current = next;
           engine.setEffect(next);
