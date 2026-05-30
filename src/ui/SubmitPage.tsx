@@ -273,34 +273,34 @@ export function SubmitPage() {
         ))}
       </div>
 
-      <div className="flex-1 flex flex-col items-center px-3 py-3 sm:p-4 relative z-10 overflow-y-auto">
+      <div className="flex-1 flex flex-col items-center px-4 py-5 sm:px-6 sm:py-6 relative z-10 overflow-y-auto">
         <div className="w-full max-w-md">
           
           {/* Title block - Ceefax style */}
-          <div className="mb-4 sm:mb-6 text-center">
-            <div className="bg-yellow-500 text-black px-3 py-1 inline-block font-bold text-xs mb-2">
+          <div className="mb-6 sm:mb-8 text-center">
+            <div className="bg-yellow-500 text-black px-3 py-1 inline-block font-bold text-xs mb-3">
               PAGE 888
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-cyan-300 tracking-wider">
+            <h1 className="text-3xl sm:text-4xl font-bold text-cyan-300 tracking-wider">
               ◀ DANFEST ▶
             </h1>
-            <h2 className="text-yellow-400 text-[11px] sm:text-sm mt-1">
+            <h2 className="text-yellow-400 text-xs sm:text-sm mt-2">
               ■ TRANSMIT A MESSAGE TO THE BIG SCREEN ■
             </h2>
-            <div className="text-white/30 text-xs mt-2">
+            <div className="text-white/30 text-xs mt-3">
               ────────────────────────────────
             </div>
           </div>
 
           {/* Name input - teletext style */}
-          <div className="mb-3 sm:mb-4">
-            <label className="block text-green-400 text-xs mb-1 tracking-widest">▶ CALL SIGN:</label>
+          <div className="mb-5 sm:mb-6">
+            <label className="block text-green-400 text-xs mb-2 tracking-widest">▶ CALL SIGN:</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="ENTER YOUR NAME"
-              className="w-full px-3 py-3 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 font-mono text-base focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 uppercase tracking-wider rounded-none"
+              className="w-full px-4 py-4 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 font-mono text-base focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 uppercase tracking-wider rounded-none"
               maxLength={100}
               autoComplete="name"
             />
@@ -308,53 +308,53 @@ export function SubmitPage() {
 
           {/* Mode selection - chunky teletext buttons */}
           {mode === 'choose' && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <button
                 onClick={() => setMode('message')}
-                className="w-full px-4 py-4 sm:py-5 bg-magenta-900 border-2 border-magenta-500 hover:bg-magenta-800 text-white text-left transition-colors group active:scale-[0.98]"
+                className="w-full px-5 py-5 sm:py-6 bg-magenta-900 border-2 border-magenta-500 hover:bg-magenta-800 text-white text-left transition-colors group active:scale-[0.98]"
                 style={{ borderColor: '#ff00ff55', backgroundColor: '#1a001a' }}
               >
-                <span className="text-yellow-300 text-xs block mb-1">OPTION 1</span>
-                <span className="text-lg sm:text-xl text-magenta-200 group-hover:text-white" style={{ color: '#ff88ff' }}>
+                <span className="text-yellow-300 text-xs block mb-2">OPTION 1</span>
+                <span className="text-xl sm:text-2xl text-magenta-200 group-hover:text-white" style={{ color: '#ff88ff' }}>
                   ✍ WRITE A MESSAGE
                 </span>
-                <span className="block text-xs text-white/40 mt-1">Text will appear on the party display</span>
+                <span className="block text-xs text-white/40 mt-2">Text will appear on the party display</span>
               </button>
               <button
                 onClick={() => setMode('photo')}
-                className="w-full px-4 py-4 sm:py-5 text-left transition-colors group active:scale-[0.98]"
+                className="w-full px-5 py-5 sm:py-6 text-left transition-colors group active:scale-[0.98]"
                 style={{ borderWidth: '2px', borderColor: '#00ffff55', backgroundColor: '#001a1a' }}
               >
-                <span className="text-yellow-300 text-xs block mb-1">OPTION 2</span>
-                <span className="text-lg sm:text-xl group-hover:text-white" style={{ color: '#88ffff' }}>
+                <span className="text-yellow-300 text-xs block mb-2">OPTION 2</span>
+                <span className="text-xl sm:text-2xl group-hover:text-white" style={{ color: '#88ffff' }}>
                   📡 BEAM A PHOTO
                 </span>
-                <span className="block text-xs text-white/40 mt-1">Image will be projected into the visuals</span>
+                <span className="block text-xs text-white/40 mt-2">Image will be projected into the visuals</span>
               </button>
             </div>
           )}
 
           {/* Message form */}
           {mode === 'message' && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
-                <label className="block text-green-400 text-xs mb-1 tracking-widest">▶ YOUR TRANSMISSION:</label>
+                <label className="block text-green-400 text-xs mb-2 tracking-widest">▶ YOUR TRANSMISSION:</label>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="HAPPY BIRTHDAY DAN..."
-                  className="w-full px-3 py-3 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 font-mono text-base focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 h-28 resize-none uppercase tracking-wide rounded-none"
+                  className="w-full px-4 py-4 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 font-mono text-base focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 h-32 resize-none uppercase tracking-wide rounded-none"
                   maxLength={500}
                 />
-                <div className="flex justify-between text-xs mt-1">
+                <div className="flex justify-between text-xs mt-2">
                   <span className="text-white/30">MAX 500 CHARS</span>
                   <span className="text-yellow-400">{message.length}/500</span>
                 </div>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-3 pt-1">
                 <button
                   onClick={() => setMode('choose')}
-                  className="px-4 py-3 border border-white/20 text-white/60 hover:text-white hover:border-white/40 text-sm transition-colors active:scale-95"
+                  className="px-5 py-4 border border-white/20 text-white/60 hover:text-white hover:border-white/40 text-sm transition-colors active:scale-95"
                 >
                   ◀ BACK
                 </button>
@@ -371,9 +371,9 @@ export function SubmitPage() {
 
           {/* Photo/video upload form */}
           {mode === 'photo' && (
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
-                <label className="block text-green-400 text-xs mb-1 tracking-widest">▶ SELECT SIGNAL:</label>
+                <label className="block text-green-400 text-xs mb-2 tracking-widest">▶ SELECT SIGNAL:</label>
                 <input
                   ref={fileRef}
                   type="file"
@@ -409,10 +409,10 @@ export function SubmitPage() {
                   </button>
                 )}
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-3 pt-1">
                 <button
                   onClick={() => { setMode('choose'); setFile(null); setPreview(null); }}
-                  className="px-4 py-3 border border-white/20 text-white/60 hover:text-white hover:border-white/40 text-sm transition-colors active:scale-95"
+                  className="px-5 py-4 border border-white/20 text-white/60 hover:text-white hover:border-white/40 text-sm transition-colors active:scale-95"
                 >
                   ◀ BACK
                 </button>
@@ -434,7 +434,7 @@ export function SubmitPage() {
           )}
 
           {/* Queue section */}
-          <div className="mt-8 border-t border-cyan-500/20 pt-4">
+          <div className="mt-10 border-t border-cyan-500/20 pt-5">
             <button
               onClick={() => setShowQueue(!showQueue)}
               className="w-full flex items-center justify-between px-3 py-2 bg-black/50 border border-cyan-500/20 text-cyan-200 hover:bg-cyan-900/20 transition-colors text-sm"

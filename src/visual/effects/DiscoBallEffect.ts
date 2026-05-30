@@ -78,8 +78,8 @@ void main() {
   // Dark background with subtle colour
   vec3 col = vec3(0.02, 0.01, 0.04);
   
-  // Rotation speed increases with bass
-  float rotTime = t * (1.0 + uBassEnergy * 2.0);
+  // Rotation speed increases gently with bass
+  float rotTime = t * (0.6 + uBassEnergy * 0.6);
   
   // === DISCO BALL (centered, upper portion) ===
   float ballSize = 0.25;
@@ -114,11 +114,11 @@ void main() {
     
     // Each facet has its own reflection timing
     float facetId = hash2(cell);
-    float reflectionPhase = facetId * 6.28 + rotTime * 3.0;
-    float reflection = pow(max(0.0, sin(reflectionPhase)), 16.0);
+    float reflectionPhase = facetId * 6.28 + rotTime * 1.5;
+    float reflection = pow(max(0.0, sin(reflectionPhase)), 12.0);
     
-    // Boost reflections on transient
-    reflection += uTransient * step(0.8, facetId) * 2.0;
+    // Gentle boost on transient
+    reflection += uTransient * step(0.85, facetId) * 0.8;
     
     // Facet edges (silver border between mirrors)
     float edgeX = smoothstep(0.0, 0.08, cellUv.x) * smoothstep(1.0, 0.92, cellUv.x);
@@ -161,8 +161,8 @@ void main() {
   // === LIGHT BEAMS sweeping from ball ===
   float numBeams = 12.0;
   for (float i = 0.0; i < 12.0; i++) {
-    float beamAngle = i * 6.2832 / numBeams + rotTime * 1.5 + sin(t * 0.7 + i) * 0.5;
-    beamAngle += uBassEnergy * sin(t * 3.0 + i * 2.0) * 0.3;
+    float beamAngle = i * 6.2832 / numBeams + rotTime * 0.8 + sin(t * 0.4 + i) * 0.3;
+    beamAngle += uBassEnergy * sin(t * 1.5 + i * 2.0) * 0.15;
     
     vec2 beamDir = vec2(cos(beamAngle), sin(beamAngle));
     vec2 toPixel = uv - ballCenter;
@@ -201,7 +201,7 @@ void main() {
     
     // Scattered light spots on the floor
     for (float i = 0.0; i < 20.0; i++) {
-      float spotAngle = i * 3.17 + rotTime * 2.0 + hash(i * 5.5) * 6.28;
+      float spotAngle = i * 3.17 + rotTime * 1.0 + hash(i * 5.5) * 6.28;
       float spotRadius = 0.1 + hash(i * 3.0) * 0.3;
       vec2 spotPos = vec2(
         0.5 + cos(spotAngle) * spotRadius,
@@ -222,15 +222,15 @@ void main() {
     }
   }
   
-  // === SPARKLE DUST in the air ===
+  // Sparkle dust (calmer)
   vec2 sparkleUv = uv * 30.0;
   vec2 sparkleCell = floor(sparkleUv);
-  float sparkle = step(0.95, hash2(sparkleCell + floor(t * 2.0) * 0.1));
-  float sparkleBright = sin(t * 5.0 + hash2(sparkleCell) * 30.0) * 0.5 + 0.5;
-  col += vec3(1.0) * sparkle * sparkleBright * 0.15;
+  float sparkle = step(0.97, hash2(sparkleCell + floor(t * 0.8) * 0.1));
+  float sparkleBright = sin(t * 3.0 + hash2(sparkleCell) * 30.0) * 0.5 + 0.5;
+  col += vec3(1.0) * sparkle * sparkleBright * 0.1;
   
-  // Transient flash (strobe effect)
-  col += vec3(0.1) * uTransient;
+  // Gentle transient glow (no strobe)
+  col += vec3(0.05) * uTransient;
   
   col *= uIntensity;
   

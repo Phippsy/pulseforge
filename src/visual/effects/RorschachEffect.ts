@@ -76,8 +76,8 @@ void main() {
   // Mirror on X axis (left-right symmetry)
   vec2 symUv = vec2(abs(uv.x), uv.y);
   
-  // Optional: 4-fold symmetry on transient
-  float fourFold = smoothstep(0.2, 0.8, uTransient);
+  // Optional: 4-fold symmetry on transient (gentler transition)
+  float fourFold = smoothstep(0.3, 0.9, uTransient) * 0.7;
   vec2 sym4 = vec2(abs(uv.x), abs(uv.y));
   symUv = mix(symUv, sym4, fourFold);
   
@@ -86,9 +86,9 @@ void main() {
   float n2 = fbm(symUv * 3.0 - vec2(t * 0.2, t * 0.1));
   float n3 = snoise(symUv * 5.0 + t * 0.4);
   
-  // Shape the ink blot - denser in center, organic edges
+  // Shape the ink blot - denser in center, wide soft fade at edges
   float r = length(symUv);
-  float shape = smoothstep(1.5, 0.0, r + n1 * 0.8);
+  float shape = smoothstep(1.8, 0.2, r + n1 * 0.6);
   
   // Create layered blot patterns
   float blot1 = smoothstep(0.1, 0.15, n1 * shape);
@@ -100,10 +100,10 @@ void main() {
   blot2 *= 0.5 + uMidEnergy * 0.8;
   blot3 *= 0.3 + uHighEnergy * 1.0;
   
-  // Bass makes the blot expand/contract (breathing)
-  float breathe = 1.0 + sin(t * 2.0) * 0.1 + uBassEnergy * 0.2;
+  // Bass makes the blot expand/contract (gentle breathing)
+  float breathe = 1.0 + sin(t * 1.5) * 0.06 + uBassEnergy * 0.1;
   float expandedR = r / breathe;
-  float outerShape = smoothstep(1.2, 0.2, expandedR + n1 * 0.6);
+  float outerShape = smoothstep(1.5, 0.3, expandedR + n1 * 0.5);
   
   // Combine layers with different colours
   vec3 col = vec3(0.0);
@@ -127,8 +127,13 @@ void main() {
   // Background: very subtle glow
   col += mix(uColor1, uColor2, r * 0.3) * 0.03 * (1.0 - shape * 0.5);
   
-  // Transient flash at edges
-  col += vec3(1.0) * uTransient * 0.3 * edge;
+  // Transient flash at edges (reduced)
+  col += vec3(1.0) * uTransient * 0.15 * edge;
+  
+  // Soft vignette to fade edges cleanly
+  vec2 vUvCentered = vUv - 0.5;
+  float vignette = 1.0 - dot(vUvCentered * 1.4, vUvCentered * 1.4);
+  col *= smoothstep(0.0, 0.5, vignette);
   
   col *= uIntensity;
   col = col / (1.0 + col * 0.2);
