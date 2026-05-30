@@ -283,7 +283,7 @@ export function AdminPage() {
         ))}
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-4 md:px-8 md:py-6">
+      <div className="px-4 py-4 md:px-8 md:py-6">
         {/* SYSTEM MESSAGES TAB */}
         {activeTab === 'system' && (
           <>
