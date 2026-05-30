@@ -93,7 +93,7 @@ void main() {
   float zoomTime = uTime * uSpeed * 0.015; // Very slow cycle
   // Smooth sine-based oscillation — no edges, no resets
   float zoomPhase = sin(zoomTime * PI) * 0.5 + 0.5; // Smooth 0->1->0
-  float zoomLevel = uZoom * (0.6 + zoomPhase * 0.4); // Only 60-100% range — subtle zoom
+  float zoomLevel = uZoom * (0.4 + zoomPhase * 0.3); // Tighter zoom range — keeps fractal filling screen
   
   // The zoom center wanders slowly - creates exploration feeling
   float wanderT = uTime * uSpeed * 0.015;
@@ -219,9 +219,9 @@ void main() {
   
   // Smooth iteration count
   if (iter < maxIter) {
-    float log_zn = log(dot(z, z)) / 2.0;
-    float nu = log(log_zn / log(2.0)) / log(2.0);
-    iter = iter + 1.0 - nu;
+    float log_zn = log(max(dot(z, z), 1.0)) / 2.0;
+    float nu = log(max(log_zn / log(2.0), 1.0)) / log(2.0);
+    iter = max(iter + 1.0 - nu, 0.0);
   }
   
   // COLOR - multiple layered coloring methods blended together
@@ -234,7 +234,7 @@ void main() {
     col += palette(minTrapCircle + uTime * 0.03) * 0.35;
     col += palette(totalDist * 0.05 + uTime * 0.02) * 0.15;
   } else {
-    float t = iter / maxIter;
+    float t = clamp(iter / maxIter, 0.0, 1.0);
     t = sqrt(t);
     
     // Layer 1: iteration-based palette — boosted for exterior richness
@@ -252,15 +252,18 @@ void main() {
     float distCol = fract(totalDist * 0.1);
     vec3 distLayer = palette(distCol + uTime * 0.02) * 0.3;
     
-    // Blend layers based on audio
+    // Blend layers based on audio and ensure minimum brightness
     col = iterCol * (0.5 + uIntensity * 0.5);
     col += trapRing * (0.3 + uBassEnergy * 0.5);
     col += trapAxis * (0.2 + uHighEnergy * 0.4);
-    col += distLayer * uMidEnergy;
+    col += distLayer * (0.2 + uMidEnergy * 0.5);
     
-    // Edge glow
+    // Edge glow — stronger for fast-escaping points to avoid black
     float edge = 1.0 - t;
-    col += uColor1 * edge * edge * 0.3 * (1.0 + uHighEnergy);
+    col += uColor1 * edge * edge * 0.4 * (1.0 + uHighEnergy);
+    
+    // Ensure exterior is never black — minimum glow based on escape speed
+    col = max(col, palette(t * 3.0 + uTime * 0.02 + uColorShift) * 0.15);
   }
   
   // Transient flash
