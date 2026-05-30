@@ -61,7 +61,6 @@ void main() {
   // Each column has a random speed and phase
   float colSeed = hash(col * 7.3 + 0.5);
   float speed = 3.0 + colSeed * 5.0;
-  speed *= 1.0 + uBassEnergy * 1.0; // bass speeds up rain
   
   float phase = hash(col * 13.7) * 200.0;
   
@@ -80,7 +79,7 @@ void main() {
   float ch = charPattern(cellUv, finalSeed * 100.0);
   
   // Rain drop brightness - multiple drops per column
-  float trailLen = 20.0 + uMidEnergy * 10.0;
+  float trailLen = 22.0;
   float brightness = 0.0;
   float isHead = 0.0;
   
@@ -103,21 +102,25 @@ void main() {
   // Ensure always visible - minimum brightness for active chars
   brightness = max(brightness, 0.08 * ch);
   
-  // Colour: iconic green Matrix rain - palette adds subtle tint only
+  // Colour: iconic green Matrix rain with beat-reactive glow
   vec3 baseGreen = vec3(0.0, 1.0, 0.3);
-  vec3 trailColor = mix(baseGreen, uColor1, 0.2) * 1.5;
-  vec3 headColor = vec3(0.9, 1.0, 0.95);
+  // Bass shifts colour toward cyan/white pulse
+  vec3 bassGlow = vec3(0.3, 0.9, 1.0); // cyan tint on beats
+  vec3 pulseGreen = mix(baseGreen, bassGlow, uBassEnergy * 0.6);
+  float bassBright = 1.0 + uBassEnergy * 0.8; // pulsate brightness
+  vec3 trailColor = mix(pulseGreen, uColor1, 0.2) * 1.5 * bassBright;
+  vec3 headColor = mix(vec3(0.9, 1.0, 0.95), vec3(1.0, 1.0, 1.0), uBassEnergy * 0.5);
   vec3 charColor = mix(trailColor, headColor, isHead);
   
   // Random highlight flicker
   float flicker = step(0.93, hash2(vec2(col, logicalRow + t * 0.3)));
   charColor += vec3(0.5, 1.0, 0.5) * flicker;
   
-  // Bass pulse brightens everything
-  charColor += baseGreen * uBassEnergy * 0.5;
+  // Mid energy: subtle warm tint on trail
+  charColor += vec3(0.2, 0.4, 0.0) * uMidEnergy * brightness * 0.3;
   
-  // Transient flash at heads
-  charColor += vec3(0.8, 1.0, 0.8) * uTransient * isHead;
+  // Transient flash: heads flare bright white
+  charColor += vec3(0.9, 1.0, 0.9) * uTransient * isHead * 1.2;
   
   vec3 finalCol = charColor * ch * brightness * 1.3;
   
