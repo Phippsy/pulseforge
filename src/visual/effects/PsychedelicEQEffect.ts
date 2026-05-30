@@ -176,12 +176,12 @@ export class PsychedelicEQEffect implements VisualEffect {
     }
 
     // Constant ring rotation + bass-driven spin bursts
-    this.ringRotation += dt * (0.3 + signals.bassPulse * bassReact * 0.8) * params.speed;
+    this.ringRotation += dt * (0.15 + signals.bassPulse * bassReact * 0.3) * params.speed;
     this.group.rotation.y = this.ringRotation;
     
-    // Tilt the ring based on bass (explosive lean)
-    this.group.rotation.x = Math.sin(time * 0.15) * 0.2 + signals.bassPulse * bassReact * 0.3;
-    this.group.rotation.z = Math.cos(time * 0.11) * 0.15 + signals.bassPulse * bassReact * 0.15;
+    // Tilt the ring based on bass (gentle lean — keep shape visible)
+    this.group.rotation.x = Math.sin(time * 0.15) * 0.08 + signals.bassPulse * bassReact * 0.1;
+    this.group.rotation.z = Math.cos(time * 0.11) * 0.06 + signals.bassPulse * bassReact * 0.06;
 
     // Update each bar
     for (let i = 0; i < BAR_COUNT; i++) {
@@ -195,7 +195,7 @@ export class PsychedelicEQEffect implements VisualEffect {
 
       // Bars explode outward on bass (radius increase)
       const baseAngle = (i / BAR_COUNT) * Math.PI * 2;
-      const explosionRadius = 2.5 + this.explosionForce * 1.5;
+      const explosionRadius = 2.5 + this.explosionForce * 0.8;
       bar.position.x = Math.cos(baseAngle) * explosionRadius;
       bar.position.z = Math.sin(baseAngle) * explosionRadius;
 
@@ -217,7 +217,7 @@ export class PsychedelicEQEffect implements VisualEffect {
     }
 
     // Scale the whole group with bass for that "pumping" feel
-    const groupScale = 1.0 + signals.bassPulse * bassReact * 0.3;
+    const groupScale = 1.0 + signals.bassPulse * bassReact * 0.15;
     this.group.scale.setScalar(groupScale);
   }
 

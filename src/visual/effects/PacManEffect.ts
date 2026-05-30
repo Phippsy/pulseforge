@@ -136,10 +136,12 @@ void main() {
   vec2 p = (uv - 0.5) * vec2(uAspect, 1.0);
   vec3 col = vec3(0.0, 0.0, 0.02);
 
-  // Map to maze grid (28x31)
-  float mazeScale = 1.05;
-  vec2 mazeOrigin = vec2(-0.5 * uAspect, -0.5) * mazeScale;
+  // Map to maze grid (28x31) — centred and scaled to fill screen height
+  float mazeScale = 1.15;
   float cellSize = mazeScale / 31.0;
+  float mazeWidth = 28.0 * cellSize;
+  float mazeHeight = 31.0 * cellSize;
+  vec2 mazeOrigin = vec2(-mazeWidth * 0.5, -mazeHeight * 0.5);
   vec2 mazeP = (p - mazeOrigin) / cellSize;
   vec2 mazeCell = floor(mazeP);
   vec2 mazeFrac = fract(mazeP) - 0.5;

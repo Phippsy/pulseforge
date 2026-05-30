@@ -65,7 +65,7 @@ export function SubmissionDisplay() {
   const adminMessagesRef = useRef<AdminMsg[]>([]);
   const priorityQueueRef = useRef<AdminMsg[]>([]);
   const shownPriorityIdsRef = useRef<Set<string>>(new Set(
-    JSON.parse(sessionStorage.getItem('shownPriorityIds') || '[]')
+    JSON.parse(localStorage.getItem('shownPriorityIds') || '[]')
   ));
   const [activeAdminMsg, setActiveAdminMsg] = useState<AdminMsg | null>(null);
 
@@ -100,7 +100,7 @@ export function SubmissionDisplay() {
         if (newPriority.length > 0) {
           priorityQueueRef.current.push(...newPriority);
           newPriority.forEach(m => shownPriorityIdsRef.current.add(m.id));
-          sessionStorage.setItem('shownPriorityIds', JSON.stringify([...shownPriorityIdsRef.current]));
+          localStorage.setItem('shownPriorityIds', JSON.stringify([...shownPriorityIdsRef.current]));
         }
       }
     } catch {
@@ -131,6 +131,12 @@ export function SubmissionDisplay() {
         setActiveAdminMsg(priorityMsg);
         setVisible(true);
         lastShowRef.current = now;
+        // Disable one-off message server-side so it never reappears
+        fetch(`/api/admin-messages/${priorityMsg.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: false }),
+        }).catch(() => {});
         setTimeout(() => {
           setVisible(false);
           setTimeout(() => {
