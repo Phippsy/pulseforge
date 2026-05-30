@@ -102,18 +102,18 @@ function RemoteControlPanel() {
       </div>
 
       {/* Quick actions */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
+      <div className="grid grid-cols-2 gap-3 md:gap-4 mb-6">
         <button
           onClick={() => sendCommand('next-palette')}
           disabled={sending !== null}
-          className="py-3.5 md:py-4 bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 border border-purple-400/30 text-white font-bold text-xs tracking-wider transition-all active:scale-95"
+          className="py-3.5 md:py-5 bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 border border-purple-400/30 text-white font-bold text-xs md:text-sm tracking-wider transition-all active:scale-95"
         >
           {sending === 'next-palette' ? 'SENDING...' : 'NEXT PALETTE'}
         </button>
         <button
           onClick={() => sendCommand('next-effect')}
           disabled={sending !== null}
-          className="py-3.5 md:py-4 bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 border border-cyan-400/30 text-white font-bold text-xs tracking-wider transition-all active:scale-95"
+          className="py-3.5 md:py-5 bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 border border-cyan-400/30 text-white font-bold text-xs md:text-sm tracking-wider transition-all active:scale-95"
         >
           {sending === 'next-effect' ? 'SENDING...' : 'NEXT EFFECT'}
         </button>
@@ -122,7 +122,7 @@ function RemoteControlPanel() {
       {/* Effect selector grid */}
       <div className="mb-5">
         <h2 className="text-sm text-yellow-400/80 tracking-widest mb-3 font-bold">SELECT EFFECT</h2>
-        <div className="grid grid-cols-3 md:grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-1.5 md:gap-2">
           {ALL_EFFECTS.map(effect => (
             <button
               key={effect.id}
@@ -283,7 +283,7 @@ export function AdminPage() {
         ))}
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-4 md:px-6 md:py-6">
+      <div className="max-w-5xl mx-auto px-4 py-4 md:px-8 md:py-6">
         {/* SYSTEM MESSAGES TAB */}
         {activeTab === 'system' && (
           <>
