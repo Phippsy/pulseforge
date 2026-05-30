@@ -14,7 +14,7 @@ const EFFECT_LABELS: Record<string, string> = {
   rorschach: 'Rorschach', spiralVortex: 'Vortex', nebula: 'Nebula',
   electricArc: 'Electric Arc', spaceInvaders: 'Space Invaders', ceefax: 'Ceefax',
   fireworks: 'Fireworks 50', discoBall: 'Disco Ball', pacman: 'Pac-Man',
-  lavaLamp: 'Lava Lamp', vhs: 'VHS', synthwave: 'Synthwave',
+  lavaLamp: 'Lava Lamp',
   acidSmiley: 'Acid Smiley', neonSigns: 'Neon Signs', lightning: 'Lightning',
   donkeyKong: 'Donkey Kong', tetris: 'Tetris Effect',
 };

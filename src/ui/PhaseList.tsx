@@ -41,8 +41,6 @@ const ALL_EFFECTS: { id: EffectName; label: string }[] = [
   { id: 'discoBall', label: 'Disco Ball' },
   { id: 'pacman', label: 'Pac-Man' },
   { id: 'lavaLamp', label: 'Lava Lamp' },
-  { id: 'vhs', label: 'VHS' },
-  { id: 'synthwave', label: 'Synthwave' },
   { id: 'acidSmiley', label: 'Acid Smiley' },
   { id: 'neonSigns', label: 'Neon Signs' },
   { id: 'lightning', label: 'Lightning' },
