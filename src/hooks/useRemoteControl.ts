@@ -4,6 +4,7 @@ import { useStore } from '../store';
 export function useRemoteControl() {
   const nextPalette = useStore((s) => s.nextPalette);
   const triggerNextEffect = useStore((s) => s.triggerNextEffect);
+  const selectEffect = useStore((s) => s.selectEffect);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -18,6 +19,8 @@ export function useRemoteControl() {
               nextPalette();
             } else if (cmd.command === 'next-effect') {
               triggerNextEffect();
+            } else if (cmd.command === 'select-effect' && cmd.effectId) {
+              selectEffect(cmd.effectId);
             }
           }
         }
@@ -30,5 +33,5 @@ export function useRemoteControl() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [nextPalette, triggerNextEffect]);
+  }, [nextPalette, triggerNextEffect, selectEffect]);
 }

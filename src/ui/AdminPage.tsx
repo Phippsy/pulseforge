@@ -1,6 +1,52 @@
 import { useState, useEffect } from 'react';
 import { TEXT_EFFECTS, DynamicTextDisplay, type TextEffect } from './TextEffects';
 import { palettes, type ColorPalette } from '../visual/palettes';
+import { type EffectName } from '../visual/effects/index';
+
+const ALL_EFFECTS: { id: EffectName; label: string }[] = [
+  { id: 'tunnel', label: 'Tunnel' },
+  { id: 'particles', label: 'Particles' },
+  { id: 'grid', label: 'Grid' },
+  { id: 'blob', label: 'Blob' },
+  { id: 'flowlines', label: 'Flow Lines' },
+  { id: 'waveformRing', label: 'Waveform' },
+  { id: 'fractal', label: 'Fractal' },
+  { id: 'imageShatter', label: 'Shatter' },
+  { id: 'metaballs', label: 'Metaballs' },
+  { id: 'helix', label: 'Helix' },
+  { id: 'starfield', label: 'Starfield' },
+  { id: 'plasma', label: 'Plasma' },
+  { id: 'voronoi', label: 'Voronoi' },
+  { id: 'aurora', label: 'Aurora' },
+  { id: 'geoKaleidoscope', label: 'Kaleidoscope' },
+  { id: 'rings', label: 'Rings' },
+  { id: 'equaliser', label: 'EQ' },
+  { id: 'soundwaves', label: 'Sound Waves' },
+  { id: 'morphPoly', label: 'Morph Poly' },
+  { id: 'warpedTorus', label: 'Warped Torus' },
+  { id: 'psychedelicEQ', label: 'Psych EQ' },
+  { id: 'laserShow', label: 'Laser Show' },
+  { id: 'fire', label: 'Fire' },
+  { id: 'superscope', label: 'Oscilloscope' },
+  { id: 'milkdrop', label: 'Milkdrop' },
+  { id: 'waterRipple', label: 'Water Ripple' },
+  { id: 'terrain', label: 'Terrain' },
+  { id: 'matrixRain', label: 'Matrix' },
+  { id: 'rorschach', label: 'Rorschach' },
+  { id: 'spiralVortex', label: 'Vortex' },
+  { id: 'nebula', label: 'Nebula' },
+  { id: 'electricArc', label: 'Electric Arc' },
+  { id: 'spaceInvaders', label: 'Space Invaders' },
+  { id: 'ceefax', label: 'Ceefax' },
+  { id: 'fireworks', label: 'Fireworks 50' },
+  { id: 'discoBall', label: 'Disco Ball' },
+  { id: 'pacman', label: 'Pac-Man' },
+  { id: 'lavaLamp', label: 'Lava Lamp' },
+  { id: 'acidSmiley', label: 'Acid Smiley' },
+  { id: 'neonSigns', label: 'Neon Signs' },
+  { id: 'lightning', label: 'Lightning' },
+  { id: 'tetris', label: 'Tetris Effect' },
+];
 
 interface AdminMessage {
   id: string;
@@ -28,16 +74,18 @@ function RemoteControlPanel() {
   const [sending, setSending] = useState<string | null>(null);
   const [lastSent, setLastSent] = useState<{ command: string; time: number } | null>(null);
 
-  const sendCommand = async (command: 'next-palette' | 'next-effect') => {
-    setSending(command);
+  const sendCommand = async (command: string, effectId?: string) => {
+    setSending(effectId || command);
     try {
+      const body: Record<string, string> = { command };
+      if (effectId) body.effectId = effectId;
       const res = await fetch('/api/remote-control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command }),
+        body: JSON.stringify(body),
       });
       if (res.ok) {
-        setLastSent({ command, time: Date.now() });
+        setLastSent({ command: effectId || command, time: Date.now() });
       }
     } catch {
       // ignore
@@ -48,35 +96,62 @@ function RemoteControlPanel() {
 
   return (
     <>
-      <div className="mb-6">
-        <h1 className="text-xl text-cyan-300 tracking-wider mb-1">▶ REMOTE CONTROL</h1>
+      <div className="mb-5">
+        <h1 className="text-lg md:text-xl text-cyan-300 tracking-wider mb-1">REMOTE CONTROL</h1>
         <p className="text-white/40 text-xs">Push commands to the live visualiser in real-time</p>
       </div>
-      <div className="space-y-4">
+
+      {/* Quick actions */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
         <button
           onClick={() => sendCommand('next-palette')}
           disabled={sending !== null}
-          className="w-full py-4 bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 border border-purple-400/30 text-white font-bold text-sm tracking-wider transition-all active:scale-95"
+          className="py-3.5 md:py-4 bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 border border-purple-400/30 text-white font-bold text-xs tracking-wider transition-all active:scale-95"
         >
-          {sending === 'next-palette' ? '⏳ SENDING...' : '🎨 NEXT PALETTE'}
+          {sending === 'next-palette' ? 'SENDING...' : 'NEXT PALETTE'}
         </button>
         <button
           onClick={() => sendCommand('next-effect')}
           disabled={sending !== null}
-          className="w-full py-4 bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 border border-cyan-400/30 text-white font-bold text-sm tracking-wider transition-all active:scale-95"
+          className="py-3.5 md:py-4 bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 border border-cyan-400/30 text-white font-bold text-xs tracking-wider transition-all active:scale-95"
         >
-          {sending === 'next-effect' ? '⏳ SENDING...' : '⚡ NEXT EFFECT'}
+          {sending === 'next-effect' ? 'SENDING...' : 'NEXT EFFECT'}
         </button>
       </div>
+
+      {/* Effect selector grid */}
+      <div className="mb-5">
+        <h2 className="text-sm text-yellow-400/80 tracking-widest mb-3 font-bold">SELECT EFFECT</h2>
+        <div className="grid grid-cols-3 md:grid-cols-4 gap-1.5">
+          {ALL_EFFECTS.map(effect => (
+            <button
+              key={effect.id}
+              onClick={() => sendCommand('select-effect', effect.id)}
+              disabled={sending !== null}
+              className={`px-1.5 py-2.5 md:py-3 text-[10px] md:text-[11px] font-bold tracking-wide border transition-all active:scale-95 disabled:opacity-50 truncate ${
+                sending === effect.id
+                  ? 'border-green-400 bg-green-900/50 text-green-200'
+                  : lastSent?.command === effect.id
+                    ? 'border-cyan-400/60 bg-cyan-900/30 text-cyan-200'
+                    : 'border-white/10 bg-black/40 text-white/60 hover:border-cyan-400/40 hover:text-white/90 hover:bg-cyan-950/30'
+              }`}
+              title={effect.label}
+            >
+              {sending === effect.id ? 'SENT' : effect.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {lastSent && (
-        <div className="mt-4 text-center text-white/40 text-xs">
-          Last sent: <span className="text-cyan-300">{lastSent.command}</span> at {new Date(lastSent.time).toLocaleTimeString()}
+        <div className="mb-4 text-center text-white/40 text-xs">
+          Last: <span className="text-cyan-300">{lastSent.command}</span> at {new Date(lastSent.time).toLocaleTimeString()}
         </div>
       )}
-      <div className="mt-6 border border-cyan-500/20 p-4 bg-black/50 text-white/40 text-xs space-y-2">
-        <p>■ Commands are pushed to all running visualiser instances</p>
-        <p>■ The visualiser polls every 2 seconds for new commands</p>
-        <p>■ Works across devices — control from your phone while visuals run on the big screen</p>
+      <div className="border border-cyan-500/20 p-3 md:p-4 bg-black/50 text-white/40 text-xs space-y-1.5">
+        <p>Commands are pushed to all running visualiser instances</p>
+        <p>The visualiser polls every 2 seconds for new commands</p>
+        <p>Works across devices -- control from phone while visuals run on big screen</p>
       </div>
     </>
   );
@@ -185,10 +260,10 @@ export function AdminPage() {
   return (
     <div className="min-h-screen bg-black font-mono text-white">
       {/* Header */}
-      <div className="flex justify-between items-center px-4 py-2 bg-black/80 border-b border-cyan-500/30">
-        <span className="text-cyan-400">■ ADMIN</span>
-        <span className="text-cyan-100 tracking-[0.3em] font-medium">DANFEST CONTROL</span>
-        <a href="/" className="text-cyan-400/60 hover:text-cyan-300 text-xs">← VISUALS</a>
+      <div className="flex justify-between items-center px-4 md:px-6 py-3 bg-black/80 border-b border-cyan-500/30">
+        <span className="text-cyan-400 text-sm md:text-base tracking-wider">ADMIN</span>
+        <span className="text-cyan-100 tracking-[0.3em] font-medium text-sm md:text-base">DANFEST CONTROL</span>
+        <a href="/" className="text-cyan-400/60 hover:text-cyan-300 text-xs md:text-sm">VISUALS</a>
       </div>
 
       {/* Tabs */}
@@ -197,7 +272,7 @@ export function AdminPage() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`flex-1 px-2 py-3 text-xs font-bold tracking-wider border-b-2 transition-colors ${
+            className={`flex-1 px-2 py-3 md:py-4 text-[10px] md:text-xs font-bold tracking-wider border-b-2 transition-colors ${
               activeTab === tab
                 ? 'border-cyan-400 text-cyan-300'
                 : 'border-transparent text-white/40 hover:text-white/60'
@@ -208,12 +283,12 @@ export function AdminPage() {
         ))}
       </div>
 
-      <div className="max-w-2xl mx-auto px-3 py-4 sm:p-6">
+      <div className="max-w-3xl mx-auto px-4 py-4 md:px-6 md:py-6">
         {/* SYSTEM MESSAGES TAB */}
         {activeTab === 'system' && (
           <>
             <div className="mb-8">
-              <h1 className="text-xl text-cyan-300 tracking-wider mb-1">▶ SYSTEM MESSAGES</h1>
+              <h1 className="text-lg md:text-xl text-cyan-300 tracking-wider mb-1">SYSTEM MESSAGES</h1>
               <p className="text-white/40 text-xs">Manage rotating display messages with cinematic effects</p>
             </div>
 
@@ -231,7 +306,7 @@ export function AdminPage() {
                       : 'border-white/10 text-white/40 hover:border-white/30'
                   }`}
                 >
-                  🔁 ROTATION
+                  ROTATION
                 </button>
                 <button
                   onClick={() => setNewType('one_off')}
@@ -241,7 +316,7 @@ export function AdminPage() {
                       : 'border-white/10 text-white/40 hover:border-white/30'
                   }`}
                 >
-                  ⚡ ONE-OFF
+                  ONE-OFF
                 </button>
               </div>
               <p className="text-white/30 text-[9px] mb-3">
@@ -269,7 +344,7 @@ export function AdminPage() {
                       : 'bg-green-900/80 border-green-500/50 text-green-200 hover:bg-green-800'
                   }`}
                 >
-                  {newType === 'one_off' ? '⚡ SEND' : '+ ADD'}
+                  {newType === 'one_off' ? 'SEND' : '+ ADD'}
                 </button>
               </div>
               <label className="block text-yellow-400/70 text-[10px] mb-1 tracking-widest">EFFECT:</label>
@@ -373,7 +448,7 @@ export function AdminPage() {
                               ? 'text-orange-400/80 border-orange-500/30'
                               : 'text-green-400/60 border-green-500/20'
                           }`}>
-                            {msg.type === 'one_off' ? '⚡' : '🔁'}
+                            {msg.type === 'one_off' ? '1x' : 'ROT'}
                           </span>
                           <span className={`flex-1 text-sm tracking-wide break-words ${msg.enabled ? 'text-cyan-100' : 'text-white/40'}`}>
                             {msg.content}
@@ -417,7 +492,7 @@ export function AdminPage() {
         {activeTab === 'submissions' && (
           <>
             <div className="mb-6">
-              <h1 className="text-xl text-cyan-300 tracking-wider mb-1">▶ USER SUBMISSIONS</h1>
+              <h1 className="text-lg md:text-xl text-cyan-300 tracking-wider mb-1">USER SUBMISSIONS</h1>
               <p className="text-white/40 text-xs">Moderate user-submitted messages and photos. Pause or delete items.</p>
             </div>
 
@@ -472,7 +547,7 @@ export function AdminPage() {
                       {/* Content + delete */}
                       <div className="flex items-center gap-2 pl-12">
                         <span className={`flex-1 text-sm tracking-wide truncate ${sub.paused ? 'text-white/30' : 'text-cyan-100'}`}>
-                          {sub.type === 'photo' ? '📷 [photo]' : sub.content}
+                          {sub.type === 'photo' ? '[photo]' : sub.content}
                         </span>
                         <button
                           onClick={() => deleteSubmission(sub.id)}
@@ -497,7 +572,7 @@ export function AdminPage() {
         {activeTab === 'settings' && (
           <>
             <div className="mb-6">
-              <h1 className="text-xl text-cyan-300 tracking-wider mb-1">▶ DISPLAY SETTINGS</h1>
+              <h1 className="text-lg md:text-xl text-cyan-300 tracking-wider mb-1">DISPLAY SETTINGS</h1>
               <p className="text-white/40 text-xs">Control timing and frequency of on-screen messages</p>
             </div>
             <div className="space-y-4 border border-cyan-500/20 p-4 bg-black/50">
@@ -522,7 +597,7 @@ export function AdminPage() {
         {activeTab === 'palettes' && (
           <>
             <div className="mb-6">
-              <h1 className="text-xl text-cyan-300 tracking-wider mb-1">▶ PALETTES</h1>
+              <h1 className="text-lg md:text-xl text-cyan-300 tracking-wider mb-1">PALETTES</h1>
               <p className="text-white/40 text-xs">{palettes.length} colour palettes — click to edit colours, names and backgrounds</p>
             </div>
 

@@ -227,6 +227,18 @@ export function App() {
 
       // Random mode - pick a weighted random effect every 15-30 seconds
       if (state.randomMode && !pm.transitioning) {
+        // Check for forced specific effect selection
+        if (state.forceSpecificEffect) {
+          const specificEffect = state.forceSpecificEffect as EffectName;
+          useStore.getState().selectEffect(''); // clear it (set to empty, then null)
+          useStore.setState({ forceSpecificEffect: null });
+          randomEffectRef.current = specificEffect;
+          engine.setEffect(specificEffect);
+          useStore.getState().setActiveEffectName(specificEffect);
+          randomTimerRef.current = now;
+          const customDuration = state.effectDurations[specificEffect];
+          randomIntervalRef.current = customDuration ?? (15 + Math.random() * 15);
+        }
         const forceChange = state.forceNextEffect !== forceNextEffectRef.current;
         if (forceChange) forceNextEffectRef.current = state.forceNextEffect;
         if (forceChange || now - randomTimerRef.current > randomIntervalRef.current || randomTimerRef.current === 0) {

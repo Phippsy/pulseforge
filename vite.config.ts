@@ -202,7 +202,9 @@ export default defineConfig({
           if (url.startsWith('/api/remote-control')) {
             if (req.method === 'POST') {
               const body = await parseBody(req);
-              if (body.command && ['next-palette', 'next-effect'].includes(body.command)) {
+              if (body.command === 'select-effect' && body.effectId) {
+                remoteCommands.push({ command: body.command, effectId: body.effectId, ts: Date.now() });
+              } else if (body.command && ['next-palette', 'next-effect'].includes(body.command)) {
                 remoteCommands.push({ command: body.command, ts: Date.now() });
               }
               res.setHeader('Content-Type', 'application/json');

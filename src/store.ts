@@ -61,6 +61,8 @@ export interface AppState {
   effectDurations: Record<string, number>;
   // Incremented to force an immediate effect change (used by remote control)
   forceNextEffect: number;
+  // Set to a specific effect name to force it immediately
+  forceSpecificEffect: string | null;
 
   setAudioDevice: (id: string) => void;
   startCapture: () => void;
@@ -85,6 +87,7 @@ export interface AppState {
   setEffectWeight: (effectId: string, weight: number) => void;
   setEffectDuration: (effectId: string, duration: number) => void;
   triggerNextEffect: () => void;
+  selectEffect: (effectId: string) => void;
   updateControlSignals: (signals: ControlSignals) => void;
   updateFps: (fps: number) => void;
   setActiveEffectName: (name: string | null) => void;
@@ -145,6 +148,7 @@ export const useStore = create<AppState>((set, get) => ({
   effectWeights: JSON.parse(localStorage.getItem('effectWeights') || '{"ceefax":3}'),
   effectDurations: JSON.parse(localStorage.getItem('effectDurations') || '{}'),
   forceNextEffect: 0,
+  forceSpecificEffect: null,
 
   setAudioDevice: (id) => set({ audioDeviceId: id }),
   startCapture: () => set({ isCapturing: true }),
@@ -191,6 +195,7 @@ export const useStore = create<AppState>((set, get) => ({
     set({ effectDurations });
   },
   triggerNextEffect: () => set((s) => ({ forceNextEffect: s.forceNextEffect + 1 })),
+  selectEffect: (effectId) => set({ forceSpecificEffect: effectId }),
   updateControlSignals: (signals) => set({ controlSignals: signals }),
   updateFps: (fps) => set({ fps }),
   setActiveEffectName: (name) => set({ activeEffectName: name }),

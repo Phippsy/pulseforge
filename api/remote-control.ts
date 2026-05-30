@@ -10,7 +10,11 @@ const REMOTE_KEY = 'danfest:remote-commands';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
-    const { command } = req.body;
+    const { command, effectId } = req.body;
+    if (command === 'select-effect' && effectId) {
+      await redis.rpush(REMOTE_KEY, JSON.stringify({ command, effectId, ts: Date.now() }));
+      return res.status(200).json({ ok: true });
+    }
     if (!command || !['next-palette', 'next-effect'].includes(command)) {
       return res.status(400).json({ error: 'Invalid command' });
     }
