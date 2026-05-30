@@ -283,6 +283,16 @@ export function App() {
         postParams.warpSpeed = Math.max(1.0, (postParams.warpSpeed ?? 1.0) * (0.8 + drift(0.03, 8.1) * 0.8));
         postParams.warpIntensity = Math.max(0.4, (postParams.warpIntensity ?? 0.5) * (0.7 + drift(0.05, 9.3) * 0.9));
 
+        // Effect-specific post-processing overrides
+        // Particle/point-based effects look terrible with feedback warp — disable it
+        const currentEffect = useStore.getState().activeEffectName;
+        const noFeedbackEffects = ['fireworks', 'spaceInvaders', 'pacman', 'matrixRain', 'tetris', 'ceefax'];
+        if (currentEffect && noFeedbackEffects.includes(currentEffect)) {
+          postParams.feedbackAmount = 0;
+          postParams.warpIntensity = 0;
+          postParams.warpSpeed = 0;
+        }
+
         // Pass FFT data for waveform ring
         if (analyzerRef.current) {
           engine.setFFTData(analyzerRef.current.getFrequencyData());
@@ -404,12 +414,25 @@ export function App() {
           state.setGenre(genres[(idx + 1) % 3]);
           break;
         }
-        case 'arrowright':
-          state.nextPhase();
+        case 'escape':
+          if (state.fullscreenMode) {
+            state.toggleFullscreen();
+          }
           break;
-        case 'arrowleft':
-          state.prevPhase();
+        case 'arrowright': {
+          const effects = Object.keys(effectRegistry) as EffectName[];
+          const curIdx = effects.indexOf(state.activeEffectName as EffectName);
+          const nextIdx = (curIdx + 1) % effects.length;
+          state.setDirectEffect(effects[nextIdx]);
           break;
+        }
+        case 'arrowleft': {
+          const effects = Object.keys(effectRegistry) as EffectName[];
+          const curIdx = effects.indexOf(state.activeEffectName as EffectName);
+          const nextIdx = (curIdx - 1 + effects.length) % effects.length;
+          state.setDirectEffect(effects[nextIdx]);
+          break;
+        }
         case '[':
           state.setIntensity(state.intensity - 0.1);
           break;
@@ -422,7 +445,8 @@ export function App() {
           state.updateControlSignals({ ...state.controlSignals, transientPulse: 1 });
           break;
         case 'f11':
-          document.documentElement.requestFullscreen?.();
+          e.preventDefault();
+          state.toggleFullscreen();
           break;
         case 'r':
           state.toggleRandomMode();
