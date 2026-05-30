@@ -27,6 +27,7 @@ export function App() {
   const randomTimerRef = useRef(0);
   const randomIntervalRef = useRef(0);
   const randomEffectRef = useRef<EffectName | null>(null);
+  const forceNextEffectRef = useRef(0);
   const frameCountRef = useRef(0);
   const fpsTimeRef = useRef(0);
   const paletteCycleTimerRef = useRef(0);
@@ -226,7 +227,9 @@ export function App() {
 
       // Random mode - pick a weighted random effect every 15-30 seconds
       if (state.randomMode && !pm.transitioning) {
-        if (now - randomTimerRef.current > randomIntervalRef.current || randomTimerRef.current === 0) {
+        const forceChange = state.forceNextEffect !== forceNextEffectRef.current;
+        if (forceChange) forceNextEffectRef.current = state.forceNextEffect;
+        if (forceChange || now - randomTimerRef.current > randomIntervalRef.current || randomTimerRef.current === 0) {
           const allEffects = Object.keys(effectRegistry) as EffectName[];
           const weights = allEffects.map((e) => state.effectWeights[e] ?? 1);
           const totalWeight = weights.reduce((sum, w) => sum + w, 0);

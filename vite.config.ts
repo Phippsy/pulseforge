@@ -37,6 +37,9 @@ const adminMessages: AdminMessage[] = [
   { id: 'admin-3', content: 'EAT SLEEP RAVE REPEAT', enabled: true, effect: 'kinetic', type: 'heavy_rotation', priority: false, createdAt: Date.now() - 30000 },
 ];
 
+// In-memory queue for remote control commands (local dev)
+const remoteCommands: Array<{ command: string; ts: number }> = [];
+
 function parseBody(req: IncomingMessage): Promise<any> {
   return new Promise((resolve) => {
     let body = '';
@@ -191,6 +194,25 @@ export default defineConfig({
               if (idx >= 0) adminMessages.splice(idx, 1);
               res.setHeader('Content-Type', 'application/json');
               res.end(JSON.stringify({ success: true }));
+              return;
+            }
+          }
+
+          // API: GET/POST /api/remote-control
+          if (url.startsWith('/api/remote-control')) {
+            if (req.method === 'POST') {
+              const body = await parseBody(req);
+              if (body.command && ['next-palette', 'next-effect'].includes(body.command)) {
+                remoteCommands.push({ command: body.command, ts: Date.now() });
+              }
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ ok: true }));
+              return;
+            }
+            if (req.method === 'GET') {
+              const commands = remoteCommands.splice(0);
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ commands }));
               return;
             }
           }

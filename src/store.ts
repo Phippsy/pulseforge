@@ -59,6 +59,8 @@ export interface AppState {
   effectWeights: Record<string, number>;
   // Per-effect duration in seconds (default ~22s from the 15-30 random range)
   effectDurations: Record<string, number>;
+  // Incremented to force an immediate effect change (used by remote control)
+  forceNextEffect: number;
 
   setAudioDevice: (id: string) => void;
   startCapture: () => void;
@@ -82,6 +84,7 @@ export interface AppState {
   togglePaletteCycling: () => void;
   setEffectWeight: (effectId: string, weight: number) => void;
   setEffectDuration: (effectId: string, duration: number) => void;
+  triggerNextEffect: () => void;
   updateControlSignals: (signals: ControlSignals) => void;
   updateFps: (fps: number) => void;
   setActiveEffectName: (name: string | null) => void;
@@ -141,6 +144,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   effectWeights: JSON.parse(localStorage.getItem('effectWeights') || '{"ceefax":3}'),
   effectDurations: JSON.parse(localStorage.getItem('effectDurations') || '{}'),
+  forceNextEffect: 0,
 
   setAudioDevice: (id) => set({ audioDeviceId: id }),
   startCapture: () => set({ isCapturing: true }),
@@ -186,6 +190,7 @@ export const useStore = create<AppState>((set, get) => ({
     localStorage.setItem('effectDurations', JSON.stringify(effectDurations));
     set({ effectDurations });
   },
+  triggerNextEffect: () => set((s) => ({ forceNextEffect: s.forceNextEffect + 1 })),
   updateControlSignals: (signals) => set({ controlSignals: signals }),
   updateFps: (fps) => set({ fps }),
   setActiveEffectName: (name) => set({ activeEffectName: name }),
