@@ -16,7 +16,7 @@ const EFFECT_LABELS: Record<string, string> = {
   fireworks: 'Fireworks 50', discoBall: 'Disco Ball', pacman: 'Pac-Man',
   lavaLamp: 'Lava Lamp', vhs: 'VHS', synthwave: 'Synthwave',
   acidSmiley: 'Acid Smiley', neonSigns: 'Neon Signs', lightning: 'Lightning',
-  chuckieEgg: 'Chuckie Egg', donkeyKong: 'Donkey Kong', arkanoid: 'Arkanoid',
+  donkeyKong: 'Donkey Kong', tetris: 'Tetris Effect',
 };
 
 export function TopBar() {
