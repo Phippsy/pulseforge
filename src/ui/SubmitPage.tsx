@@ -294,13 +294,13 @@ export function SubmitPage() {
 
           {/* Name input - teletext style */}
           <div className="mb-5 sm:mb-6">
-            <label className="block text-green-400 text-xs mb-2 tracking-widest">▶ CALL SIGN:</label>
+            <label className="block text-yellow-400 text-sm font-bold mb-2 tracking-widest">▶ YOUR NAME:</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="ENTER YOUR NAME"
-              className="w-full px-4 py-4 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 font-mono text-base focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 uppercase tracking-wider rounded-none"
+              className="w-full px-4 py-4 bg-[#0a1628] border-2 border-cyan-400/60 text-white placeholder-cyan-700 font-mono text-base focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 uppercase tracking-wider rounded-none shadow-[0_0_8px_rgba(0,255,255,0.15)]"
               maxLength={100}
               autoComplete="name"
             />
@@ -311,25 +311,25 @@ export function SubmitPage() {
             <div className="space-y-4">
               <button
                 onClick={() => setMode('message')}
-                className="w-full px-5 py-5 sm:py-6 bg-magenta-900 border-2 border-magenta-500 hover:bg-magenta-800 text-white text-left transition-colors group active:scale-[0.98]"
-                style={{ borderColor: '#ff00ff55', backgroundColor: '#1a001a' }}
+                className="w-full px-5 py-5 sm:py-6 border-2 hover:brightness-125 text-white text-left transition-all group active:scale-[0.98] shadow-[0_0_12px_rgba(255,0,255,0.2)]"
+                style={{ borderColor: '#ff55ff', backgroundColor: '#220033' }}
               >
-                <span className="text-yellow-300 text-xs block mb-2">OPTION 1</span>
-                <span className="text-xl sm:text-2xl text-magenta-200 group-hover:text-white" style={{ color: '#ff88ff' }}>
+                <span className="text-yellow-300 text-xs block mb-2 font-bold">OPTION 1</span>
+                <span className="text-xl sm:text-2xl group-hover:text-white font-bold" style={{ color: '#ff99ff' }}>
                   ✍ WRITE A MESSAGE
                 </span>
-                <span className="block text-xs text-white/40 mt-2">Text will appear on the party display</span>
+                <span className="block text-xs text-white/50 mt-2">Text will appear on the party display</span>
               </button>
               <button
                 onClick={() => setMode('photo')}
-                className="w-full px-5 py-5 sm:py-6 text-left transition-colors group active:scale-[0.98]"
-                style={{ borderWidth: '2px', borderColor: '#00ffff55', backgroundColor: '#001a1a' }}
+                className="w-full px-5 py-5 sm:py-6 text-left transition-all group active:scale-[0.98] border-2 hover:brightness-125 shadow-[0_0_12px_rgba(0,255,255,0.2)]"
+                style={{ borderColor: '#55ffff', backgroundColor: '#002233' }}
               >
-                <span className="text-yellow-300 text-xs block mb-2">OPTION 2</span>
-                <span className="text-xl sm:text-2xl group-hover:text-white" style={{ color: '#88ffff' }}>
+                <span className="text-yellow-300 text-xs block mb-2 font-bold">OPTION 2</span>
+                <span className="text-xl sm:text-2xl group-hover:text-white font-bold" style={{ color: '#99ffff' }}>
                   📡 BEAM A PHOTO
                 </span>
-                <span className="block text-xs text-white/40 mt-2">Image will be projected into the visuals</span>
+                <span className="block text-xs text-white/50 mt-2">Image will be projected into the visuals</span>
               </button>
             </div>
           )}
@@ -338,12 +338,12 @@ export function SubmitPage() {
           {mode === 'message' && (
             <div className="space-y-5">
               <div>
-                <label className="block text-green-400 text-xs mb-2 tracking-widest">▶ YOUR TRANSMISSION:</label>
+                <label className="block text-yellow-400 text-sm font-bold mb-2 tracking-widest">▶ YOUR MESSAGE:</label>
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="HAPPY BIRTHDAY DAN..."
-                  className="w-full px-4 py-4 bg-black/50 border border-cyan-500/30 text-cyan-100 placeholder-cyan-900 font-mono text-base focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30 h-32 resize-none uppercase tracking-wide rounded-none"
+                  className="w-full px-4 py-4 bg-[#0a1628] border-2 border-cyan-400/60 text-white placeholder-cyan-700 font-mono text-base focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/40 h-32 resize-none uppercase tracking-wide rounded-none shadow-[0_0_8px_rgba(0,255,255,0.15)]"
                   maxLength={500}
                 />
                 <div className="flex justify-between text-xs mt-2">
@@ -361,7 +361,7 @@ export function SubmitPage() {
                 <button
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="flex-1 px-4 py-4 bg-green-900 border-2 border-green-500 text-green-200 hover:bg-green-800 disabled:opacity-40 disabled:cursor-not-allowed text-base transition-colors font-bold tracking-wider active:scale-95"
+                  className="flex-1 px-4 py-4 bg-green-800 border-2 border-green-400 text-green-100 hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed text-base transition-all font-bold tracking-wider active:scale-95 shadow-[0_0_12px_rgba(74,222,128,0.3)]"
                 >
                   {submitting ? '▶ TRANSMITTING...' : '▶▶ TRANSMIT ▶▶'}
                 </button>
@@ -373,7 +373,7 @@ export function SubmitPage() {
           {mode === 'photo' && (
             <div className="space-y-5">
               <div>
-                <label className="block text-green-400 text-xs mb-2 tracking-widest">▶ SELECT SIGNAL:</label>
+                <label className="block text-yellow-400 text-sm font-bold mb-2 tracking-widest">▶ SELECT PHOTO:</label>
                 <input
                   ref={fileRef}
                   type="file"
@@ -401,7 +401,7 @@ export function SubmitPage() {
                 ) : (
                   <button
                     onClick={() => fileRef.current?.click()}
-                    className="w-full py-10 border-2 border-dashed border-cyan-700 text-cyan-400 hover:border-yellow-400 hover:text-yellow-300 transition-colors"
+                    className="w-full py-10 border-2 border-dashed border-cyan-400/60 text-cyan-300 hover:border-yellow-400 hover:text-yellow-300 transition-all bg-[#0a1628] shadow-[0_0_8px_rgba(0,255,255,0.15)]"
                   >
                     <div className="text-3xl mb-2">📡</div>
                     <div className="text-sm tracking-wider">TAP TO CAPTURE / SELECT</div>
@@ -419,7 +419,7 @@ export function SubmitPage() {
                 <button
                   onClick={handleSubmit}
                   disabled={submitting || !file}
-                  className="flex-1 px-4 py-4 bg-green-900 border-2 border-green-500 text-green-200 hover:bg-green-800 disabled:opacity-40 disabled:cursor-not-allowed text-base transition-colors font-bold tracking-wider active:scale-95"
+                  className="flex-1 px-4 py-4 bg-green-800 border-2 border-green-400 text-green-100 hover:bg-green-700 disabled:opacity-40 disabled:cursor-not-allowed text-base transition-all font-bold tracking-wider active:scale-95 shadow-[0_0_12px_rgba(74,222,128,0.3)]"
                 >
                   {submitting ? '▶ BEAMING...' : '▶▶ BEAM IT ▶▶'}
                 </button>

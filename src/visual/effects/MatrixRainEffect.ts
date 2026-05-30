@@ -107,8 +107,8 @@ void main() {
   // Bass shifts colour toward cyan/white pulse
   vec3 bassGlow = vec3(0.3, 0.9, 1.0); // cyan tint on beats
   vec3 pulseGreen = mix(baseGreen, bassGlow, uBassEnergy * 0.6);
-  float bassBright = 1.0 + uBassEnergy * 0.8; // pulsate brightness
-  vec3 trailColor = mix(pulseGreen, uColor1, 0.2) * 1.5 * bassBright;
+  float bassBright = 1.0 + uBassEnergy * 0.5; // pulsate brightness
+  vec3 trailColor = mix(pulseGreen, uColor1, 0.2) * 1.15 * bassBright;
   vec3 headColor = mix(vec3(0.9, 1.0, 0.95), vec3(1.0, 1.0, 1.0), uBassEnergy * 0.5);
   vec3 charColor = mix(trailColor, headColor, isHead);
   
@@ -122,7 +122,7 @@ void main() {
   // Transient flash: heads flare bright white
   charColor += vec3(0.9, 1.0, 0.9) * uTransient * isHead * 1.2;
   
-  vec3 finalCol = charColor * ch * brightness * 1.3;
+  vec3 finalCol = charColor * ch * brightness * 1.05;
   
   // Background column glow (always slightly visible)
   float bgGlow = brightness * 0.05;

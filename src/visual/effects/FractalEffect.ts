@@ -47,6 +47,18 @@ float noise1D(float x) {
   return mix(hash(i), hash(i + 1.0), f);
 }
 
+// Julia set region lookup — avoids dynamic array indexing (unsupported in GLSL ES)
+vec2 getRegion(int idx) {
+  if (idx == 0) return vec2(-0.7269, 0.1889);  // Classic dendrite
+  if (idx == 1) return vec2(-0.4, 0.6);         // Rabbit ears / spiral
+  if (idx == 2) return vec2(0.285, 0.01);        // Siegel disk
+  if (idx == 3) return vec2(-0.8, 0.156);        // Cauliflower/tree
+  if (idx == 4) return vec2(-0.12, 0.75);        // Tendrils
+  if (idx == 5) return vec2(0.36, 0.36);         // Disconnected spirals
+  if (idx == 6) return vec2(-0.52, 0.57);        // Star/flower
+  return vec2(-0.1, 0.65);                       // Lightning/fern
+}
+
 // Orbit trap distance functions for vivid coloring
 float trapCircle(vec2 z, vec2 center, float radius) {
   return abs(length(z - center) - radius);
@@ -112,19 +124,8 @@ void main() {
   int regionA = int(floor(regionIndex));
   int regionB = int(mod(float(regionA) + 1.0, 8.0));
   
-  // 8 known fascinating Julia set regions
-  vec2 regions[8];
-  regions[0] = vec2(-0.7269, 0.1889);  // Classic dendrite
-  regions[1] = vec2(-0.4, 0.6);         // Rabbit ears / spiral
-  regions[2] = vec2(0.285, 0.01);       // Siegel disk
-  regions[3] = vec2(-0.8, 0.156);       // Cauliflower/tree
-  regions[4] = vec2(-0.12, 0.75);       // Tendrils
-  regions[5] = vec2(0.36, 0.36);        // Disconnected spirals
-  regions[6] = vec2(-0.52, 0.57);       // Star/flower
-  regions[7] = vec2(-0.1, 0.65);        // Lightning/fern
-  
-  vec2 targetA = regions[regionA];
-  vec2 targetB = regions[regionB];
+  vec2 targetA = getRegion(regionA);
+  vec2 targetB = getRegion(regionB);
   
   // Smooth cubic interpolation between regions
   float smoothFrac = regionFrac * regionFrac * (3.0 - 2.0 * regionFrac);
@@ -229,8 +230,9 @@ void main() {
   if (iter >= maxIter) {
     // Interior - use orbit trap coloring instead of black
     float trapVal = minTrapCross * 2.0;
-    col = palette(trapVal + uColorShift + uTime * 0.05) * 0.3;
-    col += palette(minTrapCircle + uTime * 0.03) * 0.2;
+    col = palette(trapVal + uColorShift + uTime * 0.05) * 0.5;
+    col += palette(minTrapCircle + uTime * 0.03) * 0.35;
+    col += palette(totalDist * 0.05 + uTime * 0.02) * 0.15;
   } else {
     float t = iter / maxIter;
     t = sqrt(t);
@@ -265,12 +267,12 @@ void main() {
   col += uTransient * 0.5 * palette(uTime * 0.5);
   
   // Pulsating brightness with bass
-  col *= 0.8 + uBassPulse * 0.4;
+  col *= 1.0 + uBassPulse * 0.4;
   
   // Ambient glow in dark regions — keeps the whole screen alive
   float darkness = 1.0 - clamp(length(col) * 2.0, 0.0, 1.0);
-  vec3 ambient = palette(uTime * 0.05 + length(vUv - 0.5)) * 0.08 * darkness;
-  ambient += uColor1 * 0.03 * darkness * (0.5 + uBassEnergy * 0.5);
+  vec3 ambient = palette(uTime * 0.05 + length(vUv - 0.5)) * 0.15 * darkness;
+  ambient += uColor1 * 0.06 * darkness * (0.5 + uBassEnergy * 0.5);
   col += ambient;
   
   // Vignette (gentle)

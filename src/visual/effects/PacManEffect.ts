@@ -102,24 +102,35 @@ float pacman(vec2 p, float radius, float mouthAngle) {
 }
 
 float ghost(vec2 p, float size) {
-  vec2 top = p - vec2(0.0, size * 0.1);
+  // Dome top (hemisphere)
+  vec2 top = p - vec2(0.0, size * 0.05);
   float body = smoothstep(size + 0.003, size - 0.003, length(top));
-  if (p.y < -size * 0.3) {
-    float wave = sin(p.x / size * PI * 3.0) * size * 0.15;
-    body *= smoothstep(-size * 0.9 + wave - 0.003, -size * 0.9 + wave + 0.003, p.y);
+  // Flat sides below the equator
+  if (p.y < size * 0.05) {
+    body = smoothstep(0.003, -0.003, abs(p.x) - size);
   }
+  // Scalloped skirt bottom — 3 bumps
+  if (p.y < -size * 0.4) {
+    float bumps = cos(p.x / size * PI * 3.0) * size * 0.2;
+    body *= smoothstep(-size * 0.85 + bumps - 0.003, -size * 0.85 + bumps + 0.003, p.y);
+  }
+  // Cut off anything above the dome
+  body *= smoothstep(size * 1.05, size * 0.95, length(vec2(p.x, max(p.y - size * 0.05, 0.0))));
   return body;
 }
 
 float ghostEyes(vec2 p, float size) {
-  return smoothstep(size * 0.22, size * 0.18, length(p - vec2(-size * 0.3, size * 0.15)))
-       + smoothstep(size * 0.22, size * 0.18, length(p - vec2(size * 0.3, size * 0.15)));
+  // Larger white ovals for eyes
+  vec2 lEye = (p - vec2(-size * 0.32, size * 0.2)) / vec2(0.75, 1.0);
+  vec2 rEye = (p - vec2(size * 0.32, size * 0.2)) / vec2(0.75, 1.0);
+  return smoothstep(size * 0.26, size * 0.2, length(lEye))
+       + smoothstep(size * 0.26, size * 0.2, length(rEye));
 }
 
 float ghostPupils(vec2 p, float size, vec2 look) {
-  vec2 off = look * size * 0.08;
-  return smoothstep(size * 0.12, size * 0.08, length(p - vec2(-size * 0.25, size * 0.12) - off))
-       + smoothstep(size * 0.12, size * 0.08, length(p - vec2(size * 0.25, size * 0.12) - off));
+  vec2 off = look * size * 0.1;
+  return smoothstep(size * 0.14, size * 0.09, length(p - vec2(-size * 0.3, size * 0.18) - off))
+       + smoothstep(size * 0.14, size * 0.09, length(p - vec2(size * 0.3, size * 0.18) - off));
 }
 
 float pelletDot(vec2 p, float radius) {
@@ -256,11 +267,46 @@ void main() {
     col += vec3(1.0, 0.85, 0.6) * powerPellet(p - cp, cellSize * 0.18, uTime) * ep;
   }
 
-  // Fruit on transient
+  // Cherries — always visible near centre of maze
+  {
+    vec2 cherryGrid = vec2(14.0, 17.0);
+    vec2 cherryPos = mazeOrigin + cherryGrid * cellSize + cellSize * 0.5;
+    float cEaten = smoothstep(cellSize * 1.2, cellSize * 2.0, length(cherryPos - pacPos));
+    float cSize = cellSize * 0.3;
+    // Two cherry spheres
+    vec2 c1 = cherryPos + vec2(-cSize * 0.55, -cSize * 0.2);
+    vec2 c2 = cherryPos + vec2(cSize * 0.55, -cSize * 0.1);
+    float cherry1 = smoothstep(cSize + 0.002, cSize - 0.002, length(p - c1));
+    float cherry2 = smoothstep(cSize + 0.002, cSize - 0.002, length(p - c2));
+    // Highlight on each cherry
+    float hi1 = smoothstep(cSize * 0.45, cSize * 0.3, length(p - c1 + vec2(cSize * 0.2, -cSize * 0.2)));
+    float hi2 = smoothstep(cSize * 0.45, cSize * 0.3, length(p - c2 + vec2(cSize * 0.2, -cSize * 0.2)));
+    col += vec3(0.9, 0.05, 0.1) * (cherry1 + cherry2) * cEaten;
+    col += vec3(0.3, 0.1, 0.1) * (hi1 * cherry1 + hi2 * cherry2) * cEaten;
+    // Stems — thin lines going up from each cherry meeting at a point
+    vec2 stemTop = cherryPos + vec2(0.0, cSize * 1.4);
+    // Stem from cherry 1
+    vec2 s1dir = normalize(stemTop - c1);
+    float s1t = clamp(dot(p - c1, s1dir), 0.0, length(stemTop - c1));
+    float s1d = length(p - c1 - s1dir * s1t);
+    col += vec3(0.2, 0.6, 0.1) * smoothstep(cellSize * 0.04, cellSize * 0.01, s1d) * cEaten;
+    // Stem from cherry 2
+    vec2 s2dir = normalize(stemTop - c2);
+    float s2t = clamp(dot(p - c2, s2dir), 0.0, length(stemTop - c2));
+    float s2d = length(p - c2 - s2dir * s2t);
+    col += vec3(0.2, 0.6, 0.1) * smoothstep(cellSize * 0.04, cellSize * 0.01, s2d) * cEaten;
+    // Small leaf at the top
+    vec2 leafP = p - stemTop;
+    float leafAngle = atan(leafP.y, leafP.x) - 0.5;
+    float leafR = length(leafP);
+    float leaf = smoothstep(cSize * 0.6, cSize * 0.4, leafR / (0.5 + 0.5 * cos(leafAngle * 2.0)));
+    col += vec3(0.1, 0.7, 0.15) * leaf * step(leafP.x, cSize * 0.3) * step(-cSize * 0.1, leafP.y) * cEaten;
+  }
+
+  // Bonus fruit flash on transient
   if (uTransient > 0.4) {
     vec2 fp = mazeOrigin + vec2(14.0, 15.0) * cellSize;
-    col += vec3(1.0, 0.1, 0.2) * smoothstep(cellSize * 0.6, cellSize * 0.3, length(p - fp)) * uTransient;
-    col += vec3(1.0, 0.1, 0.2) * smoothstep(cellSize * 0.6, cellSize * 0.3, length(p - fp - vec2(cellSize * 0.4, cellSize * 0.2))) * uTransient;
+    col += vec3(1.0, 0.6, 0.0) * smoothstep(cellSize * 0.5, cellSize * 0.2, length(p - fp)) * uTransient;
   }
 
   // CRT scanlines
