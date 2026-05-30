@@ -180,39 +180,7 @@ void main() {
   // Dark background with subtle colour
   vec3 col = vec3(0.02, 0.01, 0.04);
   
-  // === "DAN THE LEGEND" TEXT - large, behind the ball on the back wall ===
-  {
-    float textY = 0.52; // centered vertically (slightly above middle)
-    float textHeight = 0.12; // large text
-    float textWidth = 0.8;
-    float textLeft = 0.5 - textWidth * 0.5;
-    vec2 textUv = vec2((uv.x - textLeft) / textWidth, (uv.y - textY) / textHeight);
-    float txt = drawText(textUv);
-    
-    // Colour cycling - subtle background glow
-    float textPhase = t * 0.3;
-    vec3 textCol;
-    float tp = mod(textPhase, 4.0);
-    if (tp < 1.0) textCol = mix(uColor1, uColor2, tp);
-    else if (tp < 2.0) textCol = mix(uColor2, uColor3, tp - 1.0);
-    else if (tp < 3.0) textCol = mix(uColor3, uColor4, tp - 2.0);
-    else textCol = mix(uColor4, uColor1, tp - 3.0);
-    
-    // Soft glow around text (background projection look)
-    float glowRange = 0.4;
-    float glow = 0.0;
-    for (float dx = -1.0; dx <= 1.0; dx += 1.0) {
-      for (float dy = -1.0; dy <= 1.0; dy += 1.0) {
-        vec2 offset = vec2(dx, dy) * glowRange;
-        glow += drawText(textUv + offset);
-      }
-    }
-    glow = min(glow / 9.0, 1.0);
-    
-    // Render as a dim projected look - bass makes it pulse brighter
-    col += textCol * txt * (0.4 + uBassEnergy * 0.6);
-    col += textCol * glow * 0.15;
-  }
+  // (text rendered after ball/beams below)
   
   // Rotation speed increases gently with bass
   float rotTime = t * (0.6 + uBassEnergy * 0.6);
@@ -367,6 +335,41 @@ void main() {
   
   // Gentle transient glow (no strobe)
   col += vec3(0.05) * uTransient;
+  
+  // === "DAN THE LEGEND" TEXT - rendered ON TOP so it's always readable ===
+  {
+    float textY = 0.22; // below the ball
+    float textHeight = 0.10;
+    float textWidth = 0.75;
+    float textLeft = 0.5 - textWidth * 0.5;
+    vec2 textUv = vec2((uv.x - textLeft) / textWidth, (uv.y - textY) / textHeight);
+    float txt = drawText(textUv);
+    
+    // Colour cycling
+    float textPhase = t * 0.3;
+    vec3 textCol;
+    float tp = mod(textPhase, 4.0);
+    if (tp < 1.0) textCol = mix(uColor1, uColor2, tp);
+    else if (tp < 2.0) textCol = mix(uColor2, uColor3, tp - 1.0);
+    else if (tp < 3.0) textCol = mix(uColor3, uColor4, tp - 2.0);
+    else textCol = mix(uColor4, uColor1, tp - 3.0);
+    
+    // Bright text with white core for readability
+    col += textCol * txt * (1.5 + uBassEnergy * 1.0);
+    col += vec3(1.0) * txt * 0.4;
+    
+    // Subtle glow around text
+    float glowRange = 0.3;
+    float glow = 0.0;
+    for (float dx = -1.0; dx <= 1.0; dx += 1.0) {
+      for (float dy = -1.0; dy <= 1.0; dy += 1.0) {
+        vec2 offset = vec2(dx, dy) * glowRange;
+        glow += drawText(textUv + offset);
+      }
+    }
+    glow = min(glow / 9.0, 1.0);
+    col += textCol * glow * 0.3;
+  }
   
   col *= uIntensity;
   
