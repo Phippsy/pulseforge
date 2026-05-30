@@ -22,7 +22,65 @@ interface UserSubmission {
   paused: boolean;
 }
 
-type AdminTab = 'system' | 'submissions' | 'settings' | 'palettes';
+type AdminTab = 'system' | 'submissions' | 'settings' | 'palettes' | 'remote';
+
+function RemoteControlPanel() {
+  const [sending, setSending] = useState<string | null>(null);
+  const [lastSent, setLastSent] = useState<{ command: string; time: number } | null>(null);
+
+  const sendCommand = async (command: 'next-palette' | 'next-effect') => {
+    setSending(command);
+    try {
+      const res = await fetch('/api/remote-control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command }),
+      });
+      if (res.ok) {
+        setLastSent({ command, time: Date.now() });
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSending(null);
+    }
+  };
+
+  return (
+    <>
+      <div className="mb-6">
+        <h1 className="text-xl text-cyan-300 tracking-wider mb-1">▶ REMOTE CONTROL</h1>
+        <p className="text-white/40 text-xs">Push commands to the live visualiser in real-time</p>
+      </div>
+      <div className="space-y-4">
+        <button
+          onClick={() => sendCommand('next-palette')}
+          disabled={sending !== null}
+          className="w-full py-4 bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 border border-purple-400/30 text-white font-bold text-sm tracking-wider transition-all active:scale-95"
+        >
+          {sending === 'next-palette' ? '⏳ SENDING...' : '🎨 NEXT PALETTE'}
+        </button>
+        <button
+          onClick={() => sendCommand('next-effect')}
+          disabled={sending !== null}
+          className="w-full py-4 bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 border border-cyan-400/30 text-white font-bold text-sm tracking-wider transition-all active:scale-95"
+        >
+          {sending === 'next-effect' ? '⏳ SENDING...' : '⚡ NEXT EFFECT'}
+        </button>
+      </div>
+      {lastSent && (
+        <div className="mt-4 text-center text-white/40 text-xs">
+          Last sent: <span className="text-cyan-300">{lastSent.command}</span> at {new Date(lastSent.time).toLocaleTimeString()}
+        </div>
+      )}
+      <div className="mt-6 border border-cyan-500/20 p-4 bg-black/50 text-white/40 text-xs space-y-2">
+        <p>■ Commands are pushed to all running visualiser instances</p>
+        <p>■ The visualiser polls every 2 seconds for new commands</p>
+        <p>■ Works across devices — control from your phone while visuals run on the big screen</p>
+      </div>
+    </>
+  );
+}
 
 export function AdminPage() {
   const [messages, setMessages] = useState<AdminMessage[]>([]);
@@ -135,7 +193,7 @@ export function AdminPage() {
 
       {/* Tabs */}
       <div className="flex border-b border-cyan-500/20">
-        {(['system', 'submissions', 'palettes', 'settings'] as AdminTab[]).map(tab => (
+        {(['system', 'submissions', 'palettes', 'settings', 'remote'] as AdminTab[]).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -145,7 +203,7 @@ export function AdminPage() {
                 : 'border-transparent text-white/40 hover:text-white/60'
             }`}
           >
-            {tab === 'system' ? 'SYSTEM' : tab === 'submissions' ? 'USER' : tab === 'palettes' ? 'PALETTES' : 'SETTINGS'}
+            {tab === 'system' ? 'SYSTEM' : tab === 'submissions' ? 'USER' : tab === 'palettes' ? 'PALETTES' : tab === 'remote' ? 'REMOTE' : 'SETTINGS'}
           </button>
         ))}
       </div>
@@ -614,6 +672,11 @@ export function AdminPage() {
                 })}
             </div>
           </>
+        )}
+
+        {/* REMOTE CONTROL TAB */}
+        {activeTab === 'remote' && (
+          <RemoteControlPanel />
         )}
 
         {/* Footer */}

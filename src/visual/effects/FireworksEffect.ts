@@ -80,8 +80,8 @@ void main() {
   float twinkle = sin(t * 2.0 + hash2(starCell) * 20.0) * 0.5 + 0.5;
   col += vec3(0.5, 0.5, 0.7) * starBright * twinkle * 0.2;
   
-  // Multiple fireworks (8 simultaneous)
-  for (float i = 0.0; i < 8.0; i++) {
+  // Multiple fireworks (5 simultaneous)
+  for (float i = 0.0; i < 5.0; i++) {
     // Each firework has its own lifecycle
     float fireId = i;
     float cycleTime = 3.0 + hash(fireId * 7.7) * 2.0; // 3-5 seconds per cycle
@@ -106,16 +106,16 @@ void main() {
     if (risePhase < 1.0) {
       vec2 rocketPos = vec2(launchX, risePhase * burstY);
       float rocketDist = length(uv - rocketPos);
-      float rocket = exp(-rocketDist * rocketDist * 2000.0);
+      float rocket = exp(-rocketDist * rocketDist * 8000.0);
       col += vec3(1.0, 0.8, 0.3) * rocket * (1.0 - explodePhase);
       
       // Trail sparks
       for (float s = 0.0; s < 5.0; s++) {
         float sparkT = risePhase - s * 0.05;
         if (sparkT < 0.0) continue;
-        vec2 sparkPos = vec2(launchX + sin(s * 3.0 + t * 10.0) * 0.005, sparkT * burstY);
+        vec2 sparkPos = vec2(launchX + sin(s * 3.0 + t * 10.0) * 0.003, sparkT * burstY);
         float sparkDist = length(uv - sparkPos);
-        float spark = exp(-sparkDist * sparkDist * 5000.0) * (1.0 - s / 5.0);
+        float spark = exp(-sparkDist * sparkDist * 15000.0) * (1.0 - s / 5.0);
         col += vec3(1.0, 0.6, 0.1) * spark * 0.5;
       }
     }
@@ -138,44 +138,37 @@ void main() {
       float is50 = step(0.7, hash(fireId * 2.2 + floor(t / cycleTime)));
       
       if (is50 > 0.5) {
-        // "50" shaped burst
-        float burstScale = 0.18 + explodeAge * 0.05;
+        // "50" shaped burst — render digits as solid glowing shapes
+        float burstScale = 0.08 + explodeAge * 0.02;
         vec2 relPos = (uv - burstPos) / burstScale;
         
-        // Check digit "5"
-        vec2 d5pos = vec2(relPos.x * 0.5 + 0.55, relPos.y + 0.5);
+        // "5" occupies x: -1.05 to -0.05, "0" occupies x: 0.05 to 1.05
+        // Both occupy y: -0.5 to 0.5
+        vec2 d5pos = vec2(relPos.x + 1.05, relPos.y + 0.5);
+        vec2 d0pos = vec2(relPos.x - 0.05, relPos.y + 0.5);
+        
         float in5 = inDigit5(d5pos);
-        
-        // Check digit "0"  
-        vec2 d0pos = vec2(relPos.x * 0.5 - 0.05, relPos.y + 0.5);
         float in0 = inDigit0(d0pos);
-        
         float inDigits = max(in5, in0);
         
-        // Solid fill with subtle shimmer (not broken up)
-        float shimmer = 0.8 + 0.2 * sin(length(relPos) * 40.0 - t * 8.0);
+        // Solid bright fill
+        col += fireColor * inDigits * fade * 3.0;
         
-        col += fireColor * inDigits * shimmer * fade * 2.5;
+        // White hot core for readability
+        col += vec3(1.0) * inDigits * fade * 1.2;
         
-        // Bright edge glow around the digit shapes
-        float edgeDist5 = length(uv - burstPos + vec2(burstScale * 0.45, 0.0));
-        float edgeDist0 = length(uv - burstPos - vec2(burstScale * 0.45, 0.0));
-        float nearDigit = min(edgeDist5, edgeDist0);
-        float glow = exp(-nearDigit * nearDigit * 60.0) * fade * 0.5;
+        // Soft outer glow around the whole "50"
+        float glowDist = length(relPos);
+        float glow = exp(-glowDist * glowDist * 1.5) * fade * 0.3;
         col += fireColor * glow;
-        
-        // Outer sparkle ring expanding from burst
-        float ringDist = abs(length(uv - burstPos) - explodeAge * 0.25);
-        float ring = exp(-ringDist * ringDist * 800.0) * fade * 0.4;
-        col += fireColor * ring;
       } else {
         // Classic starburst - particles flying outward
-        float numParticles = 30.0 + uBassEnergy * 20.0;
-        for (float p = 0.0; p < 50.0; p++) {
+        float numParticles = 18.0 + uBassEnergy * 8.0;
+        for (float p = 0.0; p < 26.0; p++) {
           if (p >= numParticles) break;
           float angle = p * 6.2831853 / numParticles + hash(p + fireId) * 0.3;
-          float speed = 0.3 + hash(p * 3.0 + fireId) * 0.4;
-          float gravity = explodeAge * explodeAge * 0.3;
+          float speed = 0.2 + hash(p * 3.0 + fireId) * 0.3;
+          float gravity = explodeAge * explodeAge * 0.2;
           
           vec2 particlePos = burstPos + vec2(
             cos(angle) * speed * explodeAge,
@@ -183,16 +176,18 @@ void main() {
           );
           
           float dist = length(uv - particlePos);
-          float particle = exp(-dist * dist * 3000.0);
+          // Very tight gaussian — sharp dots
+          float particle = exp(-dist * dist * 25000.0);
           
           // Colour variation per particle
           vec3 pCol = mix(fireColor, vec3(1.0), hash(p * 7.0) * 0.3);
-          col += pCol * particle * fade;
+          col += pCol * particle * fade * 1.5;
           
           // Trailing sparks
-          vec2 trailPos = particlePos - vec2(cos(angle), sin(angle) - gravity * 0.5) * 0.02;
+          vec2 trailPos = particlePos - vec2(cos(angle), sin(angle) - gravity * 0.5) * 0.01;
           float trailDist = length(uv - trailPos);
-          col += pCol * 0.3 * exp(-trailDist * trailDist * 5000.0) * fade;
+          col += pCol * 0.3 * exp(-trailDist * trailDist * 40000.0) * fade;
+        }
         }
       }
     }

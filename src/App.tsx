@@ -11,6 +11,7 @@ import type { EffectName } from './visual/effects/index';
 import { getPalette, lerpColors } from './visual/palettes';
 import { Overlay } from './ui/Overlay';
 import { SubmissionDisplay } from './ui/SubmissionDisplay';
+import { useRemoteControl } from './hooks/useRemoteControl';
 
 export function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -35,6 +36,9 @@ export function App() {
 
   const isCapturing = useStore((s) => s.isCapturing);
   const audioDeviceId = useStore((s) => s.audioDeviceId);
+
+  // Listen for remote control commands (next palette, next effect)
+  useRemoteControl();
 
   const startAudio = useCallback(async () => {
     const capture = new AudioCapture();

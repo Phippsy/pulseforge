@@ -384,22 +384,28 @@ export class PostProcessing {
   updateParams(params: PostProcessParams): void {
     // Bloom — very subtle. High threshold means only the absolute brightest pixels bloom
     if (params.bloomStrength <= 0) {
+      this.bloomPass.enabled = false;
       this.bloomPass.strength = 0;
     } else {
+      this.bloomPass.enabled = true;
       this.bloomPass.strength = Math.min(0.6, params.bloomStrength * 0.3 + this.bassEnergy * 0.1 + this.transient * 0.05);
     }
     this.bloomPass.threshold = Math.max(0.85, params.bloomThreshold + 0.2);
     this.bloomPass.radius = Math.min(0.4, params.bloomRadius * 0.5);
     if (params.chromaticAberration <= 0) {
+      this.chromaticPass.enabled = false;
       this.chromaticPass.uniforms.uAmount.value = 0;
     } else {
+      this.chromaticPass.enabled = true;
       this.chromaticPass.uniforms.uAmount.value = Math.min(0.03, params.chromaticAberration + this.bassEnergy * 0.005 + this.transient * 0.008);
     }
     this.chromaticPass.uniforms.uTime.value = this.time;
     this.kaleidoscopePass.uniforms.uSegments.value = params.kaleidoscopeSegments;
     this.kaleidoscopePass.uniforms.uRotation.value = this.time * 0.08;
+    this.kaleidoscopePass.enabled = params.kaleidoscopeSegments >= 2;
     
     // Warp feedback - the engine of constant motion
+    this.feedbackPass.enabled = params.feedbackAmount > 0.01;
     this.feedbackPass.uniforms.uAmount.value = params.feedbackAmount;
     this.feedbackPass.uniforms.uZoom.value = 0.008 + (params.warpIntensity ?? 0.5) * 0.012;
     this.feedbackPass.uniforms.uRotation.value = 0.003 + (params.warpSpeed ?? 1.0) * 0.004;
