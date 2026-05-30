@@ -38,7 +38,7 @@ const adminMessages: AdminMessage[] = [
 ];
 
 // In-memory queue for remote control commands (local dev)
-const remoteCommands: Array<{ command: string; ts: number }> = [];
+const remoteCommands: Array<{ command: string; ts: number; effectId?: string }> = [];
 
 function parseBody(req: IncomingMessage): Promise<any> {
   return new Promise((resolve) => {
