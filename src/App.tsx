@@ -291,6 +291,9 @@ export function App() {
           postParams.feedbackAmount = 0;
           postParams.warpIntensity = 0;
           postParams.warpSpeed = 0;
+          postParams.bloomStrength = 0;
+          postParams.chromaticAberration = 0;
+          postParams.kaleidoscopeSegments = 0;
         }
 
         // Pass FFT data for waveform ring

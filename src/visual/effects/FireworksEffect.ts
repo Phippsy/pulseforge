@@ -139,31 +139,35 @@ void main() {
       
       if (is50 > 0.5) {
         // "50" shaped burst
-        vec2 relPos = (uv - burstPos) / (0.15 + explodeAge * 0.1);
-        relPos.x *= 0.5; // Make it wider
+        float burstScale = 0.18 + explodeAge * 0.05;
+        vec2 relPos = (uv - burstPos) / burstScale;
         
         // Check digit "5"
-        vec2 d5pos = vec2(relPos.x + 0.55, relPos.y + 0.5);
+        vec2 d5pos = vec2(relPos.x * 0.5 + 0.55, relPos.y + 0.5);
         float in5 = inDigit5(d5pos);
         
         // Check digit "0"  
-        vec2 d0pos = vec2(relPos.x - 0.05, relPos.y + 0.5);
+        vec2 d0pos = vec2(relPos.x * 0.5 - 0.05, relPos.y + 0.5);
         float in0 = inDigit0(d0pos);
         
         float inDigits = max(in5, in0);
         
-        // Particle sparkle within digit shape
-        vec2 sparkleUv = relPos * 20.0;
-        float sparkle = hash2(floor(sparkleUv) + floor(t * 5.0) * 0.01);
-        sparkle = step(0.4, sparkle);
+        // Solid fill with subtle shimmer (not broken up)
+        float shimmer = 0.8 + 0.2 * sin(length(relPos) * 40.0 - t * 8.0);
         
-        col += fireColor * inDigits * sparkle * fade * 2.0;
+        col += fireColor * inDigits * shimmer * fade * 2.5;
         
-        // Glow around digits
-        float digitDist = min(length(uv - burstPos + vec2(0.05, 0.0)), 
-                             length(uv - burstPos - vec2(0.05, 0.0)));
-        float glow = exp(-digitDist * digitDist * 30.0) * fade * 0.3;
+        // Bright edge glow around the digit shapes
+        float edgeDist5 = length(uv - burstPos + vec2(burstScale * 0.45, 0.0));
+        float edgeDist0 = length(uv - burstPos - vec2(burstScale * 0.45, 0.0));
+        float nearDigit = min(edgeDist5, edgeDist0);
+        float glow = exp(-nearDigit * nearDigit * 60.0) * fade * 0.5;
         col += fireColor * glow;
+        
+        // Outer sparkle ring expanding from burst
+        float ringDist = abs(length(uv - burstPos) - explodeAge * 0.25);
+        float ring = exp(-ringDist * ringDist * 800.0) * fade * 0.4;
+        col += fireColor * ring;
       } else {
         // Classic starburst - particles flying outward
         float numParticles = 30.0 + uBassEnergy * 20.0;

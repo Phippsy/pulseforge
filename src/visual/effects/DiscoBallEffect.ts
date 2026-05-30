@@ -36,53 +36,105 @@ float hash(float n) { return fract(sin(n) * 43758.5453); }
 float hash2(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 
 // 5x5 pixel font for "DAN THE LEGEND"
-// Each character encoded as 5 rows of 5 bits (25 bits in an int)
-// Row 0 = bits 0-4, Row 1 = bits 5-9, etc.
-int charBits(int ch) {
-  if (ch == 0) return 0; // space
-  if (ch == 1) return 0x1E9D67C; // D: 11110 10001 10001 10001 11110
-  if (ch == 2) return 0x119D771; // A: 01110 10001 11111 10001 10001
-  if (ch == 3) return 0x119D319; // N: 10001 11001 10101 10011 10001
-  if (ch == 4) return 0x10842FC; // T: 11111 00100 00100 00100 00100
-  if (ch == 5) return 0x11BF119; // H: 10001 10001 11111 10001 10001
-  if (ch == 6) return 0x1F0F87F; // E: 11111 10000 11110 10000 11111
-  if (ch == 7) return 0x1F0841F; // L: 10000 10000 10000 10000 11111
-  if (ch == 8) return 0x11151CE; // G: 01110 10001 10101 10001 01110
-  if (ch == 9) return 0x1E9D67C; // same D for second occurrence
-  return 0;
+// Float-based bit extraction (no int bitwise ops needed)
+float getBit(float val, float bit) {
+  return mod(floor(val / pow(2.0, bit)), 2.0);
 }
 
-float drawChar(vec2 pos, int ch) {
+// Returns pixel (0 or 1) for a given character, row (0=top), col (0=left)
+// Characters: 1=D 2=A 3=N 4=T 5=H 6=E 7=L 8=G 0=space
+float charPixel(float ch, float row, float col) {
+  // Each char has 5 rows, each row encoded as float 0-31
+  // D
+  if (ch < 1.5) {
+    float r0 = 15.0; float r1 = 17.0; float r2 = 17.0; float r3 = 17.0; float r4 = 15.0;
+    float r = row < 0.5 ? r0 : row < 1.5 ? r1 : row < 2.5 ? r2 : row < 3.5 ? r3 : r4;
+    return getBit(r, col);
+  }
+  // A
+  if (ch < 2.5) {
+    float r0 = 14.0; float r1 = 17.0; float r2 = 31.0; float r3 = 17.0; float r4 = 17.0;
+    float r = row < 0.5 ? r0 : row < 1.5 ? r1 : row < 2.5 ? r2 : row < 3.5 ? r3 : r4;
+    return getBit(r, col);
+  }
+  // N
+  if (ch < 3.5) {
+    float r0 = 17.0; float r1 = 19.0; float r2 = 21.0; float r3 = 25.0; float r4 = 17.0;
+    float r = row < 0.5 ? r0 : row < 1.5 ? r1 : row < 2.5 ? r2 : row < 3.5 ? r3 : r4;
+    return getBit(r, col);
+  }
+  // T
+  if (ch < 4.5) {
+    float r0 = 31.0; float r1 = 4.0; float r2 = 4.0; float r3 = 4.0; float r4 = 4.0;
+    float r = row < 0.5 ? r0 : row < 1.5 ? r1 : row < 2.5 ? r2 : row < 3.5 ? r3 : r4;
+    return getBit(r, col);
+  }
+  // H
+  if (ch < 5.5) {
+    float r0 = 17.0; float r1 = 17.0; float r2 = 31.0; float r3 = 17.0; float r4 = 17.0;
+    float r = row < 0.5 ? r0 : row < 1.5 ? r1 : row < 2.5 ? r2 : row < 3.5 ? r3 : r4;
+    return getBit(r, col);
+  }
+  // E
+  if (ch < 6.5) {
+    float r0 = 31.0; float r1 = 1.0; float r2 = 15.0; float r3 = 1.0; float r4 = 31.0;
+    float r = row < 0.5 ? r0 : row < 1.5 ? r1 : row < 2.5 ? r2 : row < 3.5 ? r3 : r4;
+    return getBit(r, col);
+  }
+  // L
+  if (ch < 7.5) {
+    float r0 = 1.0; float r1 = 1.0; float r2 = 1.0; float r3 = 1.0; float r4 = 31.0;
+    float r = row < 0.5 ? r0 : row < 1.5 ? r1 : row < 2.5 ? r2 : row < 3.5 ? r3 : r4;
+    return getBit(r, col);
+  }
+  // G
+  if (ch < 8.5) {
+    float r0 = 14.0; float r1 = 1.0; float r2 = 29.0; float r3 = 17.0; float r4 = 14.0;
+    float r = row < 0.5 ? r0 : row < 1.5 ? r1 : row < 2.5 ? r2 : row < 3.5 ? r3 : r4;
+    return getBit(r, col);
+  }
+  return 0.0;
+}
+
+float drawChar(vec2 pos, float ch) {
+  if (ch < 0.5) return 0.0; // space
   if (pos.x < 0.0 || pos.x >= 1.0 || pos.y < 0.0 || pos.y >= 1.0) return 0.0;
-  int bits = charBits(ch);
-  int col_idx = int(pos.x * 5.0);
-  int row = int((1.0 - pos.y) * 5.0);
-  int bitIndex = row * 5 + col_idx;
-  return float((bits >> bitIndex) & 1);
+  float col = floor(pos.x * 5.0);
+  float row = 4.0 - floor(pos.y * 5.0); // flip so row 0 = top
+  return charPixel(ch, row, col);
 }
 
 float drawText(vec2 uv) {
   // "DAN THE LEGEND" = D A N _ T H E _ L E G E N D
-  // Map: D=1 A=2 N=3 T=4 H=5 E=6 L=7 G=8 space=0
+  // 14 characters total
   float totalChars = 14.0;
   float charWidth = 1.0 / totalChars;
   
-  float result = 0.0;
-  int chars[14];
-  chars[0] = 1; chars[1] = 2; chars[2] = 3; // DAN
-  chars[3] = 0; // space
-  chars[4] = 4; chars[5] = 5; chars[6] = 6; // THE
-  chars[7] = 0; // space
-  chars[8] = 7; chars[9] = 6; chars[10] = 8; chars[11] = 6; chars[12] = 3; chars[13] = 1; // LEGEND
+  float charIdx = floor(uv.x / charWidth);
+  if (charIdx < 0.0 || charIdx >= totalChars) return 0.0;
   
-  for (int i = 0; i < 14; i++) {
-    float cx = float(i) * charWidth;
-    vec2 charUv = vec2((uv.x - cx) / charWidth, uv.y);
-    // Slim chars slightly (add spacing)
-    charUv.x = (charUv.x - 0.1) / 0.8;
-    result += drawChar(charUv, chars[i]);
-  }
-  return min(result, 1.0);
+  // Map index to character ID
+  float ch = 0.0;
+  if (charIdx < 0.5) ch = 1.0;       // D
+  else if (charIdx < 1.5) ch = 2.0;  // A
+  else if (charIdx < 2.5) ch = 3.0;  // N
+  else if (charIdx < 3.5) ch = 0.0;  // space
+  else if (charIdx < 4.5) ch = 4.0;  // T
+  else if (charIdx < 5.5) ch = 5.0;  // H
+  else if (charIdx < 6.5) ch = 6.0;  // E
+  else if (charIdx < 7.5) ch = 0.0;  // space
+  else if (charIdx < 8.5) ch = 7.0;  // L
+  else if (charIdx < 9.5) ch = 6.0;  // E
+  else if (charIdx < 10.5) ch = 8.0; // G
+  else if (charIdx < 11.5) ch = 6.0; // E
+  else if (charIdx < 12.5) ch = 3.0; // N
+  else ch = 1.0;                      // D
+  
+  float cx = charIdx * charWidth;
+  vec2 charUv = vec2((uv.x - cx) / charWidth, uv.y);
+  // Add spacing within each character cell
+  charUv.x = (charUv.x - 0.1) / 0.8;
+  return drawChar(charUv, ch);
 }
 
 // Disco ball facet pattern (spherical mapping with facets)
@@ -127,6 +179,40 @@ void main() {
   
   // Dark background with subtle colour
   vec3 col = vec3(0.02, 0.01, 0.04);
+  
+  // === "DAN THE LEGEND" TEXT - large, behind the ball on the back wall ===
+  {
+    float textY = 0.52; // centered vertically (slightly above middle)
+    float textHeight = 0.12; // large text
+    float textWidth = 0.8;
+    float textLeft = 0.5 - textWidth * 0.5;
+    vec2 textUv = vec2((uv.x - textLeft) / textWidth, (uv.y - textY) / textHeight);
+    float txt = drawText(textUv);
+    
+    // Colour cycling - subtle background glow
+    float textPhase = t * 0.3;
+    vec3 textCol;
+    float tp = mod(textPhase, 4.0);
+    if (tp < 1.0) textCol = mix(uColor1, uColor2, tp);
+    else if (tp < 2.0) textCol = mix(uColor2, uColor3, tp - 1.0);
+    else if (tp < 3.0) textCol = mix(uColor3, uColor4, tp - 2.0);
+    else textCol = mix(uColor4, uColor1, tp - 3.0);
+    
+    // Soft glow around text (background projection look)
+    float glowRange = 0.4;
+    float glow = 0.0;
+    for (float dx = -1.0; dx <= 1.0; dx += 1.0) {
+      for (float dy = -1.0; dy <= 1.0; dy += 1.0) {
+        vec2 offset = vec2(dx, dy) * glowRange;
+        glow += drawText(textUv + offset);
+      }
+    }
+    glow = min(glow / 9.0, 1.0);
+    
+    // Render as a dim projected look - bass makes it pulse brighter
+    col += textCol * txt * (0.4 + uBassEnergy * 0.6);
+    col += textCol * glow * 0.15;
+  }
   
   // Rotation speed increases gently with bass
   float rotTime = t * (0.6 + uBassEnergy * 0.6);
@@ -270,40 +356,6 @@ void main() {
       
       col += spotCol * spot * (0.3 + uBassEnergy * 0.5);
     }
-  }
-  
-  // === "DAN THE LEGEND" TEXT below the ball ===
-  {
-    float textY = 0.38; // vertical position (below ball)
-    float textHeight = 0.04;
-    float textWidth = 0.6;
-    float textLeft = 0.5 - textWidth * 0.5;
-    vec2 textUv = vec2((uv.x - textLeft) / textWidth, (uv.y - textY) / textHeight);
-    float txt = drawText(textUv);
-    
-    // Neon glow colour cycling
-    float textPhase = t * 0.5;
-    vec3 textCol;
-    float tp = mod(textPhase, 4.0);
-    if (tp < 1.0) textCol = mix(uColor1, uColor2, tp);
-    else if (tp < 2.0) textCol = mix(uColor2, uColor3, tp - 1.0);
-    else if (tp < 3.0) textCol = mix(uColor3, uColor4, tp - 2.0);
-    else textCol = mix(uColor4, uColor1, tp - 3.0);
-    
-    // Glow around text
-    float glowRange = 0.015 / textHeight;
-    vec2 glowUv = textUv;
-    float glow = 0.0;
-    for (float dx = -1.0; dx <= 1.0; dx += 1.0) {
-      for (float dy = -1.0; dy <= 1.0; dy += 1.0) {
-        vec2 offset = vec2(dx, dy) * glowRange;
-        glow += drawText(textUv + offset);
-      }
-    }
-    glow = min(glow / 9.0, 1.0);
-    
-    col += textCol * txt * (1.2 + uBassEnergy * 0.8);
-    col += textCol * glow * 0.3;
   }
   
   // Sparkle dust (calmer)
