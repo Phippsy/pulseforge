@@ -46,6 +46,9 @@ const ALL_EFFECTS: { id: EffectName; label: string }[] = [
   { id: 'acidSmiley', label: 'Acid Smiley' },
   { id: 'neonSigns', label: 'Neon Signs' },
   { id: 'lightning', label: 'Lightning' },
+  { id: 'chuckieEgg', label: 'Chuckie Egg' },
+  { id: 'donkeyKong', label: 'Donkey Kong' },
+  { id: 'arkanoid', label: 'Arkanoid' },
 ];
 
 export function PhaseList() {
