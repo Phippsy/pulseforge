@@ -42,177 +42,106 @@ mat2 rot(float a) {
 
 float hash(float n) { return fract(sin(n) * 43758.5453); }
 
-float noise(vec3 x) {
-  vec3 p = floor(x);
-  vec3 f = fract(x);
-  f = f * f * (3.0 - 2.0 * f);
-  float n = p.x + p.y * 57.0 + 113.0 * p.z;
-  return mix(
-    mix(mix(hash(n), hash(n + 1.0), f.x),
-        mix(hash(n + 57.0), hash(n + 58.0), f.x), f.y),
-    mix(mix(hash(n + 113.0), hash(n + 114.0), f.x),
-        mix(hash(n + 170.0), hash(n + 171.0), f.x), f.y), f.z);
-}
-
-float fbm(vec3 p) {
-  float f = 0.0;
-  f += 0.5 * noise(p); p *= 2.01;
-  f += 0.25 * noise(p); p *= 2.02;
-  f += 0.125 * noise(p); p *= 2.03;
-  f += 0.0625 * noise(p);
-  return f / 0.9375;
-}
-
-vec3 tunnelPath(float z) {
-  return vec3(
-    sin(z * 0.1) * cos(z * 0.07) * 1.5,
-    cos(z * 0.13) * sin(z * 0.09) * 1.0,
-    z
-  );
-}
-
-float tunnelDist(vec3 p, float baseRadius) {
-  float rVar = sin(p.z * 0.3 + uTime * 0.5) * 0.15 +
-               sin(p.z * 0.7 - uTime * 0.3) * 0.08;
-  float breath = uBassPulse * 0.25 * sin(p.z * 0.1 + uTime);
-  float r = baseRadius + rVar + breath;
-  float angle = atan(p.y, p.x);
-  float segDeform = sin(angle * uSegments + p.z * 0.5 + uTime) * 0.06 * uMidEnergy;
-  r += segDeform;
-  return length(p.xy) - r;
-}
-
 void main() {
   vec2 uv = vUv * 2.0 - 1.0;
   uv.x *= uAspect;
 
-  float time = uTime * (0.2 + uSpeed * 0.8);
-  float baseRadius = uRadius * 1.5 + 0.5;
+  float time = uTime * (0.3 + uSpeed * 0.7);
 
-  float camZ = time * 3.0;
-  vec3 ro = tunnelPath(camZ);
-  vec3 target = tunnelPath(camZ + 2.0);
+  // Camera sway
+  uv += vec2(sin(time * 0.4) * 0.05, cos(time * 0.3) * 0.04) * (1.0 + uMidEnergy * 0.5);
 
-  vec3 fwd = normalize(target - ro);
-  vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), fwd));
-  vec3 up = cross(fwd, right);
+  // Polar coordinates — the tunnel core
+  float r = length(uv);
+  float a = atan(uv.y, uv.x);
 
-  float sway = uMidEnergy * 0.3;
-  uv.x += sin(time * 0.7) * sway * 0.2;
-  uv.y += cos(time * 0.5) * sway * 0.15;
+  // Twist rotation — angle rotates with depth
+  float twist = uTwist * (1.0 + uMidEnergy * 1.5);
+  a += time * 0.4 * twist + (1.0 / (r + 0.1)) * 0.3 * twist;
 
-  vec3 rd = normalize(uv.x * right + uv.y * up + 1.8 * fwd);
+  // Depth (inverse radius = illusion of infinite tunnel)
+  float depth = 1.0 / (r + 0.01);
+  float zPos = depth + time * 3.0; // fly forward
 
-  float twistAmount = uTwist * (1.0 + uMidEnergy * 2.0);
-  rd.xy *= rot(time * 0.3 * twistAmount);
+  // Bass-reactive pulse on radius
+  float bassPulse = uBassPulse * 0.2 * sin(zPos * 0.3);
 
-  float t = 0.0;
-  float totalGlow = 0.0;
-  float edgeGlow = 0.0;
-  float lightShaft = 0.0;
-  vec3 hitPos = ro;
-  bool hit = false;
+  // === NEON GRID RINGS ===
+  // Rings at regular depth intervals
+  float ringSpacing = 1.8;
+  float ringZ = mod(zPos, ringSpacing);
+  float ringDist = min(ringZ, ringSpacing - ringZ);
+  float ring = smoothstep(0.12, 0.0, ringDist) * smoothstep(0.001, 0.05, r);
+  ring *= 1.0 + uBassEnergy * 2.0;
 
-  for (int i = 0; i < 90; i++) {
-    vec3 p = ro + rd * t;
-    vec3 localP = p - tunnelPath(p.z);
-    float twistZ = p.z * 0.03 * twistAmount + sin(time * 0.2) * twistAmount;
-    localP.xy *= rot(twistZ);
+  // Longitudinal lines (tunnel ribs)
+  float segments = uSegments;
+  float ribAngle = mod(a * segments / TAU, 1.0);
+  float rib = smoothstep(0.08, 0.0, abs(ribAngle - 0.5) - 0.42);
+  rib *= smoothstep(0.001, 0.1, r); // fade at center
 
-    float d = tunnelDist(localP, baseRadius);
+  // Grid intersection glow
+  float gridNode = ring * rib * 3.0;
 
-    totalGlow += 0.015 / (abs(d) + 0.005) * uGlow;
+  // === COLOUR ===
+  // Depth-based colour cycling
+  float colorPhase = fract(zPos * 0.08 + time * 0.05);
+  vec3 tunnelColor;
+  if (colorPhase < 0.25) tunnelColor = mix(uColor1, uColor2, colorPhase * 4.0);
+  else if (colorPhase < 0.5) tunnelColor = mix(uColor2, uColor3, (colorPhase - 0.25) * 4.0);
+  else if (colorPhase < 0.75) tunnelColor = mix(uColor3, uColor4, (colorPhase - 0.5) * 4.0);
+  else tunnelColor = mix(uColor4, uColor1, (colorPhase - 0.75) * 4.0);
 
-    if (abs(d) < 0.3) {
-      edgeGlow += 0.01 / (abs(d) + 0.01);
-    }
+  // Secondary colour for ribs
+  vec3 ribColor = mix(uColor2, uColor4, sin(a * 2.0 + time) * 0.5 + 0.5);
 
-    // Light shaft / god ray accumulation
-    float shaftDist = length(localP.xy);
-    float shaftPulse = sin(p.z * 0.8 - time * 4.0) * 0.5 + 0.5;
-    lightShaft += exp(-shaftDist * 3.0) * 0.01 * shaftPulse * uBassPulse;
-    
-    // Pulsing ring highlight
-    float ringPhase = fract(p.z * 0.15 - time * 0.5);
-    float ringPulse = smoothstep(0.0, 0.02, ringPhase) * smoothstep(0.04, 0.02, ringPhase);
-    if (ringPulse > 0.5 && abs(d) < 0.15) {
-      edgeGlow += ringPulse * 0.05 * (1.0 + uBassEnergy * 3.0);
-    }
-
-    if (d < 0.005) {
-      hit = true;
-      hitPos = p;
-      break;
-    }
-
-    t += max(d * 0.4, 0.015);
-    if (t > 30.0) break;
-  }
-
+  // Build the final colour
   vec3 col = vec3(0.0);
-  vec3 localHit = hitPos - tunnelPath(hitPos.z);
-  float hitAngle = atan(localHit.y, localHit.x);
 
-  // Multi-layer stripe patterns
-  float stripe1 = smoothstep(0.4, 0.6, sin(hitAngle * uSegments + hitPos.z * 0.5 + time * 2.0) * 0.5 + 0.5);
-  float stripe2 = smoothstep(0.3, 0.7, sin(hitAngle * uSegments * 2.0 - hitPos.z * 0.3 + time) * 0.5 + 0.5);
-  float stripe3 = smoothstep(0.35, 0.65, sin(hitAngle * uSegments * 0.5 + hitPos.z * 0.7 - time * 0.5) * 0.5 + 0.5);
-  float wave = sin(hitPos.z * 0.2 + time * 0.5 + uBassEnergy * 3.0) * 0.5 + 0.5;
-  
-  // Hexagonal grid overlay on walls
-  float hexScale = 4.0;
-  vec2 hexUV = vec2(hitAngle * hexScale / TAU * uSegments, hitPos.z * 0.3);
-  float hex = abs(sin(hexUV.x * 6.28) * sin(hexUV.y * 6.28));
-  hex = smoothstep(0.85, 0.95, hex);
+  // Background glow — radial gradient depth illusion
+  float bgGlow = exp(-r * 2.0) * 0.15;
+  col += tunnelColor * bgGlow * (1.0 + uBassEnergy);
 
-  vec3 baseColor = mix(uColor1, uColor2, stripe1);
-  baseColor = mix(baseColor, uColor3, stripe2 * 0.5);
-  baseColor = mix(baseColor, uColor4, wave * 0.3);
-  baseColor += hex * uColor3 * 0.2 * uHighEnergy;
+  // Rings
+  col += tunnelColor * ring * 0.8;
 
-  if (hit) {
-    float rim = 1.0 - abs(dot(normalize(localHit.xy), normalize(rd.xy)));
-    col = baseColor * (0.3 + rim * 0.7);
-    float highlight = pow(stripe1 * stripe2 * stripe3, 1.5) * uBassPulse * 3.0;
-    col += uColor1 * highlight;
-    
-    // Stripe3 adds secondary pattern intensity
-    col += uColor4 * stripe3 * 0.15 * uMidEnergy;
-  }
+  // Ribs
+  col += ribColor * rib * 0.4 * (0.5 + depth * 0.02);
 
-  // Volumetric glow
-  vec3 glowColor = mix(uColor1, uColor3, sin(time * 0.3) * 0.5 + 0.5);
-  col += totalGlow * glowColor * 0.08 * (1.0 + uHighEnergy * 2.0);
+  // Grid nodes (where rings meet ribs) — brightest
+  col += vec3(1.0, 1.0, 1.0) * gridNode * 0.5;
+  col += tunnelColor * gridNode * 0.8;
 
-  vec3 edgeColor = mix(uColor2, uColor4, sin(time * 0.7 + hitAngle) * 0.5 + 0.5);
-  col += edgeGlow * edgeColor * 0.03 * uGlow * (1.0 + uHighEnergy);
-  
-  // Light shaft / god ray contribution
-  vec3 shaftColor = mix(uColor1, uColor2, sin(time * 0.4) * 0.5 + 0.5);
-  col += lightShaft * shaftColor * 3.0;
+  // Depth fog — things fade to colour in the distance
+  float fog = exp(-depth * 0.015);
+  vec3 fogColor = mix(uColor1, uColor3, sin(time * 0.2) * 0.5 + 0.5) * 0.1;
+  col = mix(fogColor, col, fog);
 
-  // Volumetric fog with FBM
-  float fogDensity = fbm(vec3(uv * 2.0, time * 0.1)) * 0.3;
-  fogDensity += fbm(vec3(uv * 4.0, time * 0.05 + 10.0)) * 0.15;
-  vec3 fogColor = mix(uColor4 * 0.3, uColor1 * 0.2, fogDensity);
-  col = mix(col, fogColor, smoothstep(10.0, 30.0, t) * 0.5);
+  // Pulsing energy waves (travel toward viewer)
+  float wave1 = smoothstep(0.15, 0.0, abs(mod(zPos * 0.5, 3.0) - 1.5) - 0.5);
+  col += tunnelColor * wave1 * 0.3 * (1.0 + uBassEnergy * 2.0) * smoothstep(0.0, 0.1, r);
 
-  // Distance fog
-  col *= exp(-t * 0.04);
+  // High-energy sparking at random depth positions
+  float sparkDepth = mod(zPos * 2.0 + hash(floor(a * segments / TAU)) * 10.0, 8.0);
+  float spark = smoothstep(0.5, 0.0, sparkDepth) * uHighEnergy;
+  col += uColor3 * spark * rib * 2.0;
 
-  // Transient flash
-  float flash = uTransient * 0.6;
-  col += flash * mix(uColor1, uColor2, sin(time * 5.0) * 0.5 + 0.5);
+  // Transient flash — bright ring pulse
+  float flashRing = smoothstep(0.2, 0.0, abs(r - 0.3 - uTransient * 0.5));
+  col += mix(uColor1, vec3(1.0), 0.5) * flashRing * uTransient * 1.5;
 
-  // Bass pulse central glow
-  float vignette = length(vUv - 0.5) * 1.414;
-  col += uBassPulse * 0.2 * (1.0 - vignette * vignette) * uColor1;
-  
-  // High energy sparkle at edges
-  col += uHighEnergy * edgeGlow * 0.02 * uColor3;
+  // Centre vanishing point glow
+  float centerGlow = exp(-r * r * 20.0) * 0.3;
+  col += mix(uColor2, uColor4, sin(time) * 0.5 + 0.5) * centerGlow * (1.0 + uBassPulse);
 
-  col *= 0.7 + uIntensity * 0.8;
-  col = col / (1.0 + col);
+  // Vignette
+  float vig = 1.0 - dot(vUv - 0.5, vUv - 0.5) * 1.5;
+  col *= max(0.0, vig);
+
+  col *= 0.6 + uIntensity * 0.8;
+
+  // Tone map
+  col = col / (1.0 + col * 0.4);
 
   gl_FragColor = vec4(col, 1.0);
 }

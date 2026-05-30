@@ -68,7 +68,7 @@ void main() {
   float scroll = t * speed + phase;
   
   // Current logical row (for character selection, wraps)
-  float logicalRow = row + floor(scroll);
+  float logicalRow = row - floor(scroll);
   float charSeed = hash(col * 31.0 + logicalRow * 17.0);
   
   // Character changes periodically for flicker effect
@@ -90,8 +90,8 @@ void main() {
     // Head position falls from top (rows-1) to bottom (0)
     float headPos = mod(t * dropSpeed + dropPhase, rows);
     // Distance: how far below the head is this row?
-    // headPos counts DOWN, so current position in column for the head
-    float dist = mod(headPos - row, rows);
+    // row is inverted so head descends visually
+    float dist = mod(row - headPos, rows);
     // dist=0 means at the head, dist>0 means head has passed (trail above)
     float b = smoothstep(trailLen, 0.0, dist);
     float h = smoothstep(1.5, 0.0, dist);
