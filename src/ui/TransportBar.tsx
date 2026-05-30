@@ -22,43 +22,47 @@ export function TransportBar() {
   const currentPalette = palettes[paletteIndex % palettes.length];
 
   return (
-    <div className="pointer-events-auto bg-black/50 border border-cyan-500/20 backdrop-blur-md px-4 py-2 flex items-center gap-2 text-xs font-mono shadow-[0_0_20px_rgba(0,0,0,0.6)]">
+    <div className="pointer-events-auto bg-black/60 border border-cyan-500/20 backdrop-blur-md px-4 py-2.5 flex items-center gap-3 text-xs font-mono shadow-[0_0_20px_rgba(0,0,0,0.6)]">
       <button
         onClick={toggleBlackout}
-        className={`px-3 py-1.5 font-bold tracking-wider uppercase text-[10px] transition-all duration-200 border ${
-          isBlackout ? 'bg-red-900/80 border-red-500/50 text-red-200 shadow-[0_0_10px_rgba(239,68,68,0.3)]' : 'border-white/10 text-white/50 hover:bg-white/10 hover:text-white/80'
+        title="Kill all visuals (B)"
+        className={`px-3 py-2 font-bold tracking-wider uppercase text-[11px] transition-all duration-200 border ${
+          isBlackout ? 'bg-red-900/80 border-red-500/50 text-red-200 shadow-[0_0_10px_rgba(239,68,68,0.3)]' : 'border-white/20 text-white/60 hover:bg-white/10 hover:text-white/90'
         }`}
       >
         Blackout
       </button>
       <button
         onClick={toggleFreeze}
-        className={`px-3 py-1.5 font-bold tracking-wider uppercase text-[10px] transition-all duration-200 border ${
-          isFreeze ? 'bg-blue-900/80 border-blue-500/50 text-blue-200 shadow-[0_0_10px_rgba(59,130,246,0.3)]' : 'border-white/10 text-white/50 hover:bg-white/10 hover:text-white/80'
+        title="Freeze current frame (Z)"
+        className={`px-3 py-2 font-bold tracking-wider uppercase text-[11px] transition-all duration-200 border ${
+          isFreeze ? 'bg-blue-900/80 border-blue-500/50 text-blue-200 shadow-[0_0_10px_rgba(59,130,246,0.3)]' : 'border-white/20 text-white/60 hover:bg-white/10 hover:text-white/90'
         }`}
       >
         Freeze
       </button>
       <button
         onClick={toggleAutoProgress}
-        className={`px-3 py-1.5 font-bold tracking-wider uppercase text-[10px] transition-all duration-200 border ${
-          autoProgress ? 'bg-green-900/80 border-green-500/50 text-green-200 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'border-white/10 text-white/50 hover:bg-white/10 hover:text-white/80'
+        title="Auto-cycle phases (A)"
+        className={`px-3 py-2 font-bold tracking-wider uppercase text-[11px] transition-all duration-200 border ${
+          autoProgress ? 'bg-green-900/80 border-green-500/50 text-green-200 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'border-white/20 text-white/60 hover:bg-white/10 hover:text-white/90'
         }`}
       >
         Auto
       </button>
       <button
         onClick={toggleRandomMode}
-        className={`px-3 py-1.5 font-bold tracking-wider uppercase text-[10px] transition-all duration-200 border ${
-          randomMode ? 'bg-violet-900/80 border-violet-500/50 text-violet-200 shadow-[0_0_10px_rgba(139,92,246,0.3)]' : 'border-white/10 text-white/50 hover:bg-white/10 hover:text-white/80'
+        title="Random effect shuffle (R)"
+        className={`px-3 py-2 font-bold tracking-wider uppercase text-[11px] transition-all duration-200 border ${
+          randomMode ? 'bg-violet-900/80 border-violet-500/50 text-violet-200 shadow-[0_0_10px_rgba(139,92,246,0.3)]' : 'border-white/20 text-white/60 hover:bg-white/10 hover:text-white/90'
         }`}
       >
         Random
       </button>
 
-      <div className="w-px h-4 bg-cyan-500/20 mx-1" />
+      <div className="w-px h-5 bg-cyan-500/20 mx-1" />
 
-      <span className="text-cyan-500/50 text-[10px] tracking-wider">INT</span>
+      <span className="text-cyan-500/60 text-[11px] tracking-wider">INT</span>
       <input
         type="range"
         min="0"
@@ -66,37 +70,41 @@ export function TransportBar() {
         step="0.01"
         value={intensity}
         onChange={(e) => setIntensity(parseFloat(e.target.value))}
-        className="w-20 accent-cyan-400"
+        className="w-24 accent-cyan-400"
+        title="Visual intensity ([ / ])"
       />
-      <span className="text-cyan-300/60 text-[10px] w-6">{Math.round(intensity * 100)}</span>
+      <span className="text-cyan-300/70 text-[11px] w-7 text-right">{Math.round(intensity * 100)}</span>
 
-      <div className="w-px h-4 bg-cyan-500/20 mx-1" />
+      <div className="w-px h-5 bg-cyan-500/20 mx-1" />
 
       <button
         onClick={toggleFullscreen}
-        className={`px-3 py-1.5 font-bold tracking-wider uppercase text-[10px] transition-all duration-200 border ${
-          fullscreenMode ? 'bg-amber-900/80 border-amber-500/50 text-amber-200 shadow-[0_0_10px_rgba(245,158,11,0.3)]' : 'border-white/10 text-white/50 hover:bg-white/10 hover:text-white/80'
+        title="Fullscreen mode (F)"
+        className={`px-3 py-2 font-bold tracking-wider uppercase text-[11px] transition-all duration-200 border ${
+          fullscreenMode ? 'bg-amber-900/80 border-amber-500/50 text-amber-200 shadow-[0_0_10px_rgba(245,158,11,0.3)]' : 'border-white/20 text-white/60 hover:bg-white/10 hover:text-white/90'
         }`}
       >
         Full
       </button>
       <button
         onClick={togglePaletteCycling}
-        className={`px-3 py-1.5 font-bold tracking-wider uppercase text-[10px] transition-all duration-200 border ${
-          paletteCycling ? 'bg-pink-900/80 border-pink-500/50 text-pink-200 shadow-[0_0_10px_rgba(236,72,153,0.3)]' : 'border-white/10 text-white/50 hover:bg-white/10 hover:text-white/80'
+        title="Toggle palette auto-cycling (C)"
+        className={`px-3 py-2 font-bold tracking-wider uppercase text-[11px] transition-all duration-200 border ${
+          paletteCycling ? 'bg-pink-900/80 border-pink-500/50 text-pink-200 shadow-[0_0_10px_rgba(236,72,153,0.3)]' : 'border-white/20 text-white/60 hover:bg-white/10 hover:text-white/90'
         }`}
       >
         Palette
       </button>
       <button
         onClick={nextPalette}
-        className="px-3 py-1.5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white/80 transition-all text-[10px] tracking-wider"
+        title="Skip to next palette (P)"
+        className="px-3 py-2 border border-white/20 text-white/60 hover:bg-white/10 hover:text-white/90 transition-all text-[11px] tracking-wider"
       >
         {currentPalette.name}
       </button>
-      <div className="flex gap-0.5 ml-1">
+      <div className="flex gap-1 ml-1">
         {currentPalette.colors.map((c, i) => (
-          <div key={i} className="w-2 h-2 border border-white/20" style={{ backgroundColor: c, boxShadow: `0 0 4px ${c}40` }} />
+          <div key={i} className="w-3 h-3 border border-white/20 rounded-sm" style={{ backgroundColor: c, boxShadow: `0 0 6px ${c}60` }} />
         ))}
       </div>
     </div>

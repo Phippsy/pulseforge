@@ -4,6 +4,7 @@ import { PhaseList } from './PhaseList';
 import { AudioMeters } from './AudioMeters';
 import { TransportBar } from './TransportBar';
 import { AudioSetup } from './AudioSetup';
+import { HelpOverlay } from './HelpOverlay';
 
 export function Overlay() {
   const showUI = useStore((s) => s.showUI);
@@ -31,6 +32,7 @@ export function Overlay() {
           <TransportBar />
         </div>
       )}
+      <HelpOverlay />
     </>
   );
 }

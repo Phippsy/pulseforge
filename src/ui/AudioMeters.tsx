@@ -3,11 +3,11 @@ import { useStore } from '../store';
 function Meter({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-cyan-500/70 text-[10px] w-8 font-mono tracking-wider">{label}</span>
-      <div className="w-24 h-2 bg-white/5 border border-white/10 overflow-hidden">
+      <span className="text-cyan-500/80 text-[11px] w-9 font-mono tracking-wider">{label}</span>
+      <div className="w-28 h-2.5 bg-white/5 border border-white/10 overflow-hidden">
         <div
           className="h-full transition-all duration-75"
-          style={{ width: `${value * 100}%`, backgroundColor: color }}
+          style={{ width: `${Math.min(100, value * 100)}%`, backgroundColor: color, boxShadow: value > 0.7 ? `0 0 6px ${color}` : 'none' }}
         />
       </div>
     </div>

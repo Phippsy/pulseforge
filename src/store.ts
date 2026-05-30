@@ -37,7 +37,9 @@ export interface AppState {
   sensitivity: number; // audio gain multiplier (1 = default, higher = more reactive)
 
   showUI: boolean;
+  showHelp: boolean;
   fps: number;
+  activeEffectName: string | null; // currently playing effect for display
 
   userImages: string[]; // data URLs of loaded images
   activeImageIndex: number;
@@ -73,6 +75,7 @@ export interface AppState {
   setIntensity: (value: number) => void;
   setSensitivity: (value: number) => void;
   toggleUI: () => void;
+  toggleHelp: () => void;
   toggleFullscreen: () => void;
   setPaletteIndex: (index: number) => void;
   nextPalette: () => void;
@@ -81,6 +84,7 @@ export interface AppState {
   setEffectDuration: (effectId: string, duration: number) => void;
   updateControlSignals: (signals: ControlSignals) => void;
   updateFps: (fps: number) => void;
+  setActiveEffectName: (name: string | null) => void;
   addImage: (dataUrl: string) => void;
   removeImage: (index: number) => void;
   setActiveImage: (index: number) => void;
@@ -120,7 +124,9 @@ export const useStore = create<AppState>((set, get) => ({
   sensitivity: 2.0,
 
   showUI: true,
+  showHelp: false,
   fps: 0,
+  activeEffectName: null,
 
   userImages: [],
   activeImageIndex: -1,
@@ -157,6 +163,7 @@ export const useStore = create<AppState>((set, get) => ({
   setIntensity: (value) => set({ intensity: Math.max(0, Math.min(1, value)) }),
   setSensitivity: (value) => set({ sensitivity: Math.max(0.5, Math.min(5, value)) }),
   toggleUI: () => set((s) => ({ showUI: !s.showUI })),
+  toggleHelp: () => set((s) => ({ showHelp: !s.showHelp })),
   toggleFullscreen: () => {
     const next = !get().fullscreenMode;
     set({ fullscreenMode: next });
@@ -181,6 +188,7 @@ export const useStore = create<AppState>((set, get) => ({
   },
   updateControlSignals: (signals) => set({ controlSignals: signals }),
   updateFps: (fps) => set({ fps }),
+  setActiveEffectName: (name) => set({ activeEffectName: name }),
   addImage: (dataUrl) => set((s) => ({ userImages: [...s.userImages, dataUrl], activeImageIndex: s.userImages.length })),
   removeImage: (index) => set((s) => {
     const images = s.userImages.filter((_, i) => i !== index);

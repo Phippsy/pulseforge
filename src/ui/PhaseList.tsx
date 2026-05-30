@@ -51,6 +51,7 @@ const ALL_EFFECTS: { id: EffectName; label: string }[] = [
 export function PhaseList() {
   const directEffect = useStore((s) => s.directEffect);
   const randomMode = useStore((s) => s.randomMode);
+  const activeEffectName = useStore((s) => s.activeEffectName);
   const setDirectEffect = useStore((s) => s.setDirectEffect);
   const effectWeights = useStore((s) => s.effectWeights);
   const setEffectWeight = useStore((s) => s.setEffectWeight);
@@ -81,15 +82,16 @@ export function PhaseList() {
         {ALL_EFFECTS.map((effect, i) => {
           const weight = effectWeights[effect.id] ?? 1;
           const duration = effectDurations[effect.id];
+          const isActive = (directEffect === effect.id && !randomMode) || (randomMode && activeEffectName === effect.id);
           return (
             <li key={effect.id}>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setDirectEffect(effect.id)}
                   className={`flex-1 text-left px-2 py-1 text-xs transition-all duration-200 ${
-                    directEffect === effect.id && !randomMode
+                    isActive
                       ? 'bg-cyan-900/40 text-cyan-200 border-l-2 border-cyan-400'
-                      : 'text-white/40 hover:text-white/70 hover:bg-white/[0.04] border-l-2 border-transparent'
+                      : 'text-white/50 hover:text-white/80 hover:bg-white/[0.06] border-l-2 border-transparent'
                   }`}
                 >
                   <span className="text-[10px] text-yellow-500/60 mr-2">{String(i + 1).padStart(2, '0')}</span>

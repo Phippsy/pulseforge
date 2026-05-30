@@ -160,6 +160,7 @@ export function App() {
       const directEffect = state.directEffect;
       if (directEffect && directEffect !== prevDirectEffectRef.current) {
         engine.setEffect(directEffect as EffectName);
+        useStore.getState().setActiveEffectName(directEffect);
         prevDirectEffectRef.current = directEffect;
         autoProgressTimerRef.current = now;
       } else if (!directEffect && (genre !== prevGenreRef.current || phaseIndex !== prevPhaseIndexRef.current)) {
@@ -177,6 +178,7 @@ export function App() {
 
         // Switch effect
         engine.setEffect(toPhase.effect as EffectName);
+        useStore.getState().setActiveEffectName(toPhase.effect);
 
         prevGenreRef.current = genre;
         prevPhaseIndexRef.current = phaseIndex;
@@ -236,6 +238,7 @@ export function App() {
           } while (next === randomEffectRef.current && allEffects.length > 1);
           randomEffectRef.current = next;
           engine.setEffect(next);
+          useStore.getState().setActiveEffectName(next);
           randomTimerRef.current = now;
           // Use per-effect duration if set, otherwise default 15-30s random
           const customDuration = state.effectDurations[next];
@@ -333,6 +336,7 @@ export function App() {
     const phaseIndex = useStore.getState().currentPhaseIndex;
     const phase = phaseManagerRef.current.getPhase(genre, phaseIndex);
     engine.setEffect(phase.effect as EffectName);
+    useStore.getState().setActiveEffectName(phase.effect);
     prevGenreRef.current = genre;
     prevPhaseIndexRef.current = phaseIndex;
     autoProgressTimerRef.current = performance.now() / 1000;
@@ -419,6 +423,12 @@ export function App() {
           break;
         case 'f11':
           document.documentElement.requestFullscreen?.();
+          break;
+        case 'r':
+          state.toggleRandomMode();
+          break;
+        case '?':
+          state.toggleHelp();
           break;
         default:
           // Number keys 1-9
