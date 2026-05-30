@@ -244,29 +244,7 @@ const WarpFeedbackShader = {
         prev = texture2D(tPrev, zoomed);
       }
       
-      // Colour decay — very aggressive to prevent brightness accumulation
-      // Decay scales with feedback amount — higher feedback needs more aggressive decay
-      float decay = 0.88 - uAmount * 0.4 - uTransient * 0.05;
-      prev.rgb *= decay;
-      
-      // Aggressively kill desaturated bright pixels in feedback — these cause grey blowout
-      float luma = dot(prev.rgb, vec3(0.299, 0.587, 0.114));
-      float sat = length(prev.rgb - vec3(luma));
-      float desat = smoothstep(0.15, 0.03, sat) * smoothstep(0.12, 0.25, luma);
-      prev.rgb *= 1.0 - desat * 0.85;
-      
-      // Cap feedback brightness — saturated colour allowed brighter
-      float maxBright = 0.25 + sat * 2.5;
-      maxBright = clamp(maxBright, 0.25, 0.6);
-      prev.rgb = min(prev.rgb, vec3(maxBright));
-      
       vec4 result = mix(current, prev, uAmount);
-      
-      // Final output: suppress desaturated brightness in the combined result too
-      float finalLuma = dot(result.rgb, vec3(0.299, 0.587, 0.114));
-      float finalSat = length(result.rgb - vec3(finalLuma));
-      float finalDesat = smoothstep(0.2, 0.05, finalSat) * smoothstep(0.3, 0.5, finalLuma);
-      result.rgb *= 1.0 - finalDesat * 0.5;
       
       gl_FragColor = result;
     }

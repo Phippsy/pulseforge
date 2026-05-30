@@ -55,6 +55,8 @@ export interface AppState {
 
   // Effect weights for random selection (1 = normal, higher = more likely)
   effectWeights: Record<string, number>;
+  // Per-effect duration in seconds (default ~22s from the 15-30 random range)
+  effectDurations: Record<string, number>;
 
   setAudioDevice: (id: string) => void;
   startCapture: () => void;
@@ -76,6 +78,7 @@ export interface AppState {
   nextPalette: () => void;
   togglePaletteCycling: () => void;
   setEffectWeight: (effectId: string, weight: number) => void;
+  setEffectDuration: (effectId: string, duration: number) => void;
   updateControlSignals: (signals: ControlSignals) => void;
   updateFps: (fps: number) => void;
   addImage: (dataUrl: string) => void;
@@ -130,7 +133,8 @@ export const useStore = create<AppState>((set, get) => ({
   paletteIndex: 0,
   paletteCycling: true,
 
-  effectWeights: { ceefax: 3 },
+  effectWeights: JSON.parse(localStorage.getItem('effectWeights') || '{"ceefax":3}'),
+  effectDurations: JSON.parse(localStorage.getItem('effectDurations') || '{}'),
 
   setAudioDevice: (id) => set({ audioDeviceId: id }),
   startCapture: () => set({ isCapturing: true }),
@@ -165,9 +169,16 @@ export const useStore = create<AppState>((set, get) => ({
   setPaletteIndex: (index) => set({ paletteIndex: index }),
   nextPalette: () => set((s) => ({ paletteIndex: s.paletteIndex + 1 })),
   togglePaletteCycling: () => set((s) => ({ paletteCycling: !s.paletteCycling })),
-  setEffectWeight: (effectId, weight) => set((s) => ({
-    effectWeights: { ...s.effectWeights, [effectId]: weight },
-  })),
+  setEffectWeight: (effectId, weight) => {
+    const effectWeights = { ...get().effectWeights, [effectId]: weight };
+    localStorage.setItem('effectWeights', JSON.stringify(effectWeights));
+    set({ effectWeights });
+  },
+  setEffectDuration: (effectId, duration) => {
+    const effectDurations = { ...get().effectDurations, [effectId]: duration };
+    localStorage.setItem('effectDurations', JSON.stringify(effectDurations));
+    set({ effectDurations });
+  },
   updateControlSignals: (signals) => set({ controlSignals: signals }),
   updateFps: (fps) => set({ fps }),
   addImage: (dataUrl) => set((s) => ({ userImages: [...s.userImages, dataUrl], activeImageIndex: s.userImages.length })),

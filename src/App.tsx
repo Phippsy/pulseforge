@@ -237,7 +237,9 @@ export function App() {
           randomEffectRef.current = next;
           engine.setEffect(next);
           randomTimerRef.current = now;
-          randomIntervalRef.current = 15 + Math.random() * 15;
+          // Use per-effect duration if set, otherwise default 15-30s random
+          const customDuration = state.effectDurations[next];
+          randomIntervalRef.current = customDuration ?? (15 + Math.random() * 15);
         }
       }
 
@@ -269,7 +271,7 @@ export function App() {
         effectParams.highReactivity *= 0.92 + drift(0.08, 7.7) * 0.16;
         
         // Post-processing drifts more dramatically
-        postParams.feedbackAmount = Math.min(0.92, postParams.feedbackAmount * (0.9 + drift(0.06, 2.0) * 0.2));
+        postParams.feedbackAmount = Math.min(0.45, postParams.feedbackAmount * (0.9 + drift(0.06, 2.0) * 0.2));
         postParams.chromaticAberration *= 0.7 + drift(0.13, 4.5) * 0.6;
         postParams.bloomStrength *= 0.85 + drift(0.04, 6.2) * 0.3;
         // Boost bloom to keep things bright

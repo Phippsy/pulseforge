@@ -89,65 +89,74 @@ void main() {
   col += vec3(0.02, 0.01, 0.005) * brick;
   
   // === DANFEST text in neon ===
-  // D-A-N-F-E-S-T spelled out with simple shapes
+  // Each letter drawn with line-segment SDFs for clean neon tube look
   
-  float letterSpacing = 0.09;
-  float startX = -0.28;
+  float letterSpacing = 0.11;
+  float startX = -0.33;
   float textY = 0.15;
-  float textScale = 0.08;
+  float textScale = 0.09;
+  float thick = 0.045; // tube thickness
   
-  // Simplified neon letter shapes (lines/arcs)
   float neonText = 0.0;
   
-  // Letter D
+  // Helper: SDF of a line segment from a to b
+  // line(p, a, b) returns distance
+  #define LINE(p, a, b) (length((p) - (a) - clamp(dot((p)-(a), (b)-(a)) / dot((b)-(a),(b)-(a)), 0.0, 1.0) * ((b)-(a))))
+  
+  // Letter D - vertical left + right arc
   vec2 lp = (p - vec2(startX, textY)) / textScale;
-  float dShape = smoothstep(0.06, 0.0, abs(length(lp - vec2(0.2, 0.0)) - 0.5) - 0.0) * step(lp.x, 0.2);
-  dShape += smoothstep(0.06, 0.0, abs(lp.x + 0.3)) * step(-0.5, lp.y) * step(lp.y, 0.5);
-  neonText += dShape;
+  float dLine = LINE(lp, vec2(-0.3, -0.5), vec2(-0.3, 0.5)); // left vertical
+  dLine = min(dLine, LINE(lp, vec2(-0.3, 0.5), vec2(0.1, 0.5))); // top horizontal
+  dLine = min(dLine, LINE(lp, vec2(-0.3, -0.5), vec2(0.1, -0.5))); // bottom horizontal
+  // Right curve approximated with segments
+  dLine = min(dLine, LINE(lp, vec2(0.1, 0.5), vec2(0.35, 0.25)));
+  dLine = min(dLine, LINE(lp, vec2(0.35, 0.25), vec2(0.35, -0.25)));
+  dLine = min(dLine, LINE(lp, vec2(0.35, -0.25), vec2(0.1, -0.5)));
+  neonText += smoothstep(thick, 0.0, dLine);
   
   // Letter A
   lp = (p - vec2(startX + letterSpacing, textY)) / textScale;
-  float aShape = smoothstep(0.06, 0.0, abs(lp.x + lp.y * 0.5)) * step(-0.5, lp.y) * step(lp.y, 0.5);
-  aShape += smoothstep(0.06, 0.0, abs(lp.x - lp.y * 0.5)) * step(-0.5, lp.y) * step(lp.y, 0.5);
-  aShape += smoothstep(0.06, 0.0, abs(lp.y)) * step(-0.25, lp.x) * step(lp.x, 0.25);
-  neonText += aShape;
+  float aLine = LINE(lp, vec2(0.0, 0.5), vec2(-0.3, -0.5)); // left leg
+  aLine = min(aLine, LINE(lp, vec2(0.0, 0.5), vec2(0.3, -0.5))); // right leg
+  aLine = min(aLine, LINE(lp, vec2(-0.15, 0.0), vec2(0.15, 0.0))); // crossbar
+  neonText += smoothstep(thick, 0.0, aLine);
   
   // Letter N
   lp = (p - vec2(startX + letterSpacing * 2.0, textY)) / textScale;
-  float nShape = smoothstep(0.06, 0.0, abs(lp.x + 0.3)) * step(-0.5, lp.y) * step(lp.y, 0.5);
-  nShape += smoothstep(0.06, 0.0, abs(lp.x - 0.3)) * step(-0.5, lp.y) * step(lp.y, 0.5);
-  nShape += smoothstep(0.06, 0.0, abs(lp.x - lp.y * 0.6)) * step(-0.5, lp.y) * step(lp.y, 0.5);
-  neonText += nShape;
+  float nLine = LINE(lp, vec2(-0.3, -0.5), vec2(-0.3, 0.5)); // left vertical
+  nLine = min(nLine, LINE(lp, vec2(0.3, -0.5), vec2(0.3, 0.5))); // right vertical
+  nLine = min(nLine, LINE(lp, vec2(-0.3, 0.5), vec2(0.3, -0.5))); // diagonal
+  neonText += smoothstep(thick, 0.0, nLine);
   
   // Letter F
   lp = (p - vec2(startX + letterSpacing * 3.0, textY)) / textScale;
-  float fShape = smoothstep(0.06, 0.0, abs(lp.x + 0.3)) * step(-0.5, lp.y) * step(lp.y, 0.5);
-  fShape += smoothstep(0.06, 0.0, abs(lp.y - 0.5)) * step(-0.3, lp.x) * step(lp.x, 0.3);
-  fShape += smoothstep(0.06, 0.0, abs(lp.y)) * step(-0.3, lp.x) * step(lp.x, 0.15);
-  neonText += fShape;
+  float fLine = LINE(lp, vec2(-0.3, -0.5), vec2(-0.3, 0.5)); // vertical
+  fLine = min(fLine, LINE(lp, vec2(-0.3, 0.5), vec2(0.3, 0.5))); // top bar
+  fLine = min(fLine, LINE(lp, vec2(-0.3, 0.0), vec2(0.15, 0.0))); // middle bar
+  neonText += smoothstep(thick, 0.0, fLine);
   
   // Letter E
   lp = (p - vec2(startX + letterSpacing * 4.0, textY)) / textScale;
-  float eShape = smoothstep(0.06, 0.0, abs(lp.x + 0.3)) * step(-0.5, lp.y) * step(lp.y, 0.5);
-  eShape += smoothstep(0.06, 0.0, abs(lp.y - 0.5)) * step(-0.3, lp.x) * step(lp.x, 0.3);
-  eShape += smoothstep(0.06, 0.0, abs(lp.y)) * step(-0.3, lp.x) * step(lp.x, 0.15);
-  eShape += smoothstep(0.06, 0.0, abs(lp.y + 0.5)) * step(-0.3, lp.x) * step(lp.x, 0.3);
-  neonText += eShape;
+  float eLine = LINE(lp, vec2(-0.3, -0.5), vec2(-0.3, 0.5)); // vertical
+  eLine = min(eLine, LINE(lp, vec2(-0.3, 0.5), vec2(0.3, 0.5))); // top bar
+  eLine = min(eLine, LINE(lp, vec2(-0.3, 0.0), vec2(0.15, 0.0))); // middle bar
+  eLine = min(eLine, LINE(lp, vec2(-0.3, -0.5), vec2(0.3, -0.5))); // bottom bar
+  neonText += smoothstep(thick, 0.0, eLine);
   
   // Letter S
   lp = (p - vec2(startX + letterSpacing * 5.0, textY)) / textScale;
-  float sShape = smoothstep(0.06, 0.0, abs(lp.y - 0.5)) * step(-0.3, lp.x) * step(lp.x, 0.3);
-  sShape += smoothstep(0.06, 0.0, abs(lp.y)) * step(-0.3, lp.x) * step(lp.x, 0.3);
-  sShape += smoothstep(0.06, 0.0, abs(lp.y + 0.5)) * step(-0.3, lp.x) * step(lp.x, 0.3);
-  sShape += smoothstep(0.06, 0.0, abs(lp.x + 0.3)) * step(0.0, lp.y) * step(lp.y, 0.5);
-  sShape += smoothstep(0.06, 0.0, abs(lp.x - 0.3)) * step(-0.5, lp.y) * step(lp.y, 0.0);
-  neonText += sShape;
+  float sLine = LINE(lp, vec2(-0.3, 0.5), vec2(0.3, 0.5)); // top bar
+  sLine = min(sLine, LINE(lp, vec2(-0.3, 0.5), vec2(-0.3, 0.0))); // top-left vertical
+  sLine = min(sLine, LINE(lp, vec2(-0.3, 0.0), vec2(0.3, 0.0))); // middle bar
+  sLine = min(sLine, LINE(lp, vec2(0.3, 0.0), vec2(0.3, -0.5))); // bottom-right vertical
+  sLine = min(sLine, LINE(lp, vec2(-0.3, -0.5), vec2(0.3, -0.5))); // bottom bar
+  neonText += smoothstep(thick, 0.0, sLine);
   
   // Letter T
   lp = (p - vec2(startX + letterSpacing * 6.0, textY)) / textScale;
-  float tShape = smoothstep(0.06, 0.0, abs(lp.y - 0.5)) * step(-0.3, lp.x) * step(lp.x, 0.3);
-  tShape += smoothstep(0.06, 0.0, abs(lp.x)) * step(-0.5, lp.y) * step(lp.y, 0.5);
-  neonText += tShape;
+  float tLine = LINE(lp, vec2(-0.3, 0.5), vec2(0.3, 0.5)); // top bar
+  tLine = min(tLine, LINE(lp, vec2(0.0, 0.5), vec2(0.0, -0.5))); // vertical stem
+  neonText += smoothstep(thick, 0.0, tLine);
   
   // Neon colour cycling
   vec3 neonColor1 = vec3(1.0, 0.1, 0.5); // Hot pink
