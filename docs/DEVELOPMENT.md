@@ -1,6 +1,6 @@
 # Development Guide
 
-> "Contributing to Pulseforge is like contributing to Dan's bar tab — always welcome, never questioned."
+> "Contributing to Pulseforge is like contributing to a bar tab — always welcome, never questioned."
 
 ## Prerequisites
 

@@ -1,6 +1,6 @@
 # Deployment & Infrastructure
 
-> "Dan's party infrastructure is more sophisticated than most startups. But then again, Dan IS more sophisticated than most startups."
+> "This party infrastructure is more sophisticated than most startups."
 
 ## Hosting
 
@@ -163,8 +163,8 @@ TypeScript is compiled in build mode (`tsc -b`) which uses project references fr
 2. Vercel auto-deploys (typically ~30 seconds)
 3. Check the deployment URL works
 4. Verify remote control from admin panel on your phone
-5. Pour Dan a beer (critical step — do not skip)
+5. Pour a celebratory beer (critical step)
 
 ---
 
-_Infrastructure principle: If it takes more than 30 seconds to deploy, Dan will have finished his current drink and need another one. So we keep deploys fast._
+_Infrastructure principle: If it takes more than 30 seconds to deploy, you've already lost your audience. So we keep deploys fast._

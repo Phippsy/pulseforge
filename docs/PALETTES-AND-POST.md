@@ -1,6 +1,6 @@
 # Palettes & Post-Processing
 
-> "60 palettes. Because Dan changes his mind more than he changes his drinks. Which is saying something."
+> "60 palettes. Because variety is the spice of a good party."
 
 ## Colour Palette System
 
@@ -125,4 +125,4 @@ Post-processing adds ~2-4ms per frame on integrated GPUs. On dedicated GPUs it's
 
 ---
 
-_Design philosophy: Every palette should make Dan go "oooh" at least once during the night. If a palette doesn't get an "oooh", it gets replaced with one that does. Dan's "oooh" is the ultimate quality metric._
+_Design philosophy: Every palette should elicit an audible "oooh" at least once during the night. If it doesn't get an "oooh", it gets replaced with one that does._

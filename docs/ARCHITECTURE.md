@@ -208,8 +208,8 @@ pulseforge/
 
 3. **Control signals, not raw FFT** — Effects receive pre-processed, smoothed control signals rather than raw frequency data. This ensures consistent visual behaviour regardless of volume levels.
 
-4. **Everything is a party** — No dark mode, no "professional" UI. The admin panel itself has the DANFEST cyberpunk aesthetic because even setting up the party should feel like a party. Dan would expect nothing less.
+4. **Everything is a party** — No dark mode, no "professional" UI. The admin panel itself has the DANFEST cyberpunk aesthetic because even setting up the party should feel like a party.
 
 ---
 
-_Built with the blood, sweat, and questionable Spotify playlists of Donal, for the absolute legend that is Dan. May his 50th decade be as energetic as a Peak Techno phase at 3am._
+_Built with blood, sweat, and questionable Spotify playlists. May the 50th decade be as energetic as a Peak Techno phase at 3am._

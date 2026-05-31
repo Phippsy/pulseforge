@@ -1,6 +1,6 @@
 # Audio Pipeline
 
-> "The audio system listens to music the way Dan listens to compliments — with maximum sensitivity and immediate physical response."
+> "The audio system listens to music with maximum sensitivity and immediate physical response."
 
 ## Overview
 

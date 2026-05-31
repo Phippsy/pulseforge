@@ -1,6 +1,6 @@
 # Admin & Remote Control Guide
 
-> "With great power comes great responsibility. With the DANFEST admin panel comes great potential for visual chaos. Use wisely, Dan."
+> "With great power comes great responsibility. With the DANFEST admin panel comes great potential for visual chaos."
 
 ## Overview
 
@@ -87,7 +87,7 @@ Remote commands are broadcast — ALL running visualiser instances will respond.
 
 - Control from your phone while visuals run on the projector
 - Multiple screens can run in sync
-- Dan can drunkenly stab at his iPad and still hit the right button (the buttons are big for a reason)
+- The buttons are deliberately large for ease of use on a busy dancefloor
 
 ## The Submit Page (`/submit`)
 

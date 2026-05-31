@@ -1,6 +1,6 @@
 # Party Setup Guide
 
-> "The most important document in this entire repository. This is the one that actually makes Dan's party legendary. Everything else is just code."
+> "The most important document in this entire repository. Everything else is just code."
 
 ## What You Need
 
@@ -89,7 +89,7 @@ On the admin panel:
 - [ ] Dan has a beer in hand
 - [ ] Backup beers chilling for Dan
 - [ ] Emergency beer supply for Dan (fridge, cooler, etc.)
-- [ ] Someone designated to keep Dan's beer glass full
+- [ ] Someone designated to keep the birthday legend's glass full
 
 ## Troubleshooting
 
@@ -136,7 +136,7 @@ For optimal party visuals:
 3. **11pm-1am (Full send)**: Peak Techno. All effects on maximum. Remote control freestyle. This is where you earn your DJ stripes.
 4. **1am+ (Afterparty)**: Slower effects — Aurora, Nebula, Lava Lamp. Turn intensity down. Everyone's vibes are internal at this point.
 
-Throughout all phases: keep Dan's glass full. This is non-negotiable.
+Throughout all phases: keep the birthday legend hydrated. This is non-negotiable.
 
 ---
 

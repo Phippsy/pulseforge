@@ -1,6 +1,6 @@
 # Effects Reference
 
-> "42 effects. One for each year of Dan's life that he actually remembers." — DANFEST Archives
+> "42 effects. One for each year someone actually remembers." — DANFEST Archives
 
 Pulseforge ships with 42 audio-reactive visual effects. Each responds to beat, bass, mids, highs, and transients in its own unique way.
 
@@ -207,7 +207,7 @@ export class MyEffect implements VisualEffect {
 
 ## Effect Weighting
 
-In random mode, effects are selected based on weights stored in `effectWeights` (persisted to localStorage). Default weight is 1. The Ceefax effect has a default weight of 3 because Dan loves Ceefax and who are we to argue with the birthday boy.
+In random mode, effects are selected based on weights stored in `effectWeights` (persisted to localStorage). Default weight is 1. The Ceefax effect has a default weight of 3 because some effects deserve more airtime.
 
 Per-effect display durations can also be configured in `effectDurations`. Default is a random interval of 15-30 seconds.
 
