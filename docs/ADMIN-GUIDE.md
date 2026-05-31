@@ -5,6 +5,7 @@
 ## Overview
 
 The admin panel (`/admin`) provides full control over:
+
 - System messages (rotating text overlays)
 - User submission moderation
 - Colour palette editing
@@ -13,7 +14,7 @@ The admin panel (`/admin`) provides full control over:
 
 ## Accessing Admin
 
-Navigate to `/admin` on any device. There's no authentication — it's a birthday party, not a bank. (Dan: if you want auth, buy another round and we'll talk.)
+Navigate to `/admin` on any device. There's no authentication — it's a birthday party, not a bank.
 
 ## Tabs
 
@@ -41,6 +42,7 @@ Each message has a text effect:
 ### USER — Submission Moderation
 
 Party guests can submit messages and photos at `/submit`. This tab shows all submissions with:
+
 - **Toggle**: Pause/unpause individual items
 - **Delete**: Remove inappropriate content (Uncle Dave's "jokes", etc.)
 - **Stats**: Active/paused/total counts
@@ -48,6 +50,7 @@ Party guests can submit messages and photos at `/submit`. This tab shows all sub
 ### PALETTES — Colour Editing
 
 All 60 palettes can be customised:
+
 - Change any of the 4 accent colours
 - Change the background colour
 - Rename palettes
@@ -63,6 +66,7 @@ Control how frequently new messages appear. Range: 3-30 seconds.
 ### REMOTE — Live Control
 
 The main event for party DJing. Two quick-action buttons:
+
 - **NEXT PALETTE** — Immediately cycle to next colour palette
 - **NEXT EFFECT** — Immediately switch to a random new effect
 
@@ -80,6 +84,7 @@ Latency: 0-2 seconds (depends on where in the polling cycle the command arrives)
 #### Multi-Device
 
 Remote commands are broadcast — ALL running visualiser instances will respond. This means:
+
 - Control from your phone while visuals run on the projector
 - Multiple screens can run in sync
 - Dan can drunkenly stab at his iPad and still hit the right button (the buttons are big for a reason)
@@ -87,6 +92,7 @@ Remote commands are broadcast — ALL running visualiser instances will respond.
 ## The Submit Page (`/submit`)
 
 Party guests see a simple form at `/submit`:
+
 - Name field
 - Message text area
 - Photo upload (supports HEIC from iPhones, auto-compressed)
@@ -108,17 +114,17 @@ Submissions appear as floating messages on the visualiser, rendered in random de
 
 These work on the main display (not admin page):
 
-| Key | Action |
-|-----|--------|
-| `Space` | Toggle blackout |
-| `F` | Toggle fullscreen |
-| `R` | Toggle random mode |
-| `→` / `←` | Next/previous effect |
+| Key       | Action                      |
+| --------- | --------------------------- |
+| `Space`   | Toggle blackout             |
+| `F`       | Toggle fullscreen           |
+| `R`       | Toggle random mode          |
+| `→` / `←` | Next/previous effect        |
 | `↑` / `↓` | Increase/decrease intensity |
-| `P` | Next palette |
-| `H` | Toggle HUD |
-| `?` | Show all shortcuts |
+| `P`       | Next palette                |
+| `H`       | Toggle HUD                  |
+| `?`       | Show all shortcuts          |
 
 ---
 
-*Dan's rule: If you're spending more time in the admin panel than dancing, you're doing it wrong. Set it up, let random mode ride, and get back to the dancefloor where you belong, you magnificent bastard.*
+_Unwritten rule: If you're spending more time in the admin panel than dancing, you're doing it wrong. Set it up, let random mode ride, and get back to the dancefloor._

@@ -6,14 +6,14 @@
 
 ### Hardware
 
-| Item | Purpose | Notes |
-|------|---------|-------|
-| Laptop/Mac | Runs the visualiser | Chrome browser required |
-| TV/Projector | Big screen display | HDMI or AirPlay |
-| Audio source | Music for the party | Spotify, vinyl, whatever Dan wants |
-| Phone/iPad | Remote control | Any device with a browser |
-| Good speakers | Making humans dance | The bigger the better |
-| Beer | Keeping Dan hydrated | CRITICAL — do not underestimate |
+| Item          | Purpose              | Notes                              |
+| ------------- | -------------------- | ---------------------------------- |
+| Laptop/Mac    | Runs the visualiser  | Chrome browser required            |
+| TV/Projector  | Big screen display   | HDMI or AirPlay                    |
+| Audio source  | Music for the party  | Spotify, vinyl, whatever Dan wants |
+| Phone/iPad    | Remote control       | Any device with a browser          |
+| Good speakers | Making humans dance  | The bigger the better              |
+| Beer          | Keeping Dan hydrated | CRITICAL — do not underestimate    |
 
 ### Network
 
@@ -36,11 +36,13 @@ The visualiser is now running and listening to whatever audio you play.
 ### 2. The Music (2 minutes)
 
 Play music on the same laptop:
+
 - Open Spotify/Apple Music/YouTube in another tab
 - Or use any audio player
 - The system audio capture will pick up ALL audio from the machine
 
 Alternatively, use a microphone input:
+
 - Select mic/line-in during audio setup
 - Useful for vinyl DJs or live instruments
 - Position mic near the speaker for best results
@@ -48,6 +50,7 @@ Alternatively, use a microphone input:
 ### 3. The Remote Control (1 minute)
 
 On your phone/iPad:
+
 1. Open `https://pulseforge-lyart.vercel.app/admin`
 2. Go to the "REMOTE" tab
 3. You can now switch effects and palettes from your pocket
@@ -55,6 +58,7 @@ On your phone/iPad:
 ### 4. Guest Submissions (1 minute)
 
 Tell guests to visit `https://pulseforge-lyart.vercel.app/submit` on their phones. They can:
+
 - Send birthday messages to Dan
 - Upload photos
 - All submissions appear as floating overlays on the big screen
@@ -64,6 +68,7 @@ Tell guests to visit `https://pulseforge-lyart.vercel.app/submit` on their phone
 ### 5. Pre-party Admin Setup (5 minutes)
 
 On the admin panel:
+
 1. Add 3-5 system messages in ROTATION:
    - "HAPPY BIRTHDAY DAN"
    - "WELCOME TO DANFEST 50"
@@ -89,29 +94,34 @@ On the admin panel:
 ## Troubleshooting
 
 ### "No audio detected" / visuals aren't reacting
+
 - Make sure you selected "System Audio" not a specific tab
 - Check the music is actually playing and not muted
 - Try increasing the sensitivity slider (visible in the HUD)
 - Restart audio capture: click the audio icon, stop, then start again
 
 ### "Visuals are choppy"
+
 - Close other browser tabs (they steal GPU)
 - Make sure the laptop isn't on power saver mode
 - The visualiser auto-adapts quality, but if your machine is struggling, some effects are heavier than others
 - Switch to lighter effects via remote: Starfield, Flow Lines, Plasma are gentle on the GPU
 
 ### "Remote control isn't working"
+
 - Both devices need internet access
 - The visualiser polls every 2 seconds — wait a moment
 - Check you're on the correct URL (not localhost)
 - Try refreshing the admin page
 
 ### "Guest submissions aren't appearing"
+
 - Submissions appear every 8 seconds by default (configurable in Settings)
 - Check the USER tab in admin — submissions might be paused
 - The submission display layer needs the visualiser to be running
 
 ### "Dan needs more beer"
+
 - This is a feature, not a bug
 - Solution: go get Dan a beer
 - If unsure which beer, Dan likes all of them
@@ -130,4 +140,4 @@ Throughout all phases: keep Dan's glass full. This is non-negotiable.
 
 ---
 
-*Final note: The best party visuals are the ones nobody notices because they're too busy having the time of their lives. If Dan doesn't remember the visuals but remembers the party being incredible, you've done your job perfectly. Legend.*
+_Final note: The best party visuals are the ones nobody notices because they're too busy having the time of their lives. If the birthday legend doesn't remember the visuals but remembers the party being incredible, mission accomplished._

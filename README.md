@@ -38,15 +38,15 @@ Open http://localhost:5173, click Start, and share your system audio.
 
 ## Tech Stack
 
-| | |
-|---|---|
-| **Frontend** | React 19 + TypeScript + Tailwind CSS 4 |
-| **3D Engine** | Three.js 0.184 + custom GLSL shaders |
-| **State** | Zustand 5 |
-| **Build** | Vite 8 |
-| **Hosting** | Vercel (auto-deploy from main) |
-| **Database** | Upstash Redis (Vercel KV) |
-| **Storage** | Vercel Blob |
+|               |                                        |
+| ------------- | -------------------------------------- |
+| **Frontend**  | React 19 + TypeScript + Tailwind CSS 4 |
+| **3D Engine** | Three.js 0.184 + custom GLSL shaders   |
+| **State**     | Zustand 5                              |
+| **Build**     | Vite 8                                 |
+| **Hosting**   | Vercel (auto-deploy from main)         |
+| **Database**  | Upstash Redis (Vercel KV)              |
+| **Storage**   | Vercel Blob                            |
 
 ## Architecture
 
@@ -63,14 +63,14 @@ The render loop runs at display refresh rate via `requestAnimationFrame`, comple
 
 42 effects spanning every visual style imaginable:
 
-| Category | Examples |
-|----------|----------|
-| **Shaders** | Tunnel, Fractal, Plasma, Metaballs, Voronoi, Laser Show |
-| **3D Geometry** | Particles, Blob, Helix, Warped Torus, Terrain |
-| **Retro** | Matrix Rain, Ceefax, Space Invaders, Pac-Man, Tetris |
-| **Party** | Disco Ball, Fireworks 50, Laser Show, Neon Signs |
-| **Nature** | Aurora, Nebula, Lightning, Fire, Water Ripple |
-| **Abstract** | Rorschach, Kaleidoscope, Lava Lamp, Vortex |
+| Category        | Examples                                                |
+| --------------- | ------------------------------------------------------- |
+| **Shaders**     | Tunnel, Fractal, Plasma, Metaballs, Voronoi, Laser Show |
+| **3D Geometry** | Particles, Blob, Helix, Warped Torus, Terrain           |
+| **Retro**       | Matrix Rain, Ceefax, Space Invaders, Pac-Man, Tetris    |
+| **Party**       | Disco Ball, Fireworks 50, Laser Show, Neon Signs        |
+| **Nature**      | Aurora, Nebula, Lightning, Fire, Water Ripple           |
+| **Abstract**    | Rorschach, Kaleidoscope, Lava Lamp, Vortex              |
 
 See [docs/EFFECTS.md](docs/EFFECTS.md) for the complete catalogue.
 
@@ -78,20 +78,21 @@ See [docs/EFFECTS.md](docs/EFFECTS.md) for the complete catalogue.
 
 Comprehensive docs in the `docs/` folder:
 
-| Document | Contents |
-|----------|----------|
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design, data flow, directory structure |
-| [EFFECTS.md](docs/EFFECTS.md) | All 42 effects, how to write new ones |
-| [AUDIO-PIPELINE.md](docs/AUDIO-PIPELINE.md) | FFT analysis, onset detection, signal smoothing |
-| [PALETTES-AND-POST.md](docs/PALETTES-AND-POST.md) | Colour system + post-processing chain |
-| [ADMIN-GUIDE.md](docs/ADMIN-GUIDE.md) | Admin panel, remote control, party DJ guide |
-| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Vercel, Redis, Blob, environment setup |
-| [DEVELOPMENT.md](docs/DEVELOPMENT.md) | Dev setup, conventions, adding features |
-| [PARTY-SETUP.md](docs/PARTY-SETUP.md) | Night-of setup checklist + troubleshooting |
+| Document                                          | Contents                                        |
+| ------------------------------------------------- | ----------------------------------------------- |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md)           | System design, data flow, directory structure   |
+| [EFFECTS.md](docs/EFFECTS.md)                     | All 42 effects, how to write new ones           |
+| [AUDIO-PIPELINE.md](docs/AUDIO-PIPELINE.md)       | FFT analysis, onset detection, signal smoothing |
+| [PALETTES-AND-POST.md](docs/PALETTES-AND-POST.md) | Colour system + post-processing chain           |
+| [ADMIN-GUIDE.md](docs/ADMIN-GUIDE.md)             | Admin panel, remote control, party DJ guide     |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md)               | Vercel, Redis, Blob, environment setup          |
+| [DEVELOPMENT.md](docs/DEVELOPMENT.md)             | Dev setup, conventions, adding features         |
+| [PARTY-SETUP.md](docs/PARTY-SETUP.md)             | Night-of setup checklist + troubleshooting      |
 
 ## Environment Variables
 
 For production (Vercel):
+
 ```
 KV_REST_API_URL=        # Upstash Redis
 KV_REST_API_TOKEN=      # Upstash Redis
@@ -125,18 +126,9 @@ Requires: WebGL 2.0, Web Audio API, ES2020+
 
 ## Credits
 
-Built by Donal for Dan's 50th birthday — DANFEST 50, 2026.
+Built by Donal for DANFEST 50, 2026.
 
 Because every legend deserves a legendary party.
-
----
-
-*P.S. Dan — if you're reading this, it means you've somehow sobered up enough to open a GitHub repo. Impressive. Now close this and go enjoy your party. The code will still be here tomorrow. Your youth won't. Happy birthday, you absolute weapon.*
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
 
       // Other configs...
     ],
@@ -147,9 +139,11 @@ Because every legend deserves a legendary party.
       },
       // other options...
     },
-  },
+
+},
 ])
-```
+
+````
 
 You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
@@ -178,4 +172,4 @@ export default defineConfig([
     },
   },
 ])
-```
+````

@@ -6,46 +6,103 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   width: 100%;
   height: 100%;
   background: #000;
 }
 
 /* Only lock scrolling on the main visualiser page */
-html.no-scroll, html.no-scroll body, html.no-scroll #root {
+html.no-scroll,
+html.no-scroll body,
+html.no-scroll #root {
   overflow: hidden;
 }
 
 /* Text animation keyframes */
 @keyframes text-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes text-glitch {
-  0%, 90%, 100% { transform: translate(0); opacity: 1; }
-  91% { transform: translate(-2px, 1px); opacity: 0.8; }
-  93% { transform: translate(2px, -1px); opacity: 0.9; }
-  95% { transform: translate(-1px, -2px); opacity: 0.7; }
-  97% { transform: translate(1px, 2px); opacity: 1; }
+  0%,
+  90%,
+  100% {
+    transform: translate(0);
+    opacity: 1;
+  }
+  91% {
+    transform: translate(-2px, 1px);
+    opacity: 0.8;
+  }
+  93% {
+    transform: translate(2px, -1px);
+    opacity: 0.9;
+  }
+  95% {
+    transform: translate(-1px, -2px);
+    opacity: 0.7;
+  }
+  97% {
+    transform: translate(1px, 2px);
+    opacity: 1;
+  }
 }
 
 @keyframes text-breathe {
-  0%, 100% { opacity: 0.4; transform: scale(1); text-shadow: 0 0 10px rgba(255,255,255,0.3); }
-  50% { opacity: 1; transform: scale(1.02); text-shadow: 0 0 40px rgba(255,255,255,0.8), 0 0 80px rgba(200,150,255,0.4); }
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.02);
+    text-shadow:
+      0 0 40px rgba(255, 255, 255, 0.8),
+      0 0 80px rgba(200, 150, 255, 0.4);
+  }
 }
 
 @keyframes text-dissolve {
-  0% { opacity: 0; filter: blur(10px); transform: scale(1.1); }
-  20% { opacity: 1; filter: blur(0px); transform: scale(1); }
-  80% { opacity: 1; filter: blur(0px); transform: scale(1); }
-  100% { opacity: 0; filter: blur(8px); transform: scale(0.95); }
+  0% {
+    opacity: 0;
+    filter: blur(10px);
+    transform: scale(1.1);
+  }
+  20% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: scale(1);
+  }
+  80% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(8px);
+    transform: scale(0.95);
+  }
 }
 
 @keyframes text-wave {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .animate-text-shimmer {
@@ -70,39 +127,93 @@ html.no-scroll, html.no-scroll body, html.no-scroll #root {
 
 /* Dynamic text effects - Fatboy Slim inspired */
 @keyframes impactIn {
-  0% { transform: scale(0.3); opacity: 0; filter: blur(10px); }
-  60% { transform: scale(1.1); opacity: 1; filter: blur(0); }
-  100% { transform: scale(1); opacity: 1; filter: blur(0); }
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+    filter: blur(10px);
+  }
+  60% {
+    transform: scale(1.1);
+    opacity: 1;
+    filter: blur(0);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
 }
 
 @keyframes scatterIn {
-  0% { transform: translate(-50%, -50%) scale(0) rotate(180deg); opacity: 0; }
-  100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+  0% {
+    transform: translate(-50%, -50%) scale(0) rotate(180deg);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 1;
+  }
 }
 
 @keyframes scatterWordIn {
-  0% { transform: scale(0); opacity: 0; }
-  60% { transform: scale(1.1); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes gridIn {
-  0% { transform: scaleX(0); opacity: 0; }
-  100% { transform: scaleX(1); opacity: 1; }
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
 }
 
 @keyframes staggerIn {
-  0% { transform: translateY(80px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+  0% {
+    transform: translateY(80px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes kineticIn {
-  0% { transform: var(--from-direction); opacity: 0; }
-  100% { transform: translateX(0) translateY(0); opacity: 1; }
+  0% {
+    transform: var(--from-direction);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0) translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes zoomIn {
-  0% { transform: scale(0); opacity: 0; }
-  50% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }

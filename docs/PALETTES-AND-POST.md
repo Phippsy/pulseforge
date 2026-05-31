@@ -12,8 +12,8 @@ Each palette defines 4 accent colours and a background:
 interface ColorPalette {
   id: string;
   name: string;
-  colors: [string, string, string, string];  // accent colours
-  backgroundColor: string;                    // scene background
+  colors: [string, string, string, string]; // accent colours
+  backgroundColor: string; // scene background
 }
 ```
 
@@ -34,6 +34,7 @@ Organised into thematic groups:
 ### Palette Cycling
 
 By default, palettes auto-cycle every 30 seconds. The cycling can be:
+
 - Toggled on/off with `togglePaletteCycling()`
 - Advanced manually with `nextPalette()` or the remote control
 - Set to a specific palette via `setPaletteIndex()`
@@ -50,7 +51,10 @@ The admin panel allows per-palette colour editing. Overrides are stored in `loca
 
 ```json
 {
-  "neon-cyber": { "colors": ["#FF00FF", "#00FFFF", "#FF0080", "#80FF00"], "name": "Custom Name" },
+  "neon-cyber": {
+    "colors": ["#FF00FF", "#00FFFF", "#FF0080", "#80FF00"],
+    "name": "Custom Name"
+  },
   "sunset": { "backgroundColor": "#1A0000" }
 }
 ```
@@ -72,6 +76,7 @@ Scene Render
 ### Bloom
 
 Uses Three.js `UnrealBloomPass`:
+
 - **Strength**: How bright the glow is (0-3, typically 0.5-1.5)
 - **Threshold**: Minimum brightness to bloom (0-1)
 - **Radius**: How far bloom spreads (0-2)
@@ -81,6 +86,7 @@ Bloom is what makes the visuals feel "alive" — bright elements glow and bleed 
 ### Chromatic Aberration
 
 A custom fragment shader that separates RGB channels based on distance from center:
+
 - Red channel shifts outward
 - Blue channel shifts inward
 - Creates a "lens distortion" effect at the edges
@@ -90,6 +96,7 @@ A custom fragment shader that separates RGB channels based on distance from cent
 ### Vignette
 
 Darkens the edges of the screen, drawing attention to the centre:
+
 - Amount typically 0.3-0.8
 - Creates a natural "spotlight" focus
 - Helps mask any edge artifacts from effects
@@ -118,4 +125,4 @@ Post-processing adds ~2-4ms per frame on integrated GPUs. On dedicated GPUs it's
 
 ---
 
-*Design philosophy: Every palette should make Dan go "oooh" at least once during the night. If a palette doesn't get an "oooh", it gets replaced with one that does. Dan's "oooh" is the ultimate quality metric.*
+_Design philosophy: Every palette should make Dan go "oooh" at least once during the night. If a palette doesn't get an "oooh", it gets replaced with one that does. Dan's "oooh" is the ultimate quality metric._

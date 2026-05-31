@@ -17,6 +17,7 @@ getDisplayMedia() or getUserMedia()
 ```
 
 Two capture modes:
+
 - **System audio** (`getDisplayMedia`): Captures whatever is playing on the computer. Ideal for the party setup where music comes from Spotify/etc.
 - **Microphone** (`getUserMedia`): Captures from a mic/line-in. Useful for live instrument/vinyl setups.
 
@@ -28,18 +29,18 @@ The analyser runs every frame and produces `AudioFeatures`:
 
 ```typescript
 interface AudioFeatures {
-  sub: number;        // 20-60 Hz (sub-bass rumble)
-  bass: number;       // 60-150 Hz (kick drums, bass guitar)
-  lowMid: number;     // 150-400 Hz (bass instruments upper harmonics)
-  mid: number;        // 400-2000 Hz (vocals, synths)
-  highMid: number;    // 2000-6000 Hz (presence, clarity)
-  treble: number;     // 6000-20000 Hz (cymbals, air)
-  energy: number;     // overall RMS energy (0-1)
+  sub: number; // 20-60 Hz (sub-bass rumble)
+  bass: number; // 60-150 Hz (kick drums, bass guitar)
+  lowMid: number; // 150-400 Hz (bass instruments upper harmonics)
+  mid: number; // 400-2000 Hz (vocals, synths)
+  highMid: number; // 2000-6000 Hz (presence, clarity)
+  treble: number; // 6000-20000 Hz (cymbals, air)
+  energy: number; // overall RMS energy (0-1)
   spectralFlux: number; // frame-to-frame spectral change
-  onset: boolean;     // true when a transient is detected
+  onset: boolean; // true when a transient is detected
   onsetStrength: number; // magnitude of the onset
-  bpm: number;        // estimated beats per minute
-  beatPhase: number;  // 0-1 position within current beat
+  bpm: number; // estimated beats per minute
+  beatPhase: number; // 0-1 position within current beat
 }
 ```
 
@@ -106,4 +107,4 @@ For effects that want raw frequency data (e.g., the Graphic Equaliser), the full
 
 ---
 
-*Dan's tip: If the visuals aren't reacting enough, turn up the sensitivity slider. If they're reacting too much... turn up the actual music. Problem solved. You're welcome.*
+_Pro tip: If the visuals aren't reacting enough, turn up the sensitivity slider. If they're reacting too much... turn up the actual music. Problem solved._

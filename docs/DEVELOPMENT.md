@@ -27,17 +27,17 @@ Open http://localhost:5173 in your browser.
 
 ## Tech Stack
 
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| UI Framework | React | 19.2.6 |
-| Language | TypeScript | 5.x |
-| Build Tool | Vite | 8.x |
-| Styling | Tailwind CSS | 4.3.0 |
-| 3D Rendering | Three.js | 0.184.0 |
-| State Management | Zustand | 5.0.14 |
-| Hosting | Vercel | — |
-| Database | Upstash Redis | via @upstash/redis |
-| File Storage | Vercel Blob | via @vercel/blob |
+| Layer            | Technology    | Version            |
+| ---------------- | ------------- | ------------------ |
+| UI Framework     | React         | 19.2.6             |
+| Language         | TypeScript    | 5.x                |
+| Build Tool       | Vite          | 8.x                |
+| Styling          | Tailwind CSS  | 4.3.0              |
+| 3D Rendering     | Three.js      | 0.184.0            |
+| State Management | Zustand       | 5.0.14             |
+| Hosting          | Vercel        | —                  |
+| Database         | Upstash Redis | via @upstash/redis |
+| File Storage     | Vercel Blob   | via @vercel/blob   |
 
 ## Project Structure
 
@@ -94,6 +94,7 @@ src/
 See [EFFECTS.md](./EFFECTS.md) for the full guide and template.
 
 Quick checklist:
+
 1. Create the effect class
 2. Register in `effects/index.ts` (type + registry + export)
 3. Add to UI lists (`PhaseList.tsx`, `AdminPage.tsx`, `TopBar.tsx`)
@@ -130,12 +131,14 @@ npm run lint
 ## Browser Compatibility
 
 Pulseforge requires:
+
 - Web Audio API with `AnalyserNode`
 - WebGL 2.0 (for Three.js + GLSL shaders)
 - `getDisplayMedia` (for system audio capture)
 - ES2020+ features
 
 Tested on:
+
 - Chrome 120+ (primary target)
 - Safari 17+ (iOS/macOS — works but no system audio capture)
 - Edge 120+
@@ -151,15 +154,19 @@ Tested on:
 ## Debugging
 
 ### FPS Counter
+
 Always visible in the top bar. Red = bad (< 30fps), yellow = okay (30-50fps), invisible = good.
 
 ### Audio Meters
+
 Toggle with the audio setup panel. Shows real-time band energies.
 
 ### Effect Name
+
 Shown in the top bar so you know what's currently running.
 
 ### Console
+
 Audio features, onset events, and effect switches are logged at debug level.
 
 ## Known Quirks
@@ -172,4 +179,4 @@ Audio features, onset events, and effect switches are logged at debug level.
 
 ---
 
-*Developer's note: If you're reading this and thinking "I could optimise that shader", you're right. But remember: perfect is the enemy of good, and good is the enemy of Dan having a great party. Ship it.*
+_Developer's note: If you're reading this and thinking "I could optimise that shader", you're right. But remember: perfect is the enemy of good, and good is the enemy of a legendary party. Ship it._

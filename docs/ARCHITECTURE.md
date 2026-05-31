@@ -70,6 +70,7 @@ Every frame (~60-120fps):
 ### 3. State Management (Zustand)
 
 Single flat store (`src/store.ts`) with:
+
 - Audio state (device, capturing, signals)
 - Visual state (genre, phase, effect, palette, mode)
 - UI state (help, overlay, freeze, blackout)
@@ -79,16 +80,23 @@ Single flat store (`src/store.ts`) with:
 ### 4. Effect System
 
 Each effect implements the `VisualEffect` interface:
+
 ```typescript
 interface VisualEffect {
   name: string;
   init(scene: THREE.Scene, camera: THREE.Camera): void;
-  update(signals: ControlSignals, params: EffectParams, dt: number, time: number): void;
+  update(
+    signals: ControlSignals,
+    params: EffectParams,
+    dt: number,
+    time: number,
+  ): void;
   dispose(): void;
 }
 ```
 
 Effects come in two camera types:
+
 - **Perspective camera**: 3D geometry effects (particles, blob, helix, etc.)
 - **Orthographic camera**: Fullscreen GLSL shader effects (tunnel, fractal, laser show, etc.)
 
@@ -204,4 +212,4 @@ pulseforge/
 
 ---
 
-*Built with the blood, sweat, and questionable Spotify playlists of Donal, for the absolute legend that is Dan. May his 50th decade be as energetic as a Peak Techno phase at 3am.*
+_Built with the blood, sweat, and questionable Spotify playlists of Donal, for the absolute legend that is Dan. May his 50th decade be as energetic as a Peak Techno phase at 3am._

@@ -10,57 +10,57 @@ Pulseforge ships with 42 audio-reactive visual effects. Each responds to beat, b
 
 These render a single fullscreen quad with a fragment shader. They use an orthographic camera and get uniforms for time, audio signals, and palette colours.
 
-| # | ID | Name | Description |
-|---|---|---|---|
-| 1 | `tunnel` | Tunnel | Infinite tunnel fly-through with pulsing rings |
-| 7 | `fractal` | Fractal | Mandelbrot-style fractal zoom, audio-reactive iteration depth |
-| 9 | `metaballs` | Metaballs | Organic blobs that merge and split to bass |
-| 12 | `plasma` | Plasma | Classic demoscene plasma with warping sine waves |
-| 13 | `voronoi` | Voronoi | Crystalline Voronoi cells that shatter on beats |
-| 14 | `aurora` | Aurora | Northern lights shimmer with audio-driven curtains |
-| 15 | `geoKaleidoscope` | Kaleidoscope | Geometric kaleidoscope that rotates with the beat |
-| 16 | `rings` | Rings | Concentric expanding rings, pulse on bass hits |
-| 17 | `equaliser` | EQ | Graphic equaliser bars — classic Winamp vibes |
-| 18 | `soundwaves` | Sound Waves | Undulating sound wave lines across the screen |
-| 22 | `laserShow` | Laser Show | Concert-quality laser beams with atmospheric haze (5 patterns: dual fan sweep, rotating scanners, geometric shapes, Lissajous curves, full chaos) |
-| 23 | `fire` | Fire | Procedural fire simulation reacting to bass |
-| 24 | `superscope` | Oscilloscope | Retro oscilloscope trace (inspired by Winamp SuperScope) |
-| 25 | `milkdrop` | Milkdrop | Warp-mesh distortion in the spirit of Milkdrop |
-| 26 | `waterRipple` | Water Ripple | Rippling water surface disturbed by beat transients |
-| 28 | `matrixRain` | Matrix | Green character rain — faster on louder audio |
-| 29 | `rorschach` | Rorschach | Symmetric ink blot patterns evolving in real-time |
-| 30 | `spiralVortex` | Vortex | Spiral vortex that accelerates on bass |
-| 31 | `nebula` | Nebula | Deep space nebula clouds with volumetric lighting |
-| 32 | `electricArc` | Electric Arc | Lightning arcs between dynamic charge points |
-| 33 | `spaceInvaders` | Space Invaders | Retro arcade invaders that march to the beat |
-| 34 | `ceefax` | Ceefax | BBC Ceefax/Teletext style pages — peak nostalgia |
-| 35 | `fireworks` | Fireworks 50 | Birthday fireworks spelling "50" — for the man himself |
-| 36 | `discoBall` | Disco Ball | Rotating mirror ball with light beams |
-| 37 | `pacman` | Pac-Man | Pac-Man chasing ghosts through a maze |
-| 38 | `lavaLamp` | Lava Lamp | 70s lava lamp with rising/falling blobs |
-| 39 | `acidSmiley` | Acid Smiley | Classic rave smiley face, pulsing and morphing |
-| 40 | `neonSigns` | Neon Signs | Flickering neon signs (custom messages) |
-| 41 | `lightning` | Lightning | Branching lightning bolts triggered by beats |
-| 42 | `tetris` | Tetris Effect | Falling Tetris pieces that stack to the rhythm |
+| #   | ID                | Name           | Description                                                                                                                                       |
+| --- | ----------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `tunnel`          | Tunnel         | Infinite tunnel fly-through with pulsing rings                                                                                                    |
+| 7   | `fractal`         | Fractal        | Mandelbrot-style fractal zoom, audio-reactive iteration depth                                                                                     |
+| 9   | `metaballs`       | Metaballs      | Organic blobs that merge and split to bass                                                                                                        |
+| 12  | `plasma`          | Plasma         | Classic demoscene plasma with warping sine waves                                                                                                  |
+| 13  | `voronoi`         | Voronoi        | Crystalline Voronoi cells that shatter on beats                                                                                                   |
+| 14  | `aurora`          | Aurora         | Northern lights shimmer with audio-driven curtains                                                                                                |
+| 15  | `geoKaleidoscope` | Kaleidoscope   | Geometric kaleidoscope that rotates with the beat                                                                                                 |
+| 16  | `rings`           | Rings          | Concentric expanding rings, pulse on bass hits                                                                                                    |
+| 17  | `equaliser`       | EQ             | Graphic equaliser bars — classic Winamp vibes                                                                                                     |
+| 18  | `soundwaves`      | Sound Waves    | Undulating sound wave lines across the screen                                                                                                     |
+| 22  | `laserShow`       | Laser Show     | Concert-quality laser beams with atmospheric haze (5 patterns: dual fan sweep, rotating scanners, geometric shapes, Lissajous curves, full chaos) |
+| 23  | `fire`            | Fire           | Procedural fire simulation reacting to bass                                                                                                       |
+| 24  | `superscope`      | Oscilloscope   | Retro oscilloscope trace (inspired by Winamp SuperScope)                                                                                          |
+| 25  | `milkdrop`        | Milkdrop       | Warp-mesh distortion in the spirit of Milkdrop                                                                                                    |
+| 26  | `waterRipple`     | Water Ripple   | Rippling water surface disturbed by beat transients                                                                                               |
+| 28  | `matrixRain`      | Matrix         | Green character rain — faster on louder audio                                                                                                     |
+| 29  | `rorschach`       | Rorschach      | Symmetric ink blot patterns evolving in real-time                                                                                                 |
+| 30  | `spiralVortex`    | Vortex         | Spiral vortex that accelerates on bass                                                                                                            |
+| 31  | `nebula`          | Nebula         | Deep space nebula clouds with volumetric lighting                                                                                                 |
+| 32  | `electricArc`     | Electric Arc   | Lightning arcs between dynamic charge points                                                                                                      |
+| 33  | `spaceInvaders`   | Space Invaders | Retro arcade invaders that march to the beat                                                                                                      |
+| 34  | `ceefax`          | Ceefax         | BBC Ceefax/Teletext style pages — peak nostalgia                                                                                                  |
+| 35  | `fireworks`       | Fireworks 50   | Birthday fireworks spelling "50" — for the man himself                                                                                            |
+| 36  | `discoBall`       | Disco Ball     | Rotating mirror ball with light beams                                                                                                             |
+| 37  | `pacman`          | Pac-Man        | Pac-Man chasing ghosts through a maze                                                                                                             |
+| 38  | `lavaLamp`        | Lava Lamp      | 70s lava lamp with rising/falling blobs                                                                                                           |
+| 39  | `acidSmiley`      | Acid Smiley    | Classic rave smiley face, pulsing and morphing                                                                                                    |
+| 40  | `neonSigns`       | Neon Signs     | Flickering neon signs (custom messages)                                                                                                           |
+| 41  | `lightning`       | Lightning      | Branching lightning bolts triggered by beats                                                                                                      |
+| 42  | `tetris`          | Tetris Effect  | Falling Tetris pieces that stack to the rhythm                                                                                                    |
 
 ### 3D Geometry Effects (Perspective Camera)
 
 These create Three.js meshes/geometries and animate them in 3D space.
 
-| # | ID | Name | Description |
-|---|---|---|---|
-| 2 | `particles` | Particles | Thousands of particles forming reactive clouds |
-| 3 | `grid` | Grid | Wireframe grid landscape that warps with bass |
-| 4 | `blob` | Blob | Organic metaball blob with vertex displacement |
-| 5 | `flowlines` | Flow Lines | Perlin noise flow field with streaming lines |
-| 6 | `waveformRing` | Waveform | Audio waveform displayed as a ring |
-| 8 | `imageShatter` | Shatter | User-uploaded image explodes into fragments on beat |
-| 10 | `helix` | Helix | DNA-style double helix rotating in 3D |
-| 11 | `starfield` | Starfield | Warp-speed starfield (speed = energy level) |
-| 19 | `morphPoly` | Morph Poly | Polyhedron morphing between shapes |
-| 20 | `warpedTorus` | Warped Torus | Torus with vertex noise warping |
-| 21 | `psychedelicEQ` | Psych EQ | 3D frequency bars in psychedelic colours |
-| 27 | `terrain` | Terrain | Wireframe terrain flyover (audio-driven height map) |
+| #   | ID              | Name         | Description                                         |
+| --- | --------------- | ------------ | --------------------------------------------------- |
+| 2   | `particles`     | Particles    | Thousands of particles forming reactive clouds      |
+| 3   | `grid`          | Grid         | Wireframe grid landscape that warps with bass       |
+| 4   | `blob`          | Blob         | Organic metaball blob with vertex displacement      |
+| 5   | `flowlines`     | Flow Lines   | Perlin noise flow field with streaming lines        |
+| 6   | `waveformRing`  | Waveform     | Audio waveform displayed as a ring                  |
+| 8   | `imageShatter`  | Shatter      | User-uploaded image explodes into fragments on beat |
+| 10  | `helix`         | Helix        | DNA-style double helix rotating in 3D               |
+| 11  | `starfield`     | Starfield    | Warp-speed starfield (speed = energy level)         |
+| 19  | `morphPoly`     | Morph Poly   | Polyhedron morphing between shapes                  |
+| 20  | `warpedTorus`   | Warped Torus | Torus with vertex noise warping                     |
+| 21  | `psychedelicEQ` | Psych EQ     | 3D frequency bars in psychedelic colours            |
+| 27  | `terrain`       | Terrain      | Wireframe terrain flyover (audio-driven height map) |
 
 ## Effect Interface
 
@@ -70,7 +70,12 @@ Every effect implements:
 interface VisualEffect {
   name: string;
   init(scene: THREE.Scene, camera: THREE.Camera): void;
-  update(signals: ControlSignals, params: EffectParams, dt: number, time: number): void;
+  update(
+    signals: ControlSignals,
+    params: EffectParams,
+    dt: number,
+    time: number,
+  ): void;
   dispose(): void;
 }
 ```
@@ -79,15 +84,15 @@ interface VisualEffect {
 
 ```typescript
 interface ControlSignals {
-  bassPulse: number;     // 0-1, fast attack/decay, punchy
-  bassEnergy: number;    // 0-1, smoother bass average
-  midEnergy: number;     // 0-1, vocal/instrument range
-  highEnergy: number;    // 0-1, hats/cymbals
+  bassPulse: number; // 0-1, fast attack/decay, punchy
+  bassEnergy: number; // 0-1, smoother bass average
+  midEnergy: number; // 0-1, vocal/instrument range
+  highEnergy: number; // 0-1, hats/cymbals
   overallIntensity: number; // 0-1, total energy
-  transientPulse: number;   // 0-1, onset-triggered spike
-  beatPhase: number;     // 0-1, position within current beat
-  bpm: number;           // estimated BPM
-  isSilent: boolean;     // true if no audio for >1 second
+  transientPulse: number; // 0-1, onset-triggered spike
+  beatPhase: number; // 0-1, position within current beat
+  bpm: number; // estimated BPM
+  isSilent: boolean; // true if no audio for >1 second
 }
 ```
 
@@ -95,12 +100,12 @@ interface ControlSignals {
 
 ```typescript
 interface EffectParams {
-  colors: [string, string, string, string];  // from active palette
+  colors: [string, string, string, string]; // from active palette
   backgroundColor: string;
-  intensity: number;        // 0-1
-  speed: number;            // multiplier
-  complexity: number;       // detail level
-  bassReactivity: number;   // how much bass drives the effect
+  intensity: number; // 0-1
+  speed: number; // multiplier
+  complexity: number; // detail level
+  bassReactivity: number; // how much bass drives the effect
   midReactivity: number;
   highReactivity: number;
   onsetReactivity: number;
@@ -123,12 +128,12 @@ interface EffectParams {
 ### Shader Effect Template
 
 ```typescript
-import * as THREE from 'three';
-import type { ControlSignals } from '../../store';
-import type { VisualEffect, EffectParams } from './types';
+import * as THREE from "three";
+import type { ControlSignals } from "../../store";
+import type { VisualEffect, EffectParams } from "./types";
 
 export class MyEffect implements VisualEffect {
-  name = 'My Effect';
+  name = "My Effect";
   private mesh!: THREE.Mesh;
   private material!: THREE.ShaderMaterial;
 
@@ -143,7 +148,9 @@ export class MyEffect implements VisualEffect {
         uColor2: { value: new THREE.Color() },
         uColor3: { value: new THREE.Color() },
         uColor4: { value: new THREE.Color() },
-        uResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+        uResolution: {
+          value: new THREE.Vector2(window.innerWidth, window.innerHeight),
+        },
       },
       vertexShader: `
         varying vec2 vUv;
@@ -174,7 +181,12 @@ export class MyEffect implements VisualEffect {
     scene.add(this.mesh);
   }
 
-  update(signals: ControlSignals, params: EffectParams, _dt: number, time: number): void {
+  update(
+    signals: ControlSignals,
+    params: EffectParams,
+    _dt: number,
+    time: number,
+  ): void {
     const u = this.material.uniforms;
     u.uTime.value = time;
     u.uBass.value = signals.bassPulse * params.bassReactivity;
@@ -201,4 +213,4 @@ Per-effect display durations can also be configured in `effectDurations`. Defaul
 
 ---
 
-*Fun fact: The number 42 effects is not a coincidence. It's the answer to life, the universe, and everything — which also happens to be Dan's philosophy on beer consumption at his own birthday party.*
+_Fun fact: The number 42 effects is not a coincidence. It's the answer to life, the universe, and everything — which also happens to be Dan's philosophy on beer consumption at his own birthday party._
