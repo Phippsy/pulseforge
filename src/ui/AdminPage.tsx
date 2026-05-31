@@ -73,9 +73,11 @@ type AdminTab = 'system' | 'submissions' | 'settings' | 'palettes' | 'remote';
 function RemoteControlPanel() {
   const [sending, setSending] = useState<string | null>(null);
   const [lastSent, setLastSent] = useState<{ command: string; time: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const sendCommand = async (command: string, effectId?: string) => {
     setSending(effectId || command);
+    setError(null);
     try {
       const body: Record<string, string> = { command };
       if (effectId) body.effectId = effectId;
@@ -86,9 +88,11 @@ function RemoteControlPanel() {
       });
       if (res.ok) {
         setLastSent({ command: effectId || command, time: Date.now() });
+      } else {
+        setError(`Failed (${res.status})`);
       }
     } catch {
-      // ignore
+      setError('Network error');
     } finally {
       setSending(null);
     }
@@ -105,15 +109,13 @@ function RemoteControlPanel() {
       <div className="grid grid-cols-2 gap-3 md:gap-4 mb-6">
         <button
           onClick={() => sendCommand('next-palette')}
-          disabled={sending !== null}
-          className="py-3.5 md:py-5 bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 border border-purple-400/30 text-white font-bold text-xs md:text-sm tracking-wider transition-all active:scale-95"
+          className="py-3.5 md:py-5 bg-gradient-to-r from-purple-600/80 to-pink-600/80 hover:from-purple-500 hover:to-pink-500 border border-purple-400/30 text-white font-bold text-xs md:text-sm tracking-wider transition-all active:scale-95"
         >
           {sending === 'next-palette' ? 'SENDING...' : 'NEXT PALETTE'}
         </button>
         <button
           onClick={() => sendCommand('next-effect')}
-          disabled={sending !== null}
-          className="py-3.5 md:py-5 bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 disabled:opacity-50 border border-cyan-400/30 text-white font-bold text-xs md:text-sm tracking-wider transition-all active:scale-95"
+          className="py-3.5 md:py-5 bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 border border-cyan-400/30 text-white font-bold text-xs md:text-sm tracking-wider transition-all active:scale-95"
         >
           {sending === 'next-effect' ? 'SENDING...' : 'NEXT EFFECT'}
         </button>
@@ -127,8 +129,7 @@ function RemoteControlPanel() {
             <button
               key={effect.id}
               onClick={() => sendCommand('select-effect', effect.id)}
-              disabled={sending !== null}
-              className={`px-1.5 py-2.5 md:py-3 text-[10px] md:text-[11px] font-bold tracking-wide border transition-all active:scale-95 disabled:opacity-50 truncate ${
+              className={`px-1.5 py-2.5 md:py-3 text-[10px] md:text-[11px] font-bold tracking-wide border transition-all active:scale-95 truncate ${
                 sending === effect.id
                   ? 'border-green-400 bg-green-900/50 text-green-200'
                   : lastSent?.command === effect.id
@@ -143,6 +144,11 @@ function RemoteControlPanel() {
         </div>
       </div>
 
+      {error && (
+        <div className="mb-3 text-center text-red-400 text-xs font-bold">
+          {error}
+        </div>
+      )}
       {lastSent && (
         <div className="mb-4 text-center text-white/40 text-xs">
           Last: <span className="text-cyan-300">{lastSent.command}</span> at {new Date(lastSent.time).toLocaleTimeString()}
@@ -150,8 +156,9 @@ function RemoteControlPanel() {
       )}
       <div className="border border-cyan-500/20 p-3 md:p-4 bg-black/50 text-white/40 text-xs space-y-1.5">
         <p>Commands are pushed to all running visualiser instances</p>
-        <p>The visualiser polls every 2 seconds for new commands</p>
+        <p>The visualiser polls every ~1 second for new commands</p>
         <p>Works across devices -- control from phone while visuals run on big screen</p>
+        <p className="text-yellow-400/60">Note: If testing on one device, keep the visualiser tab in the foreground (background tabs are throttled by the browser)</p>
       </div>
     </>
   );
