@@ -10,7 +10,7 @@ export function useRemoteControl() {
   useEffect(() => {
     const poll = async () => {
       try {
-        const res = await fetch('/api/remote-control');
+        const res = await fetch('/api/remote-control', { cache: 'no-store' });
         if (!res.ok) return;
         const data = await res.json();
         if (data.commands && data.commands.length > 0) {
@@ -24,11 +24,13 @@ export function useRemoteControl() {
             }
           }
         }
-      } catch {
-        // ignore network errors
+      } catch (e) {
+        console.warn('[RemoteControl] poll error:', e);
       }
     };
 
+    // Poll immediately on mount, then every 2 seconds
+    poll();
     intervalRef.current = setInterval(poll, 2000);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);

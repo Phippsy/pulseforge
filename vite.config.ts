@@ -214,6 +214,7 @@ export default defineConfig({
             if (req.method === 'GET') {
               const commands = remoteCommands.splice(0);
               res.setHeader('Content-Type', 'application/json');
+              res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
               res.end(JSON.stringify({ commands }));
               return;
             }

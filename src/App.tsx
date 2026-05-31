@@ -225,23 +225,24 @@ export function App() {
         }
       }
 
-      // Random mode - pick a weighted random effect every 15-30 seconds
-      if (state.randomMode && !pm.transitioning) {
-        // Check for forced specific effect selection
-        if (state.forceSpecificEffect) {
-          const specificEffect = state.forceSpecificEffect as EffectName;
-          useStore.getState().selectEffect(''); // clear it (set to empty, then null)
-          useStore.setState({ forceSpecificEffect: null });
-          randomEffectRef.current = specificEffect;
-          engine.setEffect(specificEffect);
-          useStore.getState().setActiveEffectName(specificEffect);
-          randomTimerRef.current = now;
-          const customDuration = state.effectDurations[specificEffect];
-          randomIntervalRef.current = customDuration ?? (15 + Math.random() * 15);
-        }
-        const forceChange = state.forceNextEffect !== forceNextEffectRef.current;
-        if (forceChange) forceNextEffectRef.current = state.forceNextEffect;
-        if (forceChange || now - randomTimerRef.current > randomIntervalRef.current || randomTimerRef.current === 0) {
+      // Handle forced effect commands (from remote control) - always process regardless of transition state
+      let forcedEffectHandled = false;
+      if (state.forceSpecificEffect) {
+        const specificEffect = state.forceSpecificEffect as EffectName;
+        useStore.setState({ forceSpecificEffect: null });
+        randomEffectRef.current = specificEffect;
+        engine.setEffect(specificEffect);
+        useStore.getState().setActiveEffectName(specificEffect);
+        randomTimerRef.current = now;
+        const customDuration = state.effectDurations[specificEffect];
+        randomIntervalRef.current = customDuration ?? (15 + Math.random() * 15);
+        forcedEffectHandled = true;
+      }
+      const forceChange = state.forceNextEffect !== forceNextEffectRef.current;
+      if (forceChange) {
+        forceNextEffectRef.current = state.forceNextEffect;
+        if (!forcedEffectHandled) {
+          // Only pick a random effect if we didn't just handle a specific one
           const allEffects = Object.keys(effectRegistry) as EffectName[];
           const weights = allEffects.map((e) => state.effectWeights[e] ?? 1);
           const totalWeight = weights.reduce((sum, w) => sum + w, 0);
@@ -259,7 +260,31 @@ export function App() {
           engine.setEffect(next);
           useStore.getState().setActiveEffectName(next);
           randomTimerRef.current = now;
-          // Use per-effect duration if set, otherwise default 15-30s random
+          const customDuration = state.effectDurations[next];
+          randomIntervalRef.current = customDuration ?? (15 + Math.random() * 15);
+        }
+      }
+
+      // Random mode - auto-cycle effects every 15-30 seconds
+      if (state.randomMode && !pm.transitioning && !forcedEffectHandled && !forceChange) {
+        if (now - randomTimerRef.current > randomIntervalRef.current || randomTimerRef.current === 0) {
+          const allEffects = Object.keys(effectRegistry) as EffectName[];
+          const weights = allEffects.map((e) => state.effectWeights[e] ?? 1);
+          const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+          let next: EffectName;
+          do {
+            let r = Math.random() * totalWeight;
+            let idx = 0;
+            for (let i = 0; i < weights.length; i++) {
+              r -= weights[i];
+              if (r <= 0) { idx = i; break; }
+            }
+            next = allEffects[idx];
+          } while (next === randomEffectRef.current && allEffects.length > 1);
+          randomEffectRef.current = next;
+          engine.setEffect(next);
+          useStore.getState().setActiveEffectName(next);
+          randomTimerRef.current = now;
           const customDuration = state.effectDurations[next];
           randomIntervalRef.current = customDuration ?? (15 + Math.random() * 15);
         }

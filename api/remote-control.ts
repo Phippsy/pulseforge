@@ -23,14 +23,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'GET') {
-    // Pop all pending commands atomically
-    const raw = await redis.lrange(REMOTE_KEY, 0, -1);
-    if (raw.length > 0) {
-      await redis.del(REMOTE_KEY);
-    }
+    // Pop all pending commands atomically using pipeline
+    const pipeline = redis.pipeline();
+    pipeline.lrange(REMOTE_KEY, 0, -1);
+    pipeline.del(REMOTE_KEY);
+    const results = await pipeline.exec();
+    const raw = (results[0] as string[]) || [];
     const commands = raw.map((item) =>
       typeof item === 'string' ? JSON.parse(item) : item
     );
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     return res.status(200).json({ commands });
   }
 
